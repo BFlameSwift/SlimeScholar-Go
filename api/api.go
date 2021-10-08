@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gitee.com/online-publish/slime-scholar-go/service"
+	"slime-scholar-go/model"
+	"slime-scholar-go/service"
 	"strconv"
 )
 

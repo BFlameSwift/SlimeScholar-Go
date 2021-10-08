@@ -1,8 +1,8 @@
 package initialize
 
 import (
-	"gitee.com/online-publish/slime-scholar-go/middleware"
-	"gitee.com/online-publish/slime-scholar-go/router"
+	"slime-scholar-go/middleware"
+	"slime-scholar-go/router"
 
 	"github.com/gin-gonic/gin"
 )

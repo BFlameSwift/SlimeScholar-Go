@@ -4,7 +4,7 @@ package slime_scholar_go
 import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gitee.com/online-publish/slime-scholar-go/initialize"
+	"slime-scholar-go/initialize"
 )
 
 
