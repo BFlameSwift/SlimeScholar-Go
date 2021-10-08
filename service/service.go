@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"gorm.io/gorm"
-	"slime-scholar-go/global"
-	"slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/global"
+	"gitee.com/online-publish/slime-scholar-go/model"
 )
 
 // 创建用户

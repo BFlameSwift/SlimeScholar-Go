@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm/schema"
 	"log"
 	"os"
-	"slime-scholar-go/global"
-	"slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/global"
+	"gitee.com/online-publish/slime-scholar-go/model"
 	"time"
 )
 
