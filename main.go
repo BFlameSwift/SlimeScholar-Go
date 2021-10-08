@@ -1,4 +1,4 @@
-package slime_scholar_go
+package main
 
 
 import (
