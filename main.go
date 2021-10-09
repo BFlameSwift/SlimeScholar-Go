@@ -4,6 +4,7 @@ package main
 import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	//"slime-scholar-go/docs"
 	"slime-scholar-go/initialize"
 )
 

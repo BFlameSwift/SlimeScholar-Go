@@ -16,5 +16,8 @@
 
 [推荐入门链接](https://www.jianshu.com/p/4875b5ac9feb)
 
-生成文档 `swagger init`
+生成文档 `swagger generate spec -o ./docs/swagger.json `
+
+运行swagger  `swagger serve -F=swagger ./docs/swagger.json`
+
 
