@@ -16,7 +16,7 @@ import (
 
 // 初始化 MySQL 的相关配置
 func InitMySQL() {
-	addr, port, username, password, database := "82.156.217.192", "3306", "root", "BUAAse43", "pt"
+	addr, port, username, password, database := "82.156.217.192", "3306", "root", "BUAAse43", "scholar"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, addr, port, database)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
