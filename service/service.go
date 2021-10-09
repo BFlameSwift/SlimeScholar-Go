@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"gitee.com/online-publish/slime-scholar-go/utils"
+	"math/rand"
+	"time"
 
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -45,6 +48,18 @@ func UpdateAUser(user *model.User, username string, password string, userInfo st
 	user.Username = username
 	user.Password = password
 	user.UserInfo = userInfo
+	err := global.DB.Save(user).Error
+	return err
+}
+// 如果bool == false 重发邮件，否则就把user的comfirm = true
+func UpdateConfirmAUser(user *model.User, has_comfirmed bool) error{
+	if has_comfirmed == false{
+		user.ConfirmNumber = rand.New(rand.NewSource(time.Now().UnixNano())).Int()%1000000
+		utils.SendRegisterEmail(user.Email,user.ConfirmNumber)
+		err := global.DB.Save(user).Error
+		return err
+	}
+	user.HasComfirmed = true
 	err := global.DB.Save(user).Error
 	return err
 }

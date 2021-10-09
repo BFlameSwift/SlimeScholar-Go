@@ -23,7 +23,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/api/v1": {
             "get": {
                 "description": "测试 Index 页",
                 "tags": [
@@ -32,6 +32,56 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "{\"success\": true, \"message\": \"gcp\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/confirm": {
+            "post": {
+                "description": "验证邮箱",
+                "tags": [
+                    "用户管理"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "confirm_number",
+                        "name": "confirm_number",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"用户验证邮箱成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"用户已验证邮箱\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "402": {
+                        "description": "{\"success\": false, \"message\": \"用户输入验证码错误}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户不存在}",
                         "schema": {
                             "type": "string"
                         }
@@ -94,7 +144,19 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
+                        "description": "{\"success\": true, \"message\": \"登录成功\", \"detail\": user的信息}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
                         "description": "{\"success\": false, \"message\": \"没有该用户\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "402": {
+                        "description": "{\"success\": false, \"message\": \"密码错误\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -184,6 +246,12 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "description": "用户邮箱",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
                         "description": "用户个人信息",
                         "name": "user_info",
                         "in": "formData",
@@ -195,6 +263,12 @@ var doc = `{
                         "name": "user_type",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "认证机构名",
+                        "name": "affiliation",
+                        "in": "formData"
                     },
                     {
                         "type": "string",

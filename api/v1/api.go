@@ -1,19 +1,22 @@
 package v1
 
 import (
-	"net/http"
-	"strconv"
 
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 // Index doc
 // @description 测试 Index 页
 // @Tags 测试
 // @Success 200 {string} string "{"success": true, "message": "gcp"}"
-// @Router / [GET]
+// @Router                                                                                                                                           /api/v1 [GET]
 func Index(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "gcp"})
 }
@@ -23,8 +26,10 @@ func Index(c *gin.Context) {
 // @Tags 用户管理
 // @Param username formData string true "用户名"
 // @Param password formData string true "密码"
+// @Param email formData string false "用户邮箱"
 // @Param user_info formData string true "用户个人信息"
 // @Param user_type formData string true "用户类型（0: 普通用户，1: 认证机构用户）"
+// @Param affiliation formData string false "认证机构名"
 // @Param affiliation formData string false "认证机构名"
 // @Success 200 {string} string "{"success": true, "message": "用户创建成功"}"
 // @Failure 200 {string} string "{"success": false, "message": "用户已存在"}"
@@ -33,17 +38,56 @@ func Register(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")
 	userInfo := c.Request.FormValue("user_info")
+	email := c.Request.FormValue("email")
 	userType, _ := strconv.ParseUint(c.Request.FormValue("user_type"), 0, 64)
+	user_confirm_number := rand.New(rand.NewSource(time.Now().UnixNano())).Int()%1000000
 	affiliation := c.Request.FormValue("affiliation")
-	user := model.User{Username: username, Password: password, UserInfo: userInfo, UserType: userType, Affiliation: affiliation}
+	user := model.User{Username: username, Password: password, UserInfo: userInfo, UserType: userType, Affiliation: affiliation,Email: email,ConfirmNumber: user_confirm_number}
 	_, notFound := service.QueryAUserByUsername(username)
 	if notFound {
 		service.CreateAUser(&user)
+		utils.SendRegisterEmail(email,user.ConfirmNumber);
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "用户创建成功"})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户已存在"})
 	}
 }
+
+// Confirm doc
+// @description 验证邮箱
+// @Tags 用户管理
+// @Param username formData string true "用户名"
+// @Param confirm_number formData int true "confirm_number"
+// @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "用户已验证邮箱"}"
+// @Failure 402 {string} string "{"success": false, "message": "用户输入验证码错误}"
+// @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
+// @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
+// @Router /user/confirm [POST]
+func Confirm(c *gin.Context){
+
+	confirm_number := c.Request.FormValue("confirm_number")
+
+	username := c.Request.FormValue("username")
+	user, notFound := service.QueryAUserByUsername(username)
+	if notFound{
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在","status":404})
+	}else{
+		if user.HasComfirmed == true{
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户已验证","status":401})
+		}else{
+			num,_ :=strconv.Atoi(confirm_number)
+			if num != user.ConfirmNumber{
+				c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户输入验证码错误","status":402})
+			}else{
+				service.UpdateConfirmAUser(&user,true)
+				c.JSON(http.StatusOK, gin.H{"success": true, "message": "用户验证成功","status":200})
+			}
+		}
+	}
+
+}
+
 
 // Login doc
 // @description 登录
@@ -51,20 +95,24 @@ func Register(c *gin.Context) {
 // @Param username formData string true "用户名"
 // @Param password formData string true "密码"
 // @Success 200 {string} string "{"success": true, "message": "登录成功", "detail": user的信息}"
-// @Failure 200 {string} string "{"success": false, "message": "密码错误"}"
-// @Failure 200 {string} string "{"success": false, "message": "没有该用户"}"
+// @Failure 402 {string} string "{"success": false, "message": "密码错误"}"
+// @Failure 401 {string} string "{"success": false, "message": "没有该用户"}"
 // @Router /user/login [POST]
 func Login(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")
 	user, notFound := service.QueryAUserByUsername(username)
 	if notFound {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有该用户"})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有该用户","status": 401})
 	} else {
 		if user.Password != password {
-			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误"})
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误","status": 402})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"success": true, "message": "登录成功", "detail": user})
+			if user.HasComfirmed == false{
+				c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户尚未确认邮箱","status": 403})
+			} else {
+				c.JSON(http.StatusOK, gin.H{"success": true, "message": "登录成功", "detail": user, "status": 200})
+			}
 		}
 	}
 }
