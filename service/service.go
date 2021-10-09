@@ -2,9 +2,10 @@ package service
 
 import (
 	"errors"
+
+	"gitee.com/online-publish/slime-scholar-go/global"
+	"gitee.com/online-publish/slime-scholar-go/model"
 	"gorm.io/gorm"
-	"slime-scholar-go/global"
-	"slime-scholar-go/model"
 )
 
 // 创建用户
@@ -39,3 +40,11 @@ func QueryAUserByUsername(username string) (user model.User, notFound bool) {
 	}
 }
 
+// 更新用户的用户名、密码、个人信息
+func UpdateAUser(user *model.User, username string, password string, userInfo string) error {
+	user.Username = username
+	user.Password = password
+	user.UserInfo = userInfo
+	err := global.DB.Save(user).Error
+	return err
+}

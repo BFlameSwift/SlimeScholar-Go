@@ -1,0 +1,135 @@
+info:
+  contact: {}
+  description: hzh company
+  title: hzh txd1 Golang Backend
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: 测试 Index 页
+      responses:
+        "200":
+          description: '{"success": true, "message": "gcp"}'
+          schema:
+            type: string
+      tags:
+      - 测试
+  /user/info:
+    post:
+      description: 查看用户个人信息
+      parameters:
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      tags:
+      - 用户管理
+  /user/login:
+    post:
+      description: 登录
+      parameters:
+      - description: 用户名
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": false, "message": "没有该用户"}'
+          schema:
+            type: string
+      tags:
+      - 用户管理
+  /user/modify:
+    post:
+      description: 修改用户信息（支持修改用户名和密码）
+      parameters:
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: 用户名
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: 用户个人信息
+        in: formData
+        name: user_info
+        required: true
+        type: string
+      - description: 原密码
+        in: formData
+        name: password_old
+        required: true
+        type: string
+      - description: 新密码
+        in: formData
+        name: password_new
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "数据库操作时的其他错误"}'
+          schema:
+            type: string
+      tags:
+      - 用户管理
+  /user/register:
+    post:
+      description: 注册
+      parameters:
+      - description: 用户名
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: 用户个人信息
+        in: formData
+        name: user_info
+        required: true
+        type: string
+      - description: '用户类型（0: 普通用户，1: 认证机构用户）'
+        in: formData
+        name: user_type
+        required: true
+        type: string
+      - description: 认证机构名
+        in: formData
+        name: affiliation
+        type: string
+      responses:
+        "200":
+          description: '{"success": false, "message": "用户已存在"}'
+          schema:
+            type: string
+      tags:
+      - 用户管理
+schemes:
+- https
+swagger: "2.0"

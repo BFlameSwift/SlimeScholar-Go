@@ -1,11 +1,12 @@
 package v1
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
-	"slime-scholar-go/model"
-	"slime-scholar-go/service"
 	"strconv"
+
+	"gitee.com/online-publish/slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/gin-gonic/gin"
 )
 
 // Index doc
@@ -63,14 +64,89 @@ func Login(c *gin.Context) {
 		if user.Password != password {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误"})
 		} else {
-
-			showSub := false
-
-			if !showSub {
-				c.JSON(http.StatusOK, gin.H{"success": true, "message": "登录成功", "detail": user, "show_sub": false})
-			} else {
-				c.JSON(http.StatusOK, gin.H{"success": true, "message": "登录成功", "detail": user, "show_sub": true})
-			}
+			c.JSON(http.StatusOK, gin.H{"success": true, "message": "登录成功", "detail": user})
 		}
 	}
+}
+
+// ModifyUser doc
+// @description 修改用户信息（支持修改用户名和密码）
+// @Tags 用户管理
+// @Param user_id formData string true "用户ID"
+// @Param username formData string true "用户名"
+// @Param user_info formData string true "用户个人信息"
+// @Param password_old formData string true "原密码"
+// @Param password_new formData string true "新密码"
+// @Success 200 {string} string "{"success": true, "message": "修改成功", "data": "model.User的所有信息"}"
+// @Failure 200 {string} string "{"success": false, "message": "原密码输入错误"}"
+// @Failure 200 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "数据库操作时的其他错误"}"
+// @Router /user/modify [POST]
+func ModifyUser(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	username := c.Request.FormValue("username")
+	userInfo := c.Request.FormValue("user_info")
+	passwordOld := c.Request.FormValue("password_old")
+	passwordNew := c.Request.FormValue("password_new")
+	user, notFoundUserByID := service.QueryAUserByID(userID)
+	if notFoundUserByID {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户ID不存在",
+		})
+		return
+	}
+	if passwordOld != user.Password {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "原密码输入错误",
+		})
+		return
+	}
+	_, notFoundUserByName := service.QueryAUserByUsername(username)
+	if !notFoundUserByName && username != user.Username {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户名已被占用",
+		})
+		return
+	}
+	err := service.UpdateAUser(&user, username, passwordNew, userInfo)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	//data, _ := jsoniter.Marshal(&user)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "修改成功",
+		"data":    user,
+	})
+}
+
+// TellUserInfo doc
+// @description 查看用户个人信息
+// @Tags 用户管理
+// @Param user_id formData string true "用户ID"
+// @Success 200 {string} string "{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Router /user/info [POST]
+func TellUserInfo(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	user, notFoundUserByID := service.QueryAUserByID(userID)
+	if notFoundUserByID {
+		c.JSON(404, gin.H{
+			"success": false,
+			"message": "用户ID不存在",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "查看用户信息成功",
+		"data":    user,
+	})
 }

@@ -1,24 +1,22 @@
 package main
 
-
 import (
+	"gitee.com/online-publish/slime-scholar-go/docs"
+	"gitee.com/online-publish/slime-scholar-go/initialize"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	//"slime-scholar-go/docs"
-	"slime-scholar-go/initialize"
 )
 
-
-// @title Slime Scholar Golang Backend
+// @title hzh txd1 Golang Backend
 // @version 1.0
-// @description Scholar Sharing platform
+// @description hzh company
 // @schemes https
 func main() {
-	//docs.SwaggerInfo.Title = "Scholar Sharing platform"
-	//docs.SwaggerInfo.Description = "This is Slime Scholar Golang Backend"
-	//docs.SwaggerInfo.Version = "1.0"
-	//docs.SwaggerInfo.BasePath = "/api/v1"
-	//docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Title = "hzh txdy"
+	docs.SwaggerInfo.Description = "hzh yyds"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	initialize.InitMySQL()
 	r := initialize.SetupRouter()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

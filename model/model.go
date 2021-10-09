@@ -6,7 +6,7 @@ type User struct {
 	Username    string `gorm:"size:25; not null; unique" json:"username"`
 	Password    string `gorm:"size:25; not null" json:"password"`
 	UserInfo    string `gorm:"size:255;" json:"user_info"`
-	UserType    uint64 `gorm:"default:0" json:"user_type"` // 0: 普通用户，1: 认证机构用户，2: 管理员
+	UserType    uint64 `gorm:"default:0" json:"user_type"` // 0: 普通用户，1: 认证机构用户
 	Affiliation string `gorm:"size:25;" json:"affiliation"`
+	email       string `gorm:"size:50;" json:"email"`
 }
-
