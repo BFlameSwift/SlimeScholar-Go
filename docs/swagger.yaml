@@ -119,6 +119,11 @@ paths:
         name: user_info
         required: true
         type: string
+      - description: Authorization
+        in: formData
+        name: Authorization
+        required: true
+        type: string
       - description: 原密码
         in: formData
         name: password_old
@@ -131,10 +136,22 @@ paths:
         type: string
       responses:
         "200":
-          description: '{"success": false, "message": "用户ID不存在"}'
+          description: '{"success": true, "message": "修改成功", "data": "model.User的所有信息"}'
           schema:
             type: string
         "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "原密码输入错误"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+        "500":
           description: '{"success": false, "message": "数据库操作时的其他错误"}'
           schema:
             type: string

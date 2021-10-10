@@ -130,20 +130,25 @@ func Login(c *gin.Context) {
 // @Param user_id formData string true "用户ID"
 // @Param username formData string true "用户名"
 // @Param user_info formData string true "用户个人信息"
+// @Param Authorization formData string false "Authorization"
 // @Param password_old formData string true "原密码"
 // @Param password_new formData string true "新密码"
 // @Success 200 {string} string "{"success": true, "message": "修改成功", "data": "model.User的所有信息"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 401 {string} string "{"success": false, "message": "原密码输入错误"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
-// @Failure 400/500 {string} string "{"success": false, "message": "数据库操作时的其他错误"}"
+// @Failure 500 {string} string "{"success": false, "message": "数据库操作时的其他错误"}"
 // @Router /user/modify [POST]
 func ModifyUser(c *gin.Context) {
+	// TODO 修改为请求头中的Authorization
+
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	username := c.Request.FormValue("username")
 	userInfo := c.Request.FormValue("user_info")
 	passwordOld := c.Request.FormValue("password_old")
 	passwordNew := c.Request.FormValue("password_new")
 	user, notFoundUserByID := service.QueryAUserByID(userID)
+
 	if notFoundUserByID {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -152,6 +157,15 @@ func ModifyUser(c *gin.Context) {
 		})
 		return
 	}
+
+	authorization := c.Request.FormValue("Authorization")
+	verify_answer, _ := service.VerifyAuthorization(authorization, userID, username, user.Password)
+
+	if authorization == "" || !verify_answer {
+		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
+		return
+	}
+
 	if passwordOld != user.Password {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -191,12 +205,22 @@ func ModifyUser(c *gin.Context) {
 // @description 查看用户个人信息
 // @Tags 用户管理
 // @Param user_id formData string true "用户ID"
+// @Param Authorization formData string false "Authorization"
 // @Success 200 {string} string "{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Router /user/info [POST]
 func TellUserInfo(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	user, notFoundUserByID := service.QueryAUserByID(userID)
+
+	authorization := c.Request.FormValue("Authorization")
+	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.U, user.Password)
+
+	if authorization == "" || !verify_answer {
+		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
+		return
+	}
+
 	if notFoundUserByID {
 		c.JSON(404, gin.H{
 			"success": false,

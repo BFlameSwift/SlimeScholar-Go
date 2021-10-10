@@ -129,3 +129,24 @@ func VerifyAction(strToken string) (*model.JWTClaims, error) {
 	fmt.Println("verify")
 	return claims, nil
 }
+func VerifyAuthorization(strToken string, userID uint64, username, password string) (bool, error) {
+	token, err := jwt.ParseWithClaims(strToken, &model.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(utils.Secret), nil
+	})
+	if err != nil {
+		return false, errors.New(utils.ErrorServerBusy)
+	}
+	claims, ok := token.Claims.(*model.JWTClaims)
+	if !ok {
+		return false, errors.New(utils.ErrorReLogin)
+	}
+	if err := token.Claims.Valid(); err != nil {
+		return false, errors.New(utils.ErrorServerBusy)
+	}
+	fmt.Println("verifying")
+	if claims.UserID != userID || claims.Username != username || claims.Password != password {
+		return false, nil
+	}
+	return true, nil
+
+}
