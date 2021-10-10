@@ -85,6 +85,12 @@ var doc = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "600": {
+                        "description": "{\"success\": false, \"message\": \"用户待修改，传入false 更新验证码，否则为验证正确}",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }

@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
 
-	"gitee.com/online-publish/slime-scholar-go/utils"
-
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -86,4 +88,44 @@ func SendRegisterEmail(themail string, number int) {
 	}
 	fmt.Println("sendRegisterEmail successfully")
 	return
+}
+
+// 获取Token
+func GetToken(claims *model.JWTClaims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := token.SignedString([]byte(utils.Secret))
+	if err != nil {
+		return "", errors.New(utils.ErrorServerBusy)
+	}
+	return signedToken, nil
+
+}
+
+// 验证token
+func Verify(c *gin.Context) {
+	strToken := c.Param("token")
+	claim, err := VerifyAction(strToken)
+	if err != nil {
+		c.String(http.StatusNotFound, err.Error())
+		return
+	}
+	c.String(http.StatusOK, "verify,", claim.Username)
+}
+
+func VerifyAction(strToken string) (*model.JWTClaims, error) {
+	token, err := jwt.ParseWithClaims(strToken, &model.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(utils.Secret), nil
+	})
+	if err != nil {
+		return nil, errors.New(utils.ErrorServerBusy)
+	}
+	claims, ok := token.Claims.(*model.JWTClaims)
+	if !ok {
+		return nil, errors.New(utils.ErrorReLogin)
+	}
+	if err := token.Claims.Valid(); err != nil {
+		return nil, errors.New(utils.ErrorServerBusy)
+	}
+	fmt.Println("verify")
+	return claims, nil
 }

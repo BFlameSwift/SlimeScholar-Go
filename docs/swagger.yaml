@@ -45,6 +45,10 @@ paths:
           description: '{"success": false, "message": "用户不存在}'
           schema:
             type: string
+        "600":
+          description: '{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}'
+          schema:
+            type: string
       tags:
       - 用户管理
   /user/info:
