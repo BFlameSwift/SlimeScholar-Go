@@ -200,13 +200,6 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "Authorization",
-                        "name": "Authorization",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "原密码",
                         "name": "password_old",
                         "in": "formData",

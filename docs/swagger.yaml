@@ -119,11 +119,6 @@ paths:
         name: user_info
         required: true
         type: string
-      - description: Authorization
-        in: formData
-        name: Authorization
-        required: true
-        type: string
       - description: 原密码
         in: formData
         name: password_old
