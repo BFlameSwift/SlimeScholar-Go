@@ -20,5 +20,5 @@ func main() {
 	initialize.InitMySQL()
 	r := initialize.SetupRouter()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run(":8080")
+	r.Run(":8000")
 }
