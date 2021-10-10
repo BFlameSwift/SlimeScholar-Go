@@ -17,3 +17,5 @@ vendor/
 bin
 .DS_Store
 .idea
+.idea/modules.xml
+.idea/vcs.xml
