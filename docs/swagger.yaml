@@ -170,24 +170,6 @@ paths:
         in: formData
         name: email
         type: string
-      - description: 用户个人信息
-        in: formData
-        name: user_info
-        required: true
-        type: string
-      - description: '用户类型（0: 普通用户，1: 认证机构用户）'
-        in: formData
-        name: user_type
-        required: true
-        type: string
-      - description: 认证机构名
-        in: formData
-        name: affiliation
-        type: string
-      - description: 认证机构名
-        in: formData
-        name: affiliation
-        type: string
       responses:
         "200":
           description: '{"success": false, "message": "用户已存在"}'

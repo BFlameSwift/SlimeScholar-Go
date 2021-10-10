@@ -18,21 +18,18 @@ import (
 // @Param username formData string true "用户名"
 // @Param password formData string true "密码"
 // @Param email formData string false "用户邮箱"
-// @Param user_info formData string true "用户个人信息"
-// @Param user_type formData string true "用户类型（0: 普通用户，1: 认证机构用户）"
-// @Param affiliation formData string false "认证机构名"
-// @Param affiliation formData string false "认证机构名"
 // @Success 200 {string} string "{"success": true, "message": "用户创建成功"}"
 // @Failure 200 {string} string "{"success": false, "message": "用户已存在"}"
 // @Router /user/register [POST]
 func Register(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")
-	userInfo := c.Request.FormValue("user_info")
+
 	email := c.Request.FormValue("email")
 	userType, _ := strconv.ParseUint(c.Request.FormValue("user_type"), 0, 64)
+	userInfo,affiliation, userType := "","",0
 	user_confirm_number := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 1000000
-	affiliation := c.Request.FormValue("affiliation")
+	//affiliation := c.Request.FormValue("affiliation")
 	user := model.User{Username: username, Password: password, UserInfo: userInfo, UserType: userType, Affiliation: affiliation, Email: email, ConfirmNumber: user_confirm_number,RegTime: time.Now()}
 	_, notFound := service.QueryAUserByUsername(username)
 	if notFound {
