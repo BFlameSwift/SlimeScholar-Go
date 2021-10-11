@@ -60,6 +60,10 @@ paths:
         name: user_id
         required: true
         type: string
+      - description: Authorization
+        in: formData
+        name: Authorization
+        type: string
       responses:
         "200":
           description: '{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}'
