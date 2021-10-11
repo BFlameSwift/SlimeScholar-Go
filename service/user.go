@@ -144,7 +144,7 @@ func VerifyAuthorization(strToken string, userID uint64, username, password stri
 		return false, errors.New(utils.ErrorServerBusy)
 	}
 	fmt.Println("verifying")
-	if claims.UserID != userID || claims.Username != username || claims.Password != password {
+	if claims.UserID != userID || claims.Username != username {
 		return false, nil
 	}
 	return true, nil

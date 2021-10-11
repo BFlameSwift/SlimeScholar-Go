@@ -27,10 +27,10 @@ func Register(c *gin.Context) {
 
 	email := c.Request.FormValue("email")
 	userType, _ := strconv.ParseUint(c.Request.FormValue("user_type"), 0, 64)
-	userInfo,affiliation, userType := "","",0
+	userInfo, affiliation, userType := "", "", 0
 	user_confirm_number := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 1000000
 	//affiliation := c.Request.FormValue("affiliation")
-	user := model.User{Username: username, Password: password, UserInfo: userInfo, UserType: userType, Affiliation: affiliation, Email: email, ConfirmNumber: user_confirm_number,RegTime: time.Now()}
+	user := model.User{Username: username, Password: password, UserInfo: userInfo, UserType: userType, Affiliation: affiliation, Email: email, ConfirmNumber: user_confirm_number, RegTime: time.Now()}
 	_, notFound := service.QueryAUserByUsername(username)
 	if notFound {
 		service.CreateAUser(&user)
