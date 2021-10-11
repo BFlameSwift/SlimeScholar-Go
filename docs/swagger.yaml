@@ -104,6 +104,10 @@ paths:
     post:
       description: 修改用户信息（支持修改用户名和密码）
       parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
       - description: 用户ID
         in: formData
         name: user_id
@@ -150,6 +154,8 @@ paths:
           description: '{"success": false, "message": "数据库操作时的其他错误"}'
           schema:
             type: string
+      security:
+      - Authorization: []
       tags:
       - 用户管理
   /user/register:

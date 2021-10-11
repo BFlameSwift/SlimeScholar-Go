@@ -124,6 +124,8 @@ func Login(c *gin.Context) {
 // ModifyUser doc
 // @description 修改用户信息（支持修改用户名和密码）
 // @Tags 用户管理
+// @Security Authorization
+// @param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
 // @Param username formData string true "用户名"
 // @Param user_info formData string true "用户个人信息"
@@ -154,13 +156,13 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// authorization := c.Request.FormValue("Authorization")
-	// verify_answer, _ := service.VerifyAuthorization(authorization, userID, username, user.Password)
+	authorization := c.Request.Header.Get("Authorization")
+	verify_answer, _ := service.VerifyAuthorization(authorization, userID, username, user.Password)
 
-	// if authorization == "" || !verify_answer {
-	// 	c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
-	// 	return
-	// }
+	if authorization == "" || !verify_answer {
+		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
+		return
+	}
 
 	if passwordOld != user.Password {
 		c.JSON(http.StatusOK, gin.H{

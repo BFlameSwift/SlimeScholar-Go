@@ -172,11 +172,22 @@ var doc = `{
         },
         "/user/modify": {
             "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
                 "description": "修改用户信息（支持修改用户名和密码）",
                 "tags": [
                     "用户管理"
                 ],
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
                     {
                         "type": "string",
                         "description": "用户ID",
