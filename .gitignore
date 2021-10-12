@@ -19,3 +19,4 @@ bin
 .idea
 .idea/modules.xml
 .idea/vcs.xml
+.run/

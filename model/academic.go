@@ -1,4 +1,5 @@
 package model
+// 由于相关数据量过大，数据可能会放在elasti search上，此处暂时保存一下
 
 type Paper struct {
 	PaperID          string `gorm:"type:varchar(30);primary_key;" json:"paper_id"`

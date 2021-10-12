@@ -35,3 +35,7 @@ type Followers struct {
 	BeFollowUserID uint64    `gorm:"not null" json:"be_follow_user_id"`
 	FollowTime     time.Time `gorm:"type:datetime" json:"follow_time"`
 }
+type CollectPapers struct {
+	UserID  uint64 `gorm:"primary_key; not null;" json:"user_id"`
+	PaperID string `gorm:"type:varchar(30);primary_key;" json:"paper_id"`
+}
