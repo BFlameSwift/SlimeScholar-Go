@@ -108,12 +108,6 @@ var doc = `{
                         "name": "user_id",
                         "in": "formData",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Authorization",
-                        "name": "Authorization",
-                        "in": "formData"
                     }
                 ],
                 "responses": {

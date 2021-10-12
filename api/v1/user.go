@@ -203,7 +203,6 @@ func ModifyUser(c *gin.Context) {
 // @description 查看用户个人信息
 // @Tags 用户管理
 // @Param user_id formData string true "用户ID"
-// @Param Authorization formData string false "Authorization"
 // @Success 200 {string} string "{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Router /user/info [POST]
