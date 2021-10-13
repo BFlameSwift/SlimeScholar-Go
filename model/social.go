@@ -26,5 +26,3 @@ type Like struct { // 点赞
 	CommentID uint64 `gorm:"primary_key;" json:"comment_id"`
 	UserID    uint64 `gorm:"primary_key;" json:"user_id"`
 }
-
-// TODO 举报用户

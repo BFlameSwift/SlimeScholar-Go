@@ -51,3 +51,10 @@ type CollectPapers struct {
 }
 
 // TOOD 申请成为认证学者的申请表
+type SubmitScholar struct {
+	UserID   uint64 `gorm:"not null;" json:"user_id"`
+	RealName string `gorm:"not null;type:varchar(32)" json:"real_name"`
+	Status   int    `gorm:"default" json:"status"`                      // 0:未处理，1，同意申请，2拒绝申请
+	Content  string `gorm:"type:varchar(256)" json:"content"`           // 填写内容
+	AuthorID string `gorm:"type:varchar(32);not null" json:"author_id"` // 被申请的作者ID
+}
