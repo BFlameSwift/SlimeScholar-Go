@@ -95,7 +95,7 @@ func gets() {
 	if get1.Found {
 		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
 		var bb Employee
-		err := json.Unmarshal(*get1.Source, &bb)
+		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
 		if err != nil {
 			fmt.Println(err)
 		}
