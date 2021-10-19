@@ -11,7 +11,7 @@ import (
 
 var client *elastic.Client
 
-var host = "http://82.156.217.192:9200"
+var host = "http://123.57.194.168:9200"
 
 type Employee struct {
 	FirstName string   `json:"first_name"`
@@ -47,7 +47,7 @@ func init() {
 func create() {
 
 	//使用结构体
-	e1 := Employee{"Jane", "Smith", 32, "I like to collect rock albums", []string{"music"}}
+	e1 := Employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
 	put1, err := client.Index().
 		Index("megacorp").
 		Type("employee").
@@ -88,7 +88,7 @@ func create() {
 //查找
 func gets() {
 	//通过id查找
-	get1, err := client.Get().Index("megacorp").Type("employee").Id("2").Do(context.Background())
+	get1, err := client.Get().Index("megacorp").Type("employee").Id("1").Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -197,11 +197,11 @@ func printEmployee(res *elastic.SearchResult, err error) {
 }
 
 func main() {
-	//create()
-	//gets()
+	create()
+	gets()
 	//delete()
 	//update()
-	gets()
-	query()
-	list(2, 1)
+	// gets()
+	// query()
+	// list(2, 1)
 }
