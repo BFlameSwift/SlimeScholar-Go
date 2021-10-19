@@ -1,5 +1,9 @@
-package main
+package test
 
+//reference 英文官网网址 https://pkg.go.dev/github.com/olivere/elastic?utm_source=godoc#section-documentation
+//reference 中文文档，仅有基本操作  https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9Celasticsearch/%E6%93%8D%E4%BD%9Celasticsearch.html
+
+// Kibana 可视化操作 https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9Celasticsearch/kibana%E5%AE%89%E8%A3%85.html
 import (
 	"context"
 
