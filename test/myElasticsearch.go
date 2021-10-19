@@ -11,6 +11,9 @@ var client *elastic.Client
 
 var host = utils.ELASTIC_SEARCH_HOST // 自己定义常量
 
+type myType struct{
+	id string   `json:"id"`
+}
 //初始化
 func Init() {
 	var err error
@@ -32,6 +35,7 @@ func Init() {
 }
 
 //创建
+// index 通过index 查找 id 主键，直接查找
 func create(type string,index string,id string,body string) {
 
 	//使用结构体
@@ -48,4 +52,38 @@ func create(type string,index string,id string,body string) {
 	}
 	fmt.Printf("Indexed tweet %s to index s%s, type %s\n", put1.Id, put1.Index, put1.Type)
 
+}
+
+//查找 
+// TODO 根据实际类别选择返回值 定制
+func Gets(index string, type string,id string) {
+	//通过id查找
+	get1, err := client.Get().Index(index).Type(type).Id(id).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	if get1.Found {
+		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
+		var bb myType
+		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(bb.FirstName)
+		fmt.Println(string(*get1.Source))
+	}
+}
+
+
+//删除
+func delete((type string,index string,id string) {
+	res, err := client.Delete().Index(index).
+		Type(type).
+		Id(id).
+		Do(context.Background())
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	fmt.Printf("delete result %s\n", res.Result)
 }
