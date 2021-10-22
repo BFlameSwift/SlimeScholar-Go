@@ -1,0 +1,2 @@
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)
+[GIN-debug] Listening and serving HTTP on :8000
