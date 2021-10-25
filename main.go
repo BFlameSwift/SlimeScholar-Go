@@ -5,8 +5,6 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/initialize"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	//"io"
-	//"os"
 )
 
 // @title hzh txd1 Golang Backend
@@ -20,9 +18,10 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	initialize.InitMySQL()
-	r := initialize.SetupRouter()
 	//f, _ := os.Create("gin.log")
 	//gin.DefaultWriter = io.MultiWriter(f)
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r := initialize.SetupRouter()
+
+	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
 }

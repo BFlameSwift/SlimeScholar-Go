@@ -23,7 +23,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1": {
+        "/": {
             "get": {
                 "description": "测试 Index 页",
                 "tags": [

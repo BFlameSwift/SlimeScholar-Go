@@ -6,6 +6,8 @@ package test
 // Kibana 可视化操作 https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9Celasticsearch/kibana%E5%AE%89%E8%A3%85.html
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic"
@@ -40,13 +42,13 @@ func Init() {
 
 //创建
 // index 通过index 查找 id 主键，直接查找
-func create(type string,index string,id string,body string) {
+func create(index_type string,index string,id string,body string) {
 
 	//使用结构体
 	e1 := Employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
 	put1, err := client.Index().
 		Index(index).
-		Type(type).
+		Type(index_type).
 		Id(id).
 		BodyJson(body).
 		Do(context.Background())
@@ -60,9 +62,9 @@ func create(type string,index string,id string,body string) {
 
 //查找 
 // TODO 根据实际类别选择返回值 定制
-func Gets(index string, type string,id string) {
+func Gets(index string, index_type string,id string) {
 	//通过id查找
-	get1, err := client.Get().Index(index).Type(type).Id(id).Do(context.Background())
+	get1, err := client.Get().Index(index).Type(index_type).Id(id).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -80,9 +82,9 @@ func Gets(index string, type string,id string) {
 
 
 //删除
-func delete((type string,index string,id string) {
+func delete(index_type string,index string,id string) {
 	res, err := client.Delete().Index(index).
-		Type(type).
+		Type(index_type).
 		Id(id).
 		Do(context.Background())
 	if err != nil {

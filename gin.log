@@ -1,2 +1,15 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /                         --> gitee.com/online-publish/slime-scholar-go/api/v1.Index (4 handlers)
+[GIN-debug] POST   /api/v1/user/register     --> gitee.com/online-publish/slime-scholar-go/api/v1.Register (4 handlers)
+[GIN-debug] POST   /api/v1/user/login        --> gitee.com/online-publish/slime-scholar-go/api/v1.Login (4 handlers)
+[GIN-debug] POST   /api/v1/user/modify       --> gitee.com/online-publish/slime-scholar-go/api/v1.ModifyUser (4 handlers)
+[GIN-debug] POST   /api/v1/user/info         --> gitee.com/online-publish/slime-scholar-go/api/v1.TellUserInfo (4 handlers)
+[GIN-debug] POST   /api/v1/user/confirm      --> gitee.com/online-publish/slime-scholar-go/api/v1.Confirm (4 handlers)
 [GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)
 [GIN-debug] Listening and serving HTTP on :8000
+[GIN] 2021/10/25 - 23:50:44 | 200 |     13.0968ms |       127.0.0.1 | POST     "/api/v1/user/login"

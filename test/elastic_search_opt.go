@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"reflect"
 
 	"github.com/olivere/elastic"
@@ -11,7 +12,7 @@ import (
 
 var client *elastic.Client
 
-var host = "http://123.57.194.168:9200"
+var host = utils.ELASTIC_SEARCH_HOST
 
 type Employee struct {
 	FirstName string   `json:"first_name"`
