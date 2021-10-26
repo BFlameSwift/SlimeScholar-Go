@@ -52,6 +52,13 @@ var doc = `{
                         "name": "id",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "intvalue",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -63,6 +70,80 @@ var doc = `{
                     },
                     "401": {
                         "description": "{\"success\": false, \"message\": \"该ID已存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"创建错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/es/get/mytype": {
+            "post": {
+                "description": "获取es索引",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"该ID不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/es/update/mytype": {
+            "post": {
+                "description": "更新es索引",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"更新成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"该ID不存在\"}",
                         "schema": {
                             "type": "string"
                         }

@@ -19,5 +19,7 @@ func InitRouter(Router *gin.RouterGroup) {
 	EsRouter := Router.Group("/es")
 	{
 		EsRouter.POST("/create/mytype",v1.CreateMyType)
+		EsRouter.POST("/update/mytype",v1.UpdateMyType)
+		EsRouter.POST("/get/mytype",v1.GetMyType)
 	}
 }

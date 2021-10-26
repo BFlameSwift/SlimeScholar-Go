@@ -23,6 +23,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: intvalue
+        in: formData
+        name: id
+        required: true
+        type: string
       responses:
         "200":
           description: '{"success": true, "message": "创建成功"}'
@@ -30,6 +35,54 @@ paths:
             type: string
         "401":
           description: '{"success": false, "message": "该ID已存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "创建错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/get/mytype:
+    post:
+      description: 获取es索引
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "该ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/update/mytype:
+    post:
+      description: 更新es索引
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "更新成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "该ID不存在"}'
           schema:
             type: string
         "500":

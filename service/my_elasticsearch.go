@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/model"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic"
@@ -26,21 +28,8 @@ var host = utils.ELASTIC_SEARCH_HOST //这个是es服务地址,我的是配置�
 
 //下面定义的是 聚合时候用的一些参数
 
-type Aggregations struct {
-	AVG_Metric AVG_Metric `json:"AVG_Metric"`
-}
 
-type AVG_Metric struct {
-	Buckets []Metric `json:"buckets"`
-}
 
-type Metric struct {
-	Avg_time Value `json:"avg_time"`
-}
-
-type Value struct {
-	Value float64 `json:"value"`
-}
 
 func Init() {
 	elastic.SetSniff(false) //必须 关闭 Sniffing
@@ -70,7 +59,6 @@ func Init() {
 		panic(err)
 	}
 	fmt.Printf("Elasticsearch version %s\n", esversion)
-	fmt.Println("conn es succ", EsClient.EsCon)
 }
 
 //创建
@@ -78,25 +66,31 @@ func Create(Params map[string]string) string {
 	//使用字符串
 	var res *elastic.IndexResponse
 	var err error
-
+	m := make(map[string]interface{})
+	fmt.Println(Params["bodyJson"])
+	fmt.Println([]byte(Params["bodyJson"]))
+	err = json.Unmarshal([]byte(Params["bodyJson"]), &m)
+	fmt.Println("m",m)
 	res, err = client.Index().
 		Index(Params["index"]).
 		Type(Params["type"]).
-		Id(Params["id"]).BodyJson(Params["bodyJson"]).
+		Id(Params["id"]).
+		BodyJson(m).
 		Do(context.Background())
 
 	if err != nil {
 		panic(err)
 	}
+
 	return res.Result
 }
 
 //删除
-func (client *EsClientType) Delete(Params map[string]string) string {
+func  Delete(Params map[string]string) string {
 	var res *elastic.DeleteResponse
 	var err error
 
-	res, err = client.EsCon.Delete().Index(Params["index"]).
+	res, err = client.Delete().Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).
 		Do(context.Background())
@@ -110,19 +104,37 @@ func (client *EsClientType) Delete(Params map[string]string) string {
 }
 
 //修改
-func (client *EsClientType) Update(Params map[string]string) string {
-	var res *elastic.UpdateResponse
+func  Update(Params map[string]string) string {
+	var res *elastic.IndexResponse
 	var err error
 
-	res, err = client.EsCon.Update().
+	res, err = client.Index().
+		Index(Params["index"]).
+		Type(Params["type"]).
+		Id(Params["id"]).BodyJson(Params["bodyJson"]).
+		Do(context.Background())
+
+	if err != nil {
+		panic(err)
+	}
+	return res.Result
+
+}
+//修改
+func  RealButerrorUpdate(Params map[string]string) string {
+	var res *elastic.UpdateResponse
+	var err error
+	script := elastic.NewScript("ctx._source.retweets += params.num").Param("num", 1)
+	res, err = client.Update().
 		Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).
-		Doc(Params["doc"]).
+		Script(script).
 		Do(context.Background())
 
 	if err != nil {
 		println(err.Error())
+		panic(err)
 	}
 	fmt.Printf("update age %s\n", res.Result)
 	return res.Result
@@ -130,34 +142,29 @@ func (client *EsClientType) Update(Params map[string]string) string {
 }
 
 //查找
-func Gets(Params map[string]string) *elastic.GetResult {
+func Gets(Params map[string]string) (*elastic.GetResult,error) {
 	//通过id查找
 	var get1 *elastic.GetResult
 	var err error
 	if len(Params["id"]) < 0 {
 		fmt.Printf("param error")
-		return get1
+		return get1,errors.New("param error")
 	}
-
 	get1, err = client.Get().Index(Params["index"]).Type(Params["type"]).Id(Params["id"]).Do(context.Background())
 
-	if err != nil {
-		panic(err)
-	}
-
-	return get1
+	return get1,err
 }
 
 //搜索
-func (client EsClientType) Query(Params map[string]string) *elastic.SearchResult {
+func Query(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 	//取所有
-	res, err = client.EsCon.Search(Params["index"]).Type(Params["type"]).Do(context.Background())
+	res, err = client.Search(Params["index"]).Type(Params["type"]).Do(context.Background())
 	if len(Params["queryString"]) > 0 {
 		//字段相等
 		q := elastic.NewQueryStringQuery(Params["queryString"])
-		res, err = client.EsCon.Search(Params["index"]).Type(Params["type"]).Query(q).Do(context.Background())
+		res, err = client.Search(Params["index"]).Type(Params["type"]).Query(q).Do(context.Background())
 	}
 	if err != nil {
 		println(err.Error())
@@ -171,7 +178,7 @@ func (client EsClientType) Query(Params map[string]string) *elastic.SearchResult
 
 //简单分页 可用
 
-func (client *EsClientType) List(Params map[string]string) *elastic.SearchResult {
+func List(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 	size, _ := strconv.Atoi(Params["size"])
@@ -189,7 +196,7 @@ func (client *EsClientType) List(Params map[string]string) *elastic.SearchResult
 		return res
 	}
 	if len(Params["queryString"]) > 0 {
-		res, err = client.EsCon.Search(Params["index"]).
+		res, err = client.Search(Params["index"]).
 			Type(Params["type"]).
 			Query(q).
 			Size(size).
@@ -199,7 +206,7 @@ func (client *EsClientType) List(Params map[string]string) *elastic.SearchResult
 			Do(context.Background())
 
 	} else {
-		res, err = client.EsCon.Search(Params["index"]).
+		res, err = client.Search(Params["index"]).
 			Type(Params["type"]).
 			Size(size).
 			From((page)*size).
@@ -217,7 +224,7 @@ func (client *EsClientType) List(Params map[string]string) *elastic.SearchResult
 }
 
 //聚合 平均 可用
-func (client *EsClientType) Aggregation(Params map[string]string) *elastic.SearchResult {
+func Aggregation(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 
@@ -230,7 +237,7 @@ func (client *EsClientType) Aggregation(Params map[string]string) *elastic.Searc
 		//TimeZone("Asia/Shanghai").
 		SubAggregation(Params["agg_name"], avg)
 
-	res, err = client.EsCon.Search(Params["index"]).
+	res, err = client.Search(Params["index"]).
 		Type(Params["type"]).
 		Size(0).
 		Aggregation(Params["aggregation_name"], aggs).
@@ -242,21 +249,19 @@ func (client *EsClientType) Aggregation(Params map[string]string) *elastic.Searc
 		println("func Aggregation error:" + err.Error())
 	}
 	println("func Aggregation here 297")
-
 	return res
-
 }
 
 func main() {
 	Init()
 	fmt.Println("123")
 	var map_param map[string]string = make(map[string]string)
-	e1, _ := json.Marshal(Value{Value: 132})
+	e1, _ := json.Marshal(model.ValueString{Value: "132"})
 
 	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "megacorp", "employee", "53", string(e1)
 	// ret := Create(map_param)
 	// fmt.Printf(ret)
-	get_ret := Gets(map_param)
+	get_ret,_ := Gets(map_param)
 	fmt.Printf(get_ret.Id)
 
 }

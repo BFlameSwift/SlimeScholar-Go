@@ -3,6 +3,7 @@ package main
 import (
 	"gitee.com/online-publish/slime-scholar-go/docs"
 	"gitee.com/online-publish/slime-scholar-go/initialize"
+	"gitee.com/online-publish/slime-scholar-go/service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -21,7 +22,7 @@ func main() {
 	//f, _ := os.Create("gin.log")
 	//gin.DefaultWriter = io.MultiWriter(f)
 	r := initialize.SetupRouter()
-
+	service.Init()
 	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
 }
