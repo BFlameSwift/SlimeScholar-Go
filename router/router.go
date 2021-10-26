@@ -16,5 +16,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.POST("/info", v1.TellUserInfo)
 		UserRouter.POST("/confirm", v1.Confirm)
 	}
-
+	EsRouter := Router.Group("/es")
+	{
+		EsRouter.POST("/create/mytype",v1.CreateMyType)
+	}
 }

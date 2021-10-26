@@ -5,7 +5,7 @@
     "swagger": "2.0",
     "info": {
         "description": "hzh company",
-        "title": "hzh txd1 Golang Backend",
+        "title": "Slime Scholar Golang Backend",
         "contact": {},
         "version": "1.0"
     },
@@ -19,6 +19,43 @@
                 "responses": {
                     "200": {
                         "description": "{\"success\": true, \"message\": \"gcp\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/es/create/mytype": {
+            "post": {
+                "description": "创建es索引",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"创建成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"该ID已存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"创建错误500\"}",
                         "schema": {
                             "type": "string"
                         }

@@ -7,7 +7,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title hzh txd1 Golang Backend
+// @title Slime Scholar Golang Backend
 // @version 1.0
 // @description hzh company
 // @schemes https
