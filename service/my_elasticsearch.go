@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"gitee.com/online-publish/slime-scholar-go/model"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
@@ -27,9 +28,6 @@ var EsClient EsClientType //连接类型
 var host = utils.ELASTIC_SEARCH_HOST //这个是es服务地址,我的是配置到配置文件中了，测试的时候可以写死 比如 http://127.0.0.1:9200
 
 //下面定义的是 聚合时候用的一些参数
-
-
-
 
 func Init() {
 	elastic.SetSniff(false) //必须 关闭 Sniffing
@@ -67,10 +65,10 @@ func Create(Params map[string]string) string {
 	var res *elastic.IndexResponse
 	var err error
 	m := make(map[string]interface{})
-	fmt.Println(Params["bodyJson"])
+	fmt.Println("Creating bodyJson", Params["bodyJson"])
 	fmt.Println([]byte(Params["bodyJson"]))
 	err = json.Unmarshal([]byte(Params["bodyJson"]), &m)
-	fmt.Println("m",m)
+	fmt.Println("m", m)
 	res, err = client.Index().
 		Index(Params["index"]).
 		Type(Params["type"]).
@@ -86,7 +84,7 @@ func Create(Params map[string]string) string {
 }
 
 //删除
-func  Delete(Params map[string]string) string {
+func Delete(Params map[string]string) string {
 	var res *elastic.DeleteResponse
 	var err error
 
@@ -104,7 +102,7 @@ func  Delete(Params map[string]string) string {
 }
 
 //修改
-func  Update(Params map[string]string) string {
+func Update(Params map[string]string) string {
 	var res *elastic.IndexResponse
 	var err error
 
@@ -120,8 +118,9 @@ func  Update(Params map[string]string) string {
 	return res.Result
 
 }
+
 //修改
-func  RealButerrorUpdate(Params map[string]string) string {
+func RealButerrorUpdate(Params map[string]string) string {
 	var res *elastic.UpdateResponse
 	var err error
 	script := elastic.NewScript("ctx._source.retweets += params.num").Param("num", 1)
@@ -142,17 +141,17 @@ func  RealButerrorUpdate(Params map[string]string) string {
 }
 
 //查找
-func Gets(Params map[string]string) (*elastic.GetResult,error) {
+func Gets(Params map[string]string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
 	var err error
 	if len(Params["id"]) < 0 {
 		fmt.Printf("param error")
-		return get1,errors.New("param error")
+		return get1, errors.New("param error")
 	}
 	get1, err = client.Get().Index(Params["index"]).Type(Params["type"]).Id(Params["id"]).Do(context.Background())
 
-	return get1,err
+	return get1, err
 }
 
 //搜索
@@ -261,7 +260,7 @@ func main() {
 	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "megacorp", "employee", "53", string(e1)
 	// ret := Create(map_param)
 	// fmt.Printf(ret)
-	get_ret,_ := Gets(map_param)
+	get_ret, _ := Gets(map_param)
 	fmt.Printf(get_ret.Id)
 
 }
