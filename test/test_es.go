@@ -8,6 +8,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/service"
 )
 
+
 func main() {
 	service.Init()
 	fmt.Println("123")
