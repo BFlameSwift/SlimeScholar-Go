@@ -15,6 +15,61 @@ var successNum,failedNum = 0,0
 var document = 0
 var host = utils.ELASTIC_SEARCH_HOST
 var client *elastic.Client
+type author struct {
+	name string
+	org string
+	org_id string
+	id string
+}
+type venues struct {
+	id string
+	name string
+}
+type fos struct {
+	name string
+	w string
+}
+type paper strucct{
+	id string
+	title string   
+	authors []author
+	venues []venue
+	year string
+	keywords []string
+	references []string
+	n_citation int
+	page_start int
+	page_end int
+	doc_type string
+	lang string 
+	publisher string
+	volume string 
+	issue string 
+	issn string 
+	isbn string 
+	doi string 
+	pdf string 
+	url string 
+	abstract string 
+}
+
+type Author struct {
+	id string   
+	name string 
+	normalized_name string 
+	orgs []org 
+	org org
+	last_known_aff_id string 
+	position string 
+	n_pubs int 
+	n_citation int 
+	h_index int 
+	tags_t string 
+	tags_w int
+	pubs_i string 
+	pubs_r int
+}
+
 func Init() {
 	elastic.SetSniff(false) //必须 关闭 Sniffing
 	//es 配置
