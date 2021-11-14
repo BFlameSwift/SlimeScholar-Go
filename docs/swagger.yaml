@@ -180,6 +180,10 @@ paths:
     post:
       description: 查看用户个人信息
       parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
       - description: 用户ID
         in: formData
         name: user_id
@@ -194,6 +198,8 @@ paths:
           description: '{"success": false, "message": "用户ID不存在"}'
           schema:
             type: string
+      security:
+      - Authorization: []
       tags:
       - 用户管理
   /user/login:

@@ -202,6 +202,8 @@ func ModifyUser(c *gin.Context) {
 // TellUserInfo doc
 // @description 查看用户个人信息
 // @Tags 用户管理
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
 // @Success 200 {string} string "{"success": true, "message": "查看用户信息成功", "data": "model.User的所有信息"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
@@ -211,8 +213,9 @@ func TellUserInfo(c *gin.Context) {
 	user, notFoundUserByID := service.QueryAUserByID(userID)
 
 	// @Param Authorization formData string false "Authorization"
-	authorization := c.Request.FormValue("Authorization")
+	// authorization := c.Request.FormValue("Authorization")
 	// authorization := c.Request.Header("Authorization")
+	authorization := c.Request.Header.Get("Authorization")
 	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
 
 	if authorization == "" || !verify_answer {
