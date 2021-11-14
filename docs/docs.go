@@ -340,8 +340,13 @@ var doc = `{
                         "type": "string",
                         "description": "用户名",
                         "name": "username",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户邮箱",
+                        "name": "email",
+                        "in": "formData"
                     },
                     {
                         "type": "string",

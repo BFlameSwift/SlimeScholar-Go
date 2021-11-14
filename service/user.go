@@ -50,6 +50,18 @@ func QueryAUserByUsername(username string) (user model.User, notFound bool) {
 	}
 }
 
+// 根据用户email 查询某个用户
+func QueryAUserByEmail(email string)(user model.User, notFound bool){
+	err := global.DB.Where("email = ?", email).First(&user).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return user, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return user, false
+	}
+}
+
 // 更新用户的用户名、密码、个人信息
 func UpdateAUser(user *model.User, username string, password string, userInfo string) error {
 	user.Username = username

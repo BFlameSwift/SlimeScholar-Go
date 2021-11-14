@@ -209,7 +209,10 @@ paths:
       - description: 用户名
         in: formData
         name: username
-        required: true
+        type: string
+      - description: 用户邮箱
+        in: formData
+        name: email
         type: string
       - description: 密码
         in: formData
