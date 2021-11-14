@@ -55,7 +55,7 @@ func printAminerPaper(file_path string) {
 	scanner := bufio.NewScanner(open)
 	i := 0
 	for scanner.Scan() {
-		if i < 10 {
+
 			bodyJsonbyte := scanner.Bytes()
 			var param_paper map[string]string = make(map[string]string)
 			param_paper["index"] = "test"
@@ -70,10 +70,10 @@ func printAminerPaper(file_path string) {
 			param_paper["bodyJson"] = fmt.Sprintf("%s", json_map)
 
 			// fmt.Println(tempMap)
-			fmt.Println(tempMap["id"])
+			//fmt.Println(tempMap["id"])
 			ret := service.Create(param_paper)
 			fmt.Println("return ", ret)
-		}
+
 
 		i++
 	}
@@ -82,15 +82,16 @@ func printAminerPaper(file_path string) {
 }
 
 func main() {
-	// printMagPaper("E:\\Paper\\mag_papers_0\\mag_papers_1.txt")
-	service.Init()
-	var param_paper map[string]string = make(map[string]string)
-	param_paper["index"] = "test"
-	param_paper["type"] = "test_paper"
-	param_paper["id"] = "53e99784b7602d9701f3e131"
-	// printAminerPaper("D:\\Desktop\\aminer_papers_0.txt")
-	ret, _ := service.Gets(param_paper)
 
-	body_byte, _ := json.Marshal(ret.Source)
-	fmt.Println(string(body_byte))
+	service.Init()
+	printAminerPaper("E:\\Paper\\aminer_papers_0\\aminer_papers_0.txt")
+	//var param_paper map[string]string = make(map[string]string)
+	//param_paper["index"] = "test"
+	//param_paper["type"] = "test_paper"
+	//param_paper["id"] = "53e99784b7602d9701f3e131"
+	//// printAminerPaper("D:\\Desktop\\aminer_papers_0.txt")
+	//ret, _ := service.Gets(param_paper)
+	//
+	//body_byte, _ := json.Marshal(ret.Source)
+	//fmt.Println(string(body_byte))
 }
