@@ -38,7 +38,7 @@ type AuthorConnection struct {
 
 // TOOD 申请成为认证学者的申请表
 type SubmitScholar struct {
-	SubmitID uint64 `gorm:"primary_key; not null" json:"submit_id`
+	SubmitID uint64 `gorm:"primary_key; not null" json:"submit_id"`
 	UserID   uint64 `gorm:"not null;" json:"user_id"`
 	RealName string `gorm:"not null;type:varchar(32)" json:"real_name"`
 	Status   int    `gorm:"default" json:"status"`                      // 0:未处理，1，同意申请，2拒绝申请

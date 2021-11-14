@@ -16,10 +16,10 @@ type Paper struct {
 	DOI            string `gorm:"type:varchar(64)" json:"doi"`
 	ISBN           string `gorm:"type:varchar(32)" json:"isbn"`
 	URL            string `gorm:"type:varchar(128)" json:"url"` // 是否需要限定大小
-	PDF            string `gorm:"type:varchar(128" json:"pdf"`
+	PDF            string `gorm:"type:varchar(128)" json:"pdf"`
 	ConferenceID   string `gorm:"type:varchar(30)" json:"conference_id"`
 	Lang           string `gorm:"type:varchar(32)" json:"language"`
-	Venue          string `gorm:"type:varchar(64) "json:"venue"` // 领域 数据中看到的
+	Venue          string `gorm:"type:varchar(64)" json:"venue"` // 领域 数据中看到的
 
 	// TODO
 }

@@ -326,11 +326,22 @@ var doc = `{
         },
         "/user/info": {
             "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
                 "description": "查看用户个人信息",
                 "tags": [
                     "用户管理"
                 ],
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
                     {
                         "type": "string",
                         "description": "用户ID",
@@ -366,8 +377,13 @@ var doc = `{
                         "type": "string",
                         "description": "用户名",
                         "name": "username",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户邮箱",
+                        "name": "email",
+                        "in": "formData"
                     },
                     {
                         "type": "string",
