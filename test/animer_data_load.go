@@ -29,7 +29,7 @@ type fos struct {
 	name string
 	w string
 }
-type paper strucct{
+type paper struct{
 	id string
 	title string   
 	authors []author
