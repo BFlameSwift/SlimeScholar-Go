@@ -20,3 +20,4 @@ bin
 .idea/modules.xml
 .idea/vcs.xml
 .run/
+gin.log

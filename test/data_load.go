@@ -6,32 +6,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/olivere/elastic"
+	"golang.org/x/net/context"
+
 	"gitee.com/online-publish/slime-scholar-go/service"
 )
 
-type Paper struct {
-	id         string
-	title      string
-	authors    map[string]string
-	year       string
-	keywords   []string
-	fos        []string
-	n_citation int
-	reference  []string
-	doc_type   string
-	lang       string
-	publisher  string
-	isbn       string
-	doi        string
-	pdf        string
-	url        []string
-	abstract   string
-	page_start int
-	page_end   int
-	volume     int
-}
+var successNum, failedNum = 0, 0
+var thisfolder, document = 0, 0
 
-func printMagPaper(file_path string) {
+func PrintMagPaper(file_path string) {
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println("打开失败")
@@ -44,54 +28,124 @@ func printMagPaper(file_path string) {
 		}
 		i++
 	}
-	fmt.Println("line sum", i)
+	fmt.Println("folder ", thisfolder, "document", document, "line sum", i)
 
 }
-func printAminerPaper(file_path string) {
+func InputData(file_path string, index string, index_type string) {
+	client := service.Client
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println("打开失败")
 	}
 	scanner := bufio.NewScanner(open)
 	i := 0
+	bultRequest := client.Bulk()
 	for scanner.Scan() {
-
-			bodyJsonbyte := scanner.Bytes()
-			var param_paper map[string]string = make(map[string]string)
-			param_paper["index"] = "test"
-			param_paper["type"] = "test_paper"
-			var tempMap map[string]interface{}
-			err := json.Unmarshal(bodyJsonbyte, &tempMap)
+		bodyJsonbyte := scanner.Bytes()
+		var param_paper map[string]string = make(map[string]string)
+		param_paper["index"] = index
+		param_paper["type"] = index_type
+		var tempMap map[string]interface{}
+		err := json.Unmarshal(bodyJsonbyte, &tempMap)
+		if err != nil {
+			panic(err)
+		}
+		param_paper["id"] = fmt.Sprintf("%s", tempMap["id"])
+		res := elastic.NewBulkIndexRequest().
+			Index(param_paper["index"]).
+			Type(param_paper["type"]).
+			Id(param_paper["id"]).
+			Doc(tempMap)
+		bultRequest.Add(res)
+		// fmt.Println(tempMap)
+		//fmt.Println(tempMap["id"])
+		//_ = service.Create(param_paper)
+		//fmt.Println("return ", ret)
+		if i%10000 == 0 {
+			response, err := bultRequest.Do(context.Background())
 			if err != nil {
 				panic(err)
 			}
-			json_map, _ := json.Marshal(tempMap)
-			param_paper["id"] = fmt.Sprintf("%s", tempMap["id"])
-			param_paper["bodyJson"] = fmt.Sprintf("%s", json_map)
-
-			// fmt.Println(tempMap)
-			//fmt.Println(tempMap["id"])
-			ret := service.Create(param_paper)
-			fmt.Println("return ", ret)
-
-
+			fmt.Println("success", len(response.Succeeded()), "failed", len(response.Failed()))
+			failedNum += len(response.Failed())
+			successNum += len(response.Succeeded())
+		}
 		i++
-	}
-	fmt.Println("line sum", i)
 
+		//fmt.Println("document",document,"line sum", i)
+	}
+	response, err := bultRequest.Do(context.Background())
+	failedNum += len(response.Failed())
+	successNum += len(response.Succeeded())
+	fmt.Println("Over document", document)
+	fmt.Println("success", len(response.Succeeded()), "failed", len(response.Failed()))
+	fmt.Println("successnum", successNum, "failed", failedNum)
 }
 
 func main() {
-
+	// printMagPaper("E:\\Paper\\mag_papers_0\\mag_papers_1.txt")
 	service.Init()
-	printAminerPaper("E:\\Paper\\aminer_papers_0\\aminer_papers_0.txt")
 	//var param_paper map[string]string = make(map[string]string)
 	//param_paper["index"] = "test"
 	//param_paper["type"] = "test_paper"
 	//param_paper["id"] = "53e99784b7602d9701f3e131"
-	//// printAminerPaper("D:\\Desktop\\aminer_papers_0.txt")
-	//ret, _ := service.Gets(param_paper)
+	//InputData("E:\\Paper\\mag_papers_0\\mag_papers_1.txt")
+
+	//InputData("E:\\Paper\\mag_papers_0\\mag_papers_0.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_0\\mag_papers_1.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_0\\mag_papers_2.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_0\\mag_papers_3.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_1\\mag_papers_4.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_1\\mag_papers_5.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_1\\mag_papers_6.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_1\\mag_papers_7.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_2\\mag_papers_8.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_2\\mag_papers_9.txt","mag","paper");document ++
+	//InputData("E:\\Paper\\mag_papers_2\\mag_papers_10.txt","mag","paper");document =0
+
+	InputData("E:\\Paper\\mag_authors_0\\mag_authors_0.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_0\\mag_authors_1.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_0\\mag_authors_2.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_0\\mag_authors_3.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_0\\mag_authors_4.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_1\\mag_authors_5.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_1\\mag_authors_6.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_1\\mag_authors_7.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_1\\mag_authors_8.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_1\\mag_authors_9.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_2\\mag_authors_10.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_2\\mag_authors_11.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_2\\mag_authors_12.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_2\\mag_authors_13.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_2\\mag_authors_14.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_3\\mag_authors_15.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_3\\mag_authors_16.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_3\\mag_authors_17.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_3\\mag_authors_18.txt", "mag_author", "author")
+	document++
+	InputData("E:\\Paper\\mag_authors_3\\mag_authors_19.txt", "mag_author", "author")
+	document++
+
+	//	ret, _ := service.Gets(param_paper)
 	//
-	//body_byte, _ := json.Marshal(ret.Source)
-	//fmt.Println(string(body_byte))
+	//	body_byte, _ := json.Marshal(ret.Source)
+	//	fmt.Println(string(body_byte))
 }

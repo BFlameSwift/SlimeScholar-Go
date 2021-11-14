@@ -17,11 +17,9 @@ import (
 	"time"
 )
 
-
-var client *elastic.Client
 var ESClient *elastic.Client
-var Timeout = "1s"        //超时时间
-
+var Client *elastic.Client
+var Timeout = "1s" //超时时间
 
 var host = utils.ELASTIC_SEARCH_HOST //这个是es服务地址,我的是配置到配置文件中了，测试的时候可以写死 比如 http://127.0.0.1:9200
 
@@ -32,7 +30,7 @@ func Init() {
 	//es 配置
 	var err error
 	//EsClient.EsCon, err = elastic.NewClient(elastic.SetURL(host))
-	client, err = elastic.NewClient(
+	Client, err = elastic.NewClient(
 		elastic.SetURL(host),
 		elastic.SetSniff(false),
 		elastic.SetHealthcheckInterval(10*time.Second),
@@ -43,19 +41,19 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
-	info, code, err := client.Ping(host).Do(context.Background())
+	info, code, err := Client.Ping(host).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
-	esversion, err := client.ElasticsearchVersion(host)
+	esversion, err := Client.ElasticsearchVersion(host)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("Elasticsearch version %s\n", esversion)
-	ESClient = client
+	ESClient = Client
 }
 
 //创建
@@ -67,8 +65,8 @@ func Create(Params map[string]string) string {
 	//fmt.Println("Creating bodyJson", Params["bodyJson"])
 	//fmt.Println([]byte(Params["bodyJson"]))
 	err = json.Unmarshal([]byte(Params["bodyJson"]), &m)
-	fmt.Println("m", m)
-	res, err = client.Index().
+	//fmt.Println("m", m)
+	res, err = Client.Index().
 		Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).
@@ -87,7 +85,7 @@ func Delete(Params map[string]string) string {
 	var res *elastic.DeleteResponse
 	var err error
 
-	res, err = client.Delete().Index(Params["index"]).
+	res, err = Client.Delete().Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).
 		Do(context.Background())
@@ -105,7 +103,7 @@ func Update(Params map[string]string) string {
 	var res *elastic.IndexResponse
 	var err error
 
-	res, err = client.Index().
+	res, err = Client.Index().
 		Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).BodyJson(Params["bodyJson"]).
@@ -123,7 +121,7 @@ func RealButerrorUpdate(Params map[string]string) string {
 	var res *elastic.UpdateResponse
 	var err error
 	script := elastic.NewScript("ctx._source.retweets += params.num").Param("num", 1)
-	res, err = client.Update().
+	res, err = Client.Update().
 		Index(Params["index"]).
 		Type(Params["type"]).
 		Id(Params["id"]).
@@ -148,7 +146,7 @@ func Gets(Params map[string]string) (*elastic.GetResult, error) {
 		fmt.Printf("param error")
 		return get1, errors.New("param error")
 	}
-	get1, err = client.Get().Index(Params["index"]).Type(Params["type"]).Id(Params["id"]).Do(context.Background())
+	get1, err = Client.Get().Index(Params["index"]).Type(Params["type"]).Id(Params["id"]).Do(context.Background())
 
 	return get1, err
 }
@@ -158,11 +156,11 @@ func Query(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 	//取所有
-	res, err = client.Search(Params["index"]).Type(Params["type"]).Do(context.Background())
+	res, err = Client.Search(Params["index"]).Type(Params["type"]).Do(context.Background())
 	if len(Params["queryString"]) > 0 {
 		//字段相等
 		q := elastic.NewQueryStringQuery(Params["queryString"])
-		res, err = client.Search(Params["index"]).Type(Params["type"]).Query(q).Do(context.Background())
+		res, err = Client.Search(Params["index"]).Type(Params["type"]).Query(q).Do(context.Background())
 	}
 	if err != nil {
 		println(err.Error())
@@ -194,7 +192,7 @@ func List(Params map[string]string) *elastic.SearchResult {
 		return res
 	}
 	if len(Params["queryString"]) > 0 {
-		res, err = client.Search(Params["index"]).
+		res, err = Client.Search(Params["index"]).
 			Type(Params["type"]).
 			Query(q).
 			Size(size).
@@ -204,7 +202,7 @@ func List(Params map[string]string) *elastic.SearchResult {
 			Do(context.Background())
 
 	} else {
-		res, err = client.Search(Params["index"]).
+		res, err = Client.Search(Params["index"]).
 			Type(Params["type"]).
 			Size(size).
 			From((page)*size).
@@ -225,7 +223,6 @@ func List(Params map[string]string) *elastic.SearchResult {
 func Aggregation(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
-
 	//需要聚合的指标 求平均
 	avg := elastic.NewAvgAggregation().Field(Params["avg"])
 	//单位时间和指定字段
@@ -235,7 +232,7 @@ func Aggregation(Params map[string]string) *elastic.SearchResult {
 		//TimeZone("Asia/Shanghai").
 		SubAggregation(Params["agg_name"], avg)
 
-	res, err = client.Search(Params["index"]).
+	res, err = Client.Search(Params["index"]).
 		Type(Params["type"]).
 		Size(0).
 		Aggregation(Params["aggregation_name"], aggs).
