@@ -8,11 +8,13 @@ import (
 	"github.com/olivere/elastic"
 	"golang.org/x/net/context"
 	"os"
+	"strconv"
 )
 
 const AUTHOR_DIR = "H:\\Author"
 const FILE_NUM = 3
 const FILE_PREFIX = "mag_authors_"
+const BULK_SIZE = 10000
 
 var success_num,fail_num = 0,0
 
@@ -30,7 +32,7 @@ type Author struct {
 	n_pubs         int    `json:"n_pubs"`
 	n_citation     int    `json:"n_citation"`
 	h_index        int    `json:"h_index"`
-	pubs [10000]pub `json:"pubs"`
+	//pubs [10000]pub `json:"pubs"`
 }
 
 func jsonToAuthor(jsonStr string) (Author) {
@@ -41,30 +43,33 @@ func jsonToAuthor(jsonStr string) (Author) {
 		panic(err)
 	}
 	var author Author
-	author.id = fmt.Sprintf("%s",item["id"])
-	author.name = fmt.Sprintf("%s",item["name"])
-	author.org = fmt.Sprintf("%s",item["org"])
-	author.affiliation_id = fmt.Sprintf("%s",item["last_known_aff_id"])
-	author.position = fmt.Sprintf("%s",item["position"])
+	author.id = strconv.Itoa((int(item["id"].(float64))))
+	author.name = item["name"].(string)
+	author.org,ok = item["org"].(string)
+	if !ok{author.org = ""}
+	author.affiliation_id ,ok= item["last_known_aff_id"].(string)
+	if !ok{author.affiliation_id = ""}
+	author.position ,ok= item["position"].(string)
+	if !ok{author.position = ""}
 	author.n_pubs = int(item["n_pubs"].(float64))
 	author.h_index, ok = item["h_index"].(int)
 	if !ok{author.h_index = 0}
 	n_citation ,ok := item["n_citation"].(float64)
 	if !ok{author.n_citation = 0} else {author.n_citation = int(n_citation)}
-	pub_list := item["pubs"].([]interface {})
-	var pub_set [10000]pub
-
-	for i,publish := range pub_list{
-		var pub_item pub
-		var map_item map[string]interface{} = make(map[string]interface{})
-		map_item = publish.(map[string]interface{})
-		publish_id := fmt.Sprintf("%s",item["i"])
-		publish_item := pub{publish_id,int(map_item["r"].(float64))}
-		pub_set[i] = publish_item
-		if err != nil {panic(err)}
-		pub_set[i] = pub_item
-	}
-	author.pubs = pub_set
+	//pub_list := item["pubs"].([]interface {})
+	//var pub_set [10000]pub
+	//
+	//for i,publish := range pub_list{
+	//	var pub_item pub
+	//	var map_item map[string]interface{} = make(map[string]interface{})
+	//	map_item = publish.(map[string]interface{})
+	//	publish_id := fmt.Sprintf("%s",item["i"])
+	//	publish_item := pub{publish_id,int(map_item["r"].(float64))}
+	//	pub_set[i] = publish_item
+	//	if err != nil {panic(err)}
+	//	pub_set[i] = pub_item
+	//}
+	//author.pubs = pub_set
 	if err != nil {panic(err)}
 	return author
 }
@@ -81,9 +86,9 @@ func proc_file(file_path string) {
 	bulkRequest := client.Bulk()
 	for scanner.Scan() {
 		author := jsonToAuthor(scanner.Text())
-		doc := elastic.NewBulkIndexRequest().Index("author").Id(author.id).Doc(author)
+		doc := elastic.NewBulkIndexRequest().Index("author").Type("author").Id(author.id).Doc(author)
 		bulkRequest = bulkRequest.Add(doc)
-		if i %10000 == 0 {
+		if i % BULK_SIZE == 0 {
 			response , err := bulkRequest.Do(context.Background())
 			if(err!=nil) { panic(err)}
 			success_num += len(response.Succeeded())
