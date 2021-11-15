@@ -43,7 +43,7 @@ var doc = `{
             "post": {
                 "description": "创建es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {
@@ -124,7 +124,7 @@ var doc = `{
             "post": {
                 "description": "获取es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {
@@ -198,7 +198,7 @@ var doc = `{
             "post": {
                 "description": "更新es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {

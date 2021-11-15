@@ -42,7 +42,7 @@ paths:
           schema:
             type: string
       tags:
-      - elasticsearch
+      - template
   /es/get/author:
     post:
       description: 获取es作者
@@ -90,7 +90,7 @@ paths:
           schema:
             type: string
       tags:
-      - elasticsearch
+      - template
   /es/get/paper:
     post:
       description: es获取Paper详细信息
@@ -138,7 +138,7 @@ paths:
           schema:
             type: string
       tags:
-      - elasticsearch
+      - template
   /user/confirm:
     post:
       description: 验证邮箱

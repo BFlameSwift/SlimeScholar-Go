@@ -9,7 +9,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/model"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 
 	"log"
 	"os"
@@ -244,6 +244,11 @@ func Aggregation(Params map[string]string) *elastic.SearchResult {
 	println("func Aggregation here 297")
 	return res
 }
+func GetPaperById(id string){
+	// TODO
+}
+
+
 
 func main() {
 	Init()
