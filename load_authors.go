@@ -12,8 +12,10 @@ import (
 )
 
 const AUTHOR_DIR = "H:\\Author"
+const PAPER_DIR = "H:\\Paper"
 const FILE_NUM = 3
-const FILE_PREFIX = "mag_authors_"
+const AUTHOR_FILE_PREFIX = "mag_authors_"
+const PAPER_FILE_PREFIX = "mag_papers_"
 const BULK_SIZE = 10000
 
 var success_num,fail_num = 0,0
@@ -73,7 +75,7 @@ func jsonToAuthor(jsonStr string) (*Author) {
 	if err != nil {panic(err)}
 	return &author
 }
-func proc_file(file_path string) {
+func proc_file(file_path string,index string) {
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println(file_path+"打开失败")
@@ -89,7 +91,7 @@ func proc_file(file_path string) {
 		json_str := scanner.Text()
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
-		doc := elastic.NewBulkIndexRequest().Index("author").Id(strconv.FormatUint(uint64((m["id"].(float64))),10)).Doc(m)
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(strconv.FormatUint(uint64((m["id"].(float64))),10)).Doc(m)
 
 		bulkRequest = bulkRequest.Add(doc)
 		if i % BULK_SIZE == 0 {
@@ -108,14 +110,25 @@ func proc_file(file_path string) {
 	fmt.Println("line sum", i)
 	fmt.Println("success_num", success_num,"fail_num",fail_num)
 }
-func main() {
+func load_authors(){
 	service.Init()
 	for i:=0 ; i<2;i++{
 		for j:=0 ;j<FILE_NUM;j++{
-			proc_file(AUTHOR_DIR+"\\"+FILE_PREFIX+string(i+'0')+"\\"+FILE_PREFIX+string(i*FILE_NUM+j+'0')+".txt")
+			proc_file(AUTHOR_DIR+"\\"+AUTHOR_FILE_PREFIX+string(i+'0')+"\\"+AUTHOR_FILE_PREFIX+string(i*FILE_NUM+j+'0')+".txt","author")
 		}
 	}
-
+}
+func load_paper(){
+	service.Init()
+	for i:=0 ; i<1;i++{
+		for j:=0 ;j<FILE_NUM;j++{
+			proc_file(PAPER_DIR+"\\"+PAPER_FILE_PREFIX+string(i+'0')+"\\"+PAPER_FILE_PREFIX+string(i*FILE_NUM+j+'0')+".txt","paper")
+		}
+	}
+}
+func main() {
+	//load_authors
+	load_paper()
 
 
 }

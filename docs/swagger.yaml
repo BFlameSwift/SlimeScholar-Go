@@ -91,31 +91,7 @@ paths:
             type: string
       tags:
       - elasticsearch
-  /es/get/paper/animer:
-    post:
-      description: es获取Paper详细信息
-      parameters:
-      - description: id
-        in: formData
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"success": true, "message": "获取成功"}'
-          schema:
-            type: string
-        "404":
-          description: '{"success": false, "message": "该PaperID不存在"}'
-          schema:
-            type: string
-        "500":
-          description: '{"success": false, "message": "错误500"}'
-          schema:
-            type: string
-      tags:
-      - elasticsearch
-  /es/get/paper/msg:
+  /es/get/paper:
     post:
       description: es获取Paper详细信息
       parameters:

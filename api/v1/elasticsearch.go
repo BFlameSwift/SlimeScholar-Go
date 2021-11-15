@@ -100,18 +100,18 @@ func GetMyType(c *gin.Context) {
 
 
 
-// GetMsgPaper doc
+// GetPaper doc
 // @description es获取Paper详细信息
 // @Tags elasticsearch
 // @Param id formData string true "id"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/get/paper/msg [POST]
-func GetMsgPaper(c *gin.Context) {
+// @Router /es/get/paper [POST]
+func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"] = "mag", "paper", this_id
+	map_param["index"],  map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
@@ -126,32 +126,7 @@ func GetMsgPaper(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
 	return
 }
-// GetAnimerPaper doc
-// @description es获取Paper详细信息
-// @Tags elasticsearch
-// @Param id formData string true "id"
-// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-// @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
-// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/get/paper/animer [POST]
-func GetAnimerPaper(c *gin.Context) {
-	this_id := c.Request.FormValue("id")
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["id"] = "animer", this_id
-	_, error_get := service.Gets(map_param)
-	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
-		return
-	}
-	ret,_ := service.Gets(map_param)
-	body_byte,_ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte,&paper)
-	fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
-	return
-}
+
 // GetAuthor doc
 // @description 获取es作者
 // @Tags elasticsearch
