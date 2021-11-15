@@ -137,7 +137,7 @@ func GetMsgPaper(c *gin.Context) {
 func GetAnimerPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"] = "animer", "paper", this_id
+	map_param["index"], map_param["id"] = "animer", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
@@ -163,7 +163,7 @@ func GetAnimerPaper(c *gin.Context) {
 func GetAuthor(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "author", "author", this_id, ""
+	map_param["index"], map_param["id"], map_param["bodyJson"] = "author", this_id, ""
 
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {

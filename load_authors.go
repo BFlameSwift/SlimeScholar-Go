@@ -35,7 +35,7 @@ type Author struct {
 	//pubs [10000]pub `json:"pubs"`
 }
 
-func jsonToAuthor(jsonStr string) (Author) {
+func jsonToAuthor(jsonStr string) (*Author) {
 	var item map[string]interface{} = make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonStr), &item)
 	ok := false
@@ -71,7 +71,7 @@ func jsonToAuthor(jsonStr string) (Author) {
 	//}
 	//author.pubs = pub_set
 	if err != nil {panic(err)}
-	return author
+	return &author
 }
 func proc_file(file_path string) {
 	open, err := os.Open(file_path)
@@ -85,8 +85,12 @@ func proc_file(file_path string) {
 	client := service.ESClient
 	bulkRequest := client.Bulk()
 	for scanner.Scan() {
-		author := jsonToAuthor(scanner.Text())
-		doc := elastic.NewBulkIndexRequest().Index("author").Type("author").Id(author.id).Doc(author)
+		//author := jsonToAuthor(scanner.Text())
+		json_str := scanner.Text()
+		var m map[string]interface{}
+		_ = json.Unmarshal([]byte(json_str), &m)
+		doc := elastic.NewBulkIndexRequest().Index("author").Id(strconv.FormatUint(uint64((m["id"].(float64))),10)).Doc(m)
+
 		bulkRequest = bulkRequest.Add(doc)
 		if i % BULK_SIZE == 0 {
 			response , err := bulkRequest.Do(context.Background())

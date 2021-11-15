@@ -68,7 +68,6 @@ func Create(Params map[string]string) string {
 	//fmt.Println("m", m)
 	res, err = Client.Index().
 		Index(Params["index"]).
-		Type(Params["type"]).
 		Id(Params["id"]).
 		BodyJson(m).
 		Do(context.Background())
@@ -105,7 +104,6 @@ func Update(Params map[string]string) string {
 
 	res, err = Client.Index().
 		Index(Params["index"]).
-		Type(Params["type"]).
 		Id(Params["id"]).BodyJson(Params["bodyJson"]).
 		Do(context.Background())
 
@@ -146,7 +144,7 @@ func Gets(Params map[string]string) (*elastic.GetResult, error) {
 		fmt.Printf("param error")
 		return get1, errors.New("param error")
 	}
-	get1, err = Client.Get().Index(Params["index"]).Type(Params["type"]).Id(Params["id"]).Do(context.Background())
+	get1, err = Client.Get().Index(Params["index"]).Id(Params["id"]).Do(context.Background())
 
 	return get1, err
 }
