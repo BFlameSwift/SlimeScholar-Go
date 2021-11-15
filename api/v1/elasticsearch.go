@@ -11,7 +11,7 @@ import (
 
 // TestCreate doc
 // @description 创建es索引
-// @Tags elasticsearch
+// @Tags template
 // @Param id formData string true "id"
 // @Param id formData string true "intvalue"
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
@@ -45,7 +45,7 @@ func CreateMyType(c *gin.Context) {
 
 // UpdateMyType doc
 // @description 更新es索引
-// @Tags elasticsearch
+// @Tags template
 // @Param id formData string true "id"
 // @Success 200 {string} string "{"success": true, "message": "更新成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "该ID不存在"}"
@@ -72,7 +72,7 @@ func UpdateMyType(c *gin.Context) {
 
 // GetMyType doc
 // @description 获取es索引
-// @Tags elasticsearch
+// @Tags template
 // @Param id formData string true "id"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "该ID不存在"}"
@@ -100,18 +100,18 @@ func GetMyType(c *gin.Context) {
 
 
 
-// GetMsgPaper doc
+// GetPaper doc
 // @description es获取Paper详细信息
 // @Tags elasticsearch
 // @Param id formData string true "id"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/get/paper/msg [POST]
-func GetMsgPaper(c *gin.Context) {
+// @Router /es/get/paper [POST]
+func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"] = "mag", "paper", this_id
+	map_param["index"],  map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
@@ -126,32 +126,7 @@ func GetMsgPaper(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
 	return
 }
-// GetAnimerPaper doc
-// @description es获取Paper详细信息
-// @Tags elasticsearch
-// @Param id formData string true "id"
-// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-// @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
-// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/get/paper/animer [POST]
-func GetAnimerPaper(c *gin.Context) {
-	this_id := c.Request.FormValue("id")
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"] = "animer", "paper", this_id
-	_, error_get := service.Gets(map_param)
-	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
-		return
-	}
-	ret,_ := service.Gets(map_param)
-	body_byte,_ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte,&paper)
-	fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
-	return
-}
+
 // GetAuthor doc
 // @description 获取es作者
 // @Tags elasticsearch
@@ -163,7 +138,7 @@ func GetAnimerPaper(c *gin.Context) {
 func GetAuthor(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "author", "author", this_id, ""
+	map_param["index"], map_param["id"], map_param["bodyJson"] = "author", this_id, ""
 
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
@@ -180,5 +155,33 @@ func GetAuthor(c *gin.Context) {
 	}
 	fmt.Println(author_map)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": author_map,"body":string(body_byte)})
+	return
+}
+
+// GetPaper doc
+// @description es获取Paper详细信息
+// @Tags elasticsearch
+// @Param title formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/paper [POST]
+func TitleQueryPaper(c *gin.Context) {
+	title := c.Request.FormValue("title")
+
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"],  map_param["id"] = "paper", this_id
+	_, error_get := service.Gets(map_param)
+	if error_get != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
+		fmt.Println("this id %s not existed",this_id)
+		return
+	}
+	ret,_ := service.Gets(map_param)
+	body_byte,_ := json.Marshal(ret.Source)
+	var paper = make(map[string]interface{})
+	_ = json.Unmarshal(body_byte,&paper)
+	fmt.Println(paper)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
 	return
 }
