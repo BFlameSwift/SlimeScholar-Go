@@ -43,7 +43,7 @@ var doc = `{
             "post": {
                 "description": "创建es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {
@@ -124,7 +124,7 @@ var doc = `{
             "post": {
                 "description": "获取es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {
@@ -157,44 +157,7 @@ var doc = `{
                 }
             }
         },
-        "/es/get/paper/animer": {
-            "post": {
-                "description": "es获取Paper详细信息",
-                "tags": [
-                    "elasticsearch"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"该PaperID不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "{\"success\": false, \"message\": \"错误500\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/es/get/paper/msg": {
+        "/es/get/paper": {
             "post": {
                 "description": "es获取Paper详细信息",
                 "tags": [
@@ -235,7 +198,7 @@ var doc = `{
             "post": {
                 "description": "更新es索引",
                 "tags": [
-                    "elasticsearch"
+                    "template"
                 ],
                 "parameters": [
                     {
@@ -595,5 +558,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }

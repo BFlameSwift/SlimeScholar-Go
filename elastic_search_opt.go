@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/service"
 	"reflect"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 )
 
 var client *elastic.Client
@@ -22,6 +23,7 @@ type Employee struct {
 	About     string   `json:"about"`
 	Interests []string `json:"interests"`
 }
+
 
 //初始化
 func Init() {
@@ -67,23 +69,23 @@ func Create() {
 }
 
 //查找
-func gets() {
-	//通过id查找
-	get1, err := client.Get().Index("megacorp").Type("employee").Id("1").Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	if get1.Found {
-		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
-		var bb Employee
-		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(bb.FirstName)
-		fmt.Println(string(*get1.Source))
-	}
-}
+//func gets() {
+//	//通过id查找
+//	get1, err := client.Get().Index("megacorp").Type("employee").Id("1").Do(context.Background())
+//	if err != nil {
+//		panic(err)
+//	}
+//	if get1.Found {
+//		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
+//		var bb Employee
+//		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
+//		if err != nil {
+//			fmt.Println(err)
+//		}
+//		fmt.Println(bb.FirstName)
+//		fmt.Println(string(*get1.Source))
+//	}
+//}
 
 //删除
 func delete() {
@@ -111,6 +113,19 @@ func update() {
 
 }
 
+func query_by_field(index string ,field string,content string){
+	client = service.Client
+	boolQuery := elastic.NewBoolQuery()
+	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
+	searchResult, err := client.Search(index).Query(boolQuery).Pretty(true).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(searchResult.TotalHits())
+
+
+}
 ////搜索
 func query() {
 	var res *elastic.SearchResult
@@ -177,13 +192,14 @@ func printEmployee(res *elastic.SearchResult, err error) {
 	}
 }
 
-//func main() {
-//	Init()
+func main() {
+	service.Init()
+	query_by_field("paper","title","Business")
 //	Create()
 //	gets()
 //	//delete()
-//	//update()
+
 //	// gets()
 //	// query()
 //	// list(2, 1)
-//}
+}

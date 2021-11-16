@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 )
 
 type Employee struct {
@@ -89,12 +89,12 @@ func OldGets(index string, index_type string, id string) {
 	if get1.Found {
 		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
 		var bb MyType
-		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
+		err := json.Unmarshal(get1.Source, &bb) // 个人修改，原来模板存在问题
 		if err != nil {
 			fmt.Println(err)
 		}
 		// fmt.Println(bb.FirstName)
-		fmt.Println(string(*get1.Source))
+		fmt.Println(string(get1.Source))
 	}
 }
 

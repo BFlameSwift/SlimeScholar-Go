@@ -41,3 +41,10 @@ type CollectPapers struct {
 	CollectionID uint64    `gorm:"primary_key;" json:"collection_id"`
 	CollectTime  time.Time `gorm:"type:datetime" json:"collect_time"`
 }
+// 浏览记录
+type BrowsingHistory struct {
+	BrowsingTime time.Time `gorm:"type:datetime" json:"browsing_time"`
+	UserID       uint64    `gorm:" not null;" json:"user_id"`
+	PaperID      string    `gorm:"type:varchar(32);" json:"paper_id"`
+	Title  string `gorm:"type:varchar(256);not null" json:"title"`
+}
