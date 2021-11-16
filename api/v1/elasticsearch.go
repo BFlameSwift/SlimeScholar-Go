@@ -98,6 +98,8 @@ func GetMyType(c *gin.Context) {
 	return
 }
 
+
+
 // GetMsgPaper doc
 // @description es获取Paper详细信息
 // @Tags elasticsearch
@@ -148,5 +150,35 @@ func GetAnimerPaper(c *gin.Context) {
 	_ = json.Unmarshal(body_byte,&paper)
 	fmt.Println(paper)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
+	return
+}
+// GetAuthor doc
+// @description 获取es作者
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "该ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/author [POST]
+func GetAuthor(c *gin.Context) {
+	this_id := c.Request.FormValue("id")
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "author", "author", this_id, ""
+
+	_, error_get := service.Gets(map_param)
+	if error_get != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
+		return
+	}
+	ret, _ := service.Gets(map_param)
+	var author_map map[string]interface{} = make(map[string]interface{})
+	body_byte, _ := json.Marshal(ret.Source)
+	err := json.Unmarshal(body_byte, &author_map)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(author_map)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": author_map,"body":string(body_byte)})
 	return
 }

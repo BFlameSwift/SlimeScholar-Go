@@ -17,13 +17,9 @@ import (
 	"time"
 )
 
-type EsClientType struct {
-	EsCon *elastic.Client
-}
-
+var ESClient *elastic.Client
 var Client *elastic.Client
-var Timeout = "1s"        //超时时间
-var EsClient EsClientType //连接类型
+var Timeout = "1s" //超时时间
 
 var host = utils.ELASTIC_SEARCH_HOST //这个是es服务地址,我的是配置到配置文件中了，测试的时候可以写死 比如 http://127.0.0.1:9200
 
@@ -57,6 +53,7 @@ func Init() {
 		panic(err)
 	}
 	fmt.Printf("Elasticsearch version %s\n", esversion)
+	ESClient = Client
 }
 
 //创建

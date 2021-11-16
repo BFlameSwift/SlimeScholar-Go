@@ -18,10 +18,11 @@ func InitRouter(Router *gin.RouterGroup) {
 	}
 	EsRouter := Router.Group("/es")
 	{
-		EsRouter.POST("/create/mytype",v1.CreateMyType)
-		EsRouter.POST("/update/mytype",v1.UpdateMyType)
-		EsRouter.POST("/get/mytype",v1.GetMyType)
-		EsRouter.POST("/get/paper/msg",v1.GetMsgPaper)
-		EsRouter.POST("/get/paper/animer",v1.GetAnimerPaper)
+		EsRouter.POST("/create/mytype", v1.CreateMyType)
+		EsRouter.POST("/update/mytype", v1.UpdateMyType)
+		EsRouter.POST("/get/mytype", v1.GetMyType)
+		EsRouter.POST("/get/author", v1.GetAuthor)
+		EsRouter.POST("/get/paper/msg", v1.GetMsgPaper)
+		EsRouter.POST("/get/paper/animer", v1.GetAnimerPaper)
 	}
 }
