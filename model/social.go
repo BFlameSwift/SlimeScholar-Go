@@ -34,13 +34,15 @@ type Follow struct {
 	FollowTime   time.Time `gorm:"type:datetime" json:"follow_time"`
 }
 
-// 收藏问卷
-type CollectPapers struct {
-	UserID       uint64    `gorm:" not null;" json:"user_id"`
-	PaperID      string    `gorm:"type:varchar(32);" json:"paper_id"`
-	CollectionID uint64    `gorm:"primary_key;" json:"collection_id"`
-	CollectTime  time.Time `gorm:"type:datetime" json:"collect_time"`
+//标签
+type Tag struct{
+	TagID		uint64	`gorm:"primary_key;" json:"tag_id"`
+	TagName		string	`gorm:"type:varchar(32);" json:"tag_name"`
+	PaperID		string	`gorm:"type:varchar(32);" json:"paper_id"`
+	UserID		uint64	`gorm:" not null;" json:"user_id"`
+	CreateTime	time.Time	`gorm:"type:datetime" json:"create_time"`
 }
+
 // 浏览记录
 type BrowsingHistory struct {
 	BrowsingTime time.Time `gorm:"type:datetime" json:"browsing_time"`
