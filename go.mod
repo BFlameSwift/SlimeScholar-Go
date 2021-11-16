@@ -50,11 +50,6 @@ require (
 require github.com/olivere/elastic v6.2.37+incompatible
 
 require (
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/urfave/cli/v2 v2.3.0 // indirect
 )
