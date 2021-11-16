@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+
 	//"encoding/json"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
@@ -110,10 +112,9 @@ func update() {
 		println(err.Error())
 	}
 	fmt.Printf("update age %s\n", res.Result)
-
 }
 
-func query_by_field(index string ,field string,content string){
+func query_by_field(index string ,field string,content string)  *elastic.SearchResult{
 	client = service.Client
 	boolQuery := elastic.NewBoolQuery()
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
@@ -123,8 +124,18 @@ func query_by_field(index string ,field string,content string){
 		panic(err)
 	}
 	fmt.Println(searchResult.TotalHits())
+	//var paper_ret map[string]interface{} = make(map[string]interface{})
 
-
+	for i,result := range(searchResult.Hits.Hits){
+		json_str,err := json.Marshal(result.Source)
+		if err != nil {panic(err)}
+		var m map[string]interface{} = make(map[string]interface{})
+		_ = json.Unmarshal([]byte(json_str),&m)
+		if i<10{
+			fmt.Println(i,m)
+		}
+	}
+	return searchResult
 }
 ////搜索
 func query() {
@@ -194,7 +205,7 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 func main() {
 	service.Init()
-	query_by_field("paper","title","Business")
+	query_by_field("paper","year","2021")
 //	Create()
 //	gets()
 //	//delete()

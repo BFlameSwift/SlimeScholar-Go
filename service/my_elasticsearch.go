@@ -248,7 +248,28 @@ func GetPaperById(id string){
 	// TODO
 }
 
+func QueryByField(index string ,field string,content string,page int,size int)  *elastic.SearchResult{
+	boolQuery := elastic.NewBoolQuery()
+	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
+	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).
+		From((page-1)*size).Pretty(true).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(searchResult.TotalHits())
 
+	//for i,result := range(searchResult.Hits.Hits){
+	//	json_str,err := json.Marshal(result.Source)
+	//	if err != nil {panic(err)}
+	//	var m map[string]interface{} = make(map[string]interface{})
+	//	_ = json.Unmarshal([]byte(json_str),&m)
+	//	if i<10{
+	//		fmt.Println(i,m)
+	//	}
+	//}
+	return searchResult
+}
 
 func main() {
 	Init()

@@ -194,6 +194,43 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/title": {
+            "post": {
+                "description": "es 根据title查询论文",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"论文不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/update/mytype": {
             "post": {
                 "description": "更新es索引",

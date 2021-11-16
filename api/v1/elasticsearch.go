@@ -7,6 +7,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // TestCreate doc
@@ -163,26 +164,29 @@ func GetAuthor(c *gin.Context) {
 // @Tags elasticsearch
 // @Param title formData string true "title"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-// @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
+// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/get/paper [POST]
+// @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
 	title := c.Request.FormValue("title")
-	this_id := c.Request.FormValue("id")
-	fmt.Println(title)
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"],  map_param["id"] = "paper", this_id
-	_, error_get := service.Gets(map_param)
-	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
+	searchResult := service.QueryByField("paper","title",title,1,10)
+
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在","status":404})
+		fmt.Printf("this title query %s not existed",title)
 		return
 	}
-	ret,_ := service.Gets(map_param)
-	body_byte,_ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte,&paper)
-	fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
+	fmt.Println("search title",title,"hits :",searchResult.TotalHits())
+	var paper_sequences map[string]interface{} = make(map[string]interface{})
+	for i,paper:= range(searchResult.Hits.Hits){
+		paper_sequences[strconv.FormatInt(int64(i),10)] = paper.Source
+		if(i<10){fmt.Println(paper.Source)}
+	}
+	//body_byte,_ := json.Marshal(ret.Source)
+	//var paper = make(map[string]interface{})
+	//_ = json.Unmarshal(body_byte,&paper)
+	//fmt.Println(paper)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"total_hits":searchResult.TotalHits(),
+		"details":paper_sequences})
 	return
 }
