@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	//"encoding/json"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"reflect"
@@ -125,16 +124,25 @@ func query_by_field(index string ,field string,content string)  *elastic.SearchR
 	}
 	fmt.Println(searchResult.TotalHits())
 	//var paper_ret map[string]interface{} = make(map[string]interface{})
-
-	for i,result := range(searchResult.Hits.Hits){
-		json_str,err := json.Marshal(result.Source)
+	var paper_item map[string]interface{} = make(map[string]interface{})
+	for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
+		t := item.(map[string]interface{})
+		json_str,err := json.Marshal(item.(map[string]interface{}))
 		if err != nil {panic(err)}
-		var m map[string]interface{} = make(map[string]interface{})
-		_ = json.Unmarshal([]byte(json_str),&m)
-		if i<10{
-			fmt.Println(i,m)
-		}
+		paper := service.JsonToPaper(string(json_str))
+		fmt.Printf("%#v\n", t)
+		fmt.Printf("%#v\n",paper)
+		fmt.Println(reflect.ValueOf(&paper).Elem())
 	}
+	//for i,result := range(searchResult.Hits.Hits){
+	//	json_str,err := json.Marshal(result.Source)
+	//	if err != nil {panic(err)}
+	//	var m map[string]interface{} = make(map[string]interface{})
+	//	_ = json.Unmarshal([]byte(json_str),&m)
+	//	if i<10{
+	//		fmt.Println(i,m)
+	//	}
+	//}
 	return searchResult
 }
 ////搜索
@@ -181,7 +189,6 @@ func list(size, page int) {
 		return
 	}
 	res, err := client.Search("megacorp").
-		Type("employee").
 		Size(size).
 		From((page - 1) * size).
 		Do(context.Background())
@@ -205,8 +212,8 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 func main() {
 	service.Init()
-	query_by_field("paper","year","2021")
-//	Create()
+	query_by_field("paper","id","5ec82e10f84917d112f4c0e10356b65161eb79b5")
+//	Create
 //	gets()
 //	//delete()
 

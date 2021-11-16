@@ -17,14 +17,23 @@ type User struct {
 	RegTime       time.Time `gorm:"column:reg_time;type:datetime" json:"reg_time"`
 }
 type Author struct {
-	AuthorID          string `gorm:"type:varchar(32);primary_key;" json:"author_id"`
-	AuthorName        string `gorm:"type:varchar(100)" json:"author_name"`
-	AffiliationName   string `gorm:"type:varchar(150)" json:"affiliation_name"`
-	PublishNumber     int    `gorm:"default:0" ,json:"publish_number"`
-	CitationNumber    int    `gorm:"default:0" ,json:"citation_number"`
-	Position          string `gorm:"type:varchar(32)" ,json:"position"` // 职位
-	ResearchInterests string `gorm:"type:varchar(64)" ,json:"research_interests"`
+	Id             string `json:"id"`
+	Name           string `json:"name"`
+	N_pubs         int    `json:"n_pubs"`
+	N_citation     int    `json:"n_citation"`
+	H_index        int    `json:"h_index"`
+	Papers []string `json:"papers"`
 }
+
+//type Author struct {
+//	AuthorID          string `gorm:"type:varchar(32);primary_key;" json:"author_id"`
+//	AuthorName        string `gorm:"type:varchar(100)" json:"author_name"`
+//	AffiliationName   string `gorm:"type:varchar(150)" json:"affiliation_name"`
+//	PublishNumber     int    `gorm:"default:0" ,json:"publish_number"`
+//	CitationNumber    int    `gorm:"default:0" ,json:"citation_number"`
+//	Position          string `gorm:"type:varchar(32)" ,json:"position"` // 职位
+//	ResearchInterests string `gorm:"type:varchar(64)" ,json:"research_interests"`
+//}
 type Affiliation struct {
 	AffiliationName string `gorm:"type:varchar(150)" json:"affiliation_name"`
 	AffiliationID   string `gorm:"type:varchar(32);primary_key;" json:"affiliation_id"`

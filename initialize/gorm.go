@@ -42,12 +42,11 @@ func InitMySQL() {
 		&model.Author{},
 		&model.Affiliation{},
 		&model.AuthorConnection{},
-		&model.CollectPapers{},
 		&model.Comment{},
 		&model.Follow{},
 		&model.Like{},
 		&model.Message{},
-		&model.Paper{},
+		//&model.Paper{},
 		&model.BrowsingHistory{},
 		&model.Tag{},
 		// 生成新的数据库表
