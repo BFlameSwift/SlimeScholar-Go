@@ -24,6 +24,7 @@ type Employee struct {
 	Interests []string `json:"interests"`
 }
 
+
 //初始化
 func Init() {
 	//errorlog := log.New(os.Stdout, "APP", log.LstdFlags)
@@ -122,6 +123,7 @@ func query_by_field(index string ,field string,content string){
 		panic(err)
 	}
 	fmt.Println(searchResult.TotalHits())
+
 
 }
 ////搜索

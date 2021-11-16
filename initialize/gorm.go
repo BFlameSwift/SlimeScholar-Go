@@ -48,6 +48,7 @@ func InitMySQL() {
 		&model.Like{},
 		&model.Message{},
 		&model.Paper{},
+		&model.BrowsingHistory{},
 		// 生成新的数据库表
 	)
 }

@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
 )
 
@@ -36,6 +36,42 @@ type Author struct {
 	n_citation     int    `json:"n_citation"`
 	h_index        int    `json:"h_index"`
 	//pubs [10000]pub `json:"pubs"`
+}
+type author_paper struct{
+	id string `json:"id"`
+	org string `json:"org"`
+	org_id string `json:"org_id"`
+	name string `json:"name"`
+}
+type venue_paper struct{
+	id string `json:"id"`
+	name string `json:"name"`
+}
+type fos_paper struct{
+	name string `json:"name"`
+	w float64 `json:"weight"`
+}
+
+type Paper struct {
+	id string `json:"id"`
+	title string `json:"title"`
+	authors []author_paper `json:authors`
+	venue venue_paper `json:venue`
+	year int `json:"year"`
+	keywords []string `json:"keywords"`
+	fos []fos_paper `json:"fos"`
+	reference []string `json:"reference"`
+	n_citation int `json:"n_citation"`
+	page_start string `json:"page_start"`
+	page_end string `json:"page_end"`
+	publisher string `json:"publisher"`
+	volume string `json:"volume"`
+	issn string `json:"issn"`
+	isbn string `json:"isbn"`
+	doi string `json:"doi"`
+	pdf string `json:"pdf"`
+	url string `json:"url"`
+	abstract string `json:"abstract"`
 }
 
 func jsonToAuthor(jsonStr string) *Author {

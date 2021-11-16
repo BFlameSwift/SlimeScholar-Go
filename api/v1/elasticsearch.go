@@ -158,17 +158,18 @@ func GetAuthor(c *gin.Context) {
 	return
 }
 
-// GetPaper doc
-// @description es获取Paper详细信息
+// TitleQueryPaper doc
+// @description es 根据title查询论文
 // @Tags elasticsearch
-// @Param title formData string true "id"
+// @Param title formData string true "title"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "该PaperID不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/get/paper [POST]
 func TitleQueryPaper(c *gin.Context) {
 	title := c.Request.FormValue("title")
-
+	this_id := c.Request.FormValue("id")
+	fmt.Println(title)
 	var map_param map[string]string = make(map[string]string)
 	map_param["index"],  map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
