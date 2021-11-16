@@ -26,5 +26,5 @@ func main() {
 	r := initialize.SetupRouter()
 	service.Init()
 	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run(":8080")
+	r.Run(":8000")
 }
