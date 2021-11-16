@@ -42,7 +42,6 @@ func InitMySQL() {
 		&model.Author{},
 		&model.Affiliation{},
 		&model.AuthorConnection{},
-		&model.CollectPapers{},
 		&model.Comment{},
 		&model.Follow{},
 		&model.Like{},

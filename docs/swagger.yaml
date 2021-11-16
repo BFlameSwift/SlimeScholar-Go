@@ -341,6 +341,36 @@ paths:
             type: string
       tags:
       - 用户管理
+  /user/tag:
+    post:
+      description: 查看用户所有标签
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查看用户标签成功", "data": "model.User的所有标签"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "用户未设置标签"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 用户管理
 schemes:
 - https
 swagger: "2.0"
