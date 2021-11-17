@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/olivere/elastic/v7"
+
 	"golang.org/x/net/context"
 	"io"
 	"os"
@@ -18,7 +19,7 @@ const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
 const BULK_SIZE = 10000
-
+var fieldsMap  map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
 
 type pub struct {
@@ -140,18 +141,27 @@ func proc_file(file_path string, index string) {
 		//if(i<5){fmt.Println(paper)}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
-		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
+		var fields []interface{} = m["fieldsOfStudy"].([]interface{})
+		for _,field := range(fields){
+			fieldsMap[field.(string)] += 1
+			if field.(string) == "Computer Science" || field.(string) == "Mathematics"{
+				doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
 
-		bulkRequest = bulkRequest.Add(doc)
-		if i%BULK_SIZE == 0 {
-			response, err := bulkRequest.Do(context.Background())
-			if err != nil {
-				panic(err)
+				bulkRequest.Add(doc)
+				if i%BULK_SIZE == 0 {
+					response, err := bulkRequest.Do(context.Background())
+					if err != nil {
+						panic(err)
+					}
+					success_num += len(response.Succeeded())
+					fail_num += len(response.Failed())
+					fmt.Println("success_num", success_num, "fail_num", fail_num)
+
+				}
+				break
 			}
-			success_num += len(response.Succeeded())
-			fail_num += len(response.Failed())
-			fmt.Println("success_num", success_num, "fail_num", fail_num)
 		}
+
 
 		if error_read != nil {
 			if err == io.EOF {
@@ -173,6 +183,7 @@ func proc_file(file_path string, index string) {
 	fail_num += len(response.Failed())
 	fmt.Println("line sum", i)
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
+	fmt.Println(fieldsMap)
 }
 
 func load_paper() {
@@ -193,4 +204,5 @@ func print1(){
 func main() {
 	load_paper()
 	//print1()
+	fmt.Println(fieldsMap)
 }

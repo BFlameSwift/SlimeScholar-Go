@@ -6,6 +6,8 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
+	"github.com/olivere/elastic/v7"
+	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 )
@@ -177,6 +179,49 @@ func TitleQueryPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search title",title,"hits :",searchResult.TotalHits())
+	var paper_sequences map[string]interface{} = make(map[string]interface{})
+	for i,paper:= range(searchResult.Hits.Hits){
+		paper_sequences[strconv.FormatInt(int64(i),10)] = paper.Source
+		if(i<10){fmt.Println(paper.Source)}
+	}
+	//body_byte,_ := json.Marshal(ret.Source)
+	//var paper = make(map[string]interface{})
+	//_ = json.Unmarshal(body_byte,&paper)
+	//fmt.Println(paper)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"total_hits":searchResult.TotalHits(),
+		"details":paper_sequences})
+	return
+}
+
+// NameQueryAuthor doc
+// @description es 根据姓名查询作者：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配
+// @Tags elasticsearch
+// @Param name formData string true "name"
+// @Param isPrecise formData int flase "isPrecise"
+// @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/author/name [POST]
+func NameQueryAuthor(c *gin.Context) {
+	name:= c.Request.FormValue("name")
+	isPrecise ,err:= strconv.Atoi(c.Request.FormValue("isPrecise"))
+	if err != nil {panic(err)}
+	boolQuery := elastic.NewBoolQuery()
+	if isPrecise ==1{
+		query := elastic.NewMatchPhraseQuery("authors.name", name)
+		boolQuery.Must(query)
+	}else {
+		query := elastic.NewMatchQuery("authors.name", name)
+		boolQuery.Must(query)
+	}
+	searchResult ,err:= service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
+	if err != nil {panic(err)}
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在","status":404})
+		fmt.Printf("this authors query %s not existed",name)
+		return
+	}
+	fmt.Println("search author",name,"hits :",searchResult.TotalHits())
 	var paper_sequences map[string]interface{} = make(map[string]interface{})
 	for i,paper:= range(searchResult.Hits.Hits){
 		paper_sequences[strconv.FormatInt(int64(i),10)] = paper.Source

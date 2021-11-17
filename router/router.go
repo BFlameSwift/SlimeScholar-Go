@@ -25,5 +25,6 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/author", v1.GetAuthor)
 		EsRouter.POST("/get/paper", v1.GetPaper)
 		EsRouter.POST("/query/paper/title", v1.TitleQueryPaper)
+		EsRouter.POST("/query/author/name", v1.NameQueryAuthor)
 	}
 }

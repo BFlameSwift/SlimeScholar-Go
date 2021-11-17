@@ -115,10 +115,14 @@ func update() {
 
 func query_by_field(index string ,field string,content string)  *elastic.SearchResult{
 	client = service.Client
-	boolQuery := elastic.NewBoolQuery()
-	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	//boolQuery := elastic.NewBoolQuery()
+	q := elastic.NewMatchPhraseQuery(field+".name", content) //精确匹配
+	//boolQuery.Must(elastic.NewMatchQuery(field+".name", content))
+	//childQuery := elastic.NewHasChildQuery("name",boolQuery)
+	//q := elastic.NewQueryStringQuery(field+".name:"+content)
+	//boolQuery := elastic.NewTermQuery(field,content)
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err := client.Search(index).Query(boolQuery).Pretty(true).Do(context.Background())
+	searchResult, err := client.Search(index).Query(q).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -147,37 +151,49 @@ func query_by_field(index string ,field string,content string)  *elastic.SearchR
 }
 ////搜索
 func query() {
-	var res *elastic.SearchResult
-	var err error
+	//var res *elastic.SearchResult
+	//var err error
 	//取所有
-	res, err = client.Search("megacorp").Type("employee").Do(context.Background())
-	printEmployee(res, err)
+	//res, err = client.Search("paper").Do(context.Background())
+	//printEmployee(res, err)
 
 	//字段相等
-	q := elastic.NewQueryStringQuery("last_name:Smith")
-	res, err = client.Search("megacorp").Type("employee").Query(q).Do(context.Background())
+	client = service.ESClient
+	q := elastic.NewQueryStringQuery("authors:name:James")
+	searchResult, err := client.Search().Index("paper").Query(q).Do(context.Background())
 	if err != nil {
 		println(err.Error())
 	}
-	printEmployee(res, err)
+	fmt.Println(searchResult.TotalHits())
+	var paper_item map[string]interface{} = make(map[string]interface{})
+	for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
+		t := item.(map[string]interface{})
+		//json_str,err := json.Marshal(item.(map[string]interface{}))
+		if err != nil {panic(err)}
+		//paper := service.JsonToPaper(string(json_str))
+		fmt.Printf("%#v\n", t)
+		//fmt.Printf("%#v\n",paper)
+		//fmt.Println(reflect.ValueOf(&paper).Elem())
+	}
+	//printEmployee(res, err)
 
 	//条件查询
 	//年龄大于30岁的
-	boolQ := elastic.NewBoolQuery()
-	boolQ.Must(elastic.NewMatchQuery("last_name", "smith"))
-	boolQ.Filter(elastic.NewRangeQuery("age").Gt(30))
-	res, err = client.Search("megacorp").Type("employee").Query(q).Do(context.Background())
-	printEmployee(res, err)
+	//boolQ := elastic.NewBoolQuery()
+	//boolQ.Must(elastic.NewMatchQuery("last_name", "smith"))
+	//boolQ.Filter(elastic.NewRangeQuery("age").Gt(30))
+	//res, err = client.Search("megacorp").Type("employee").Query(q).Do(context.Background())
+	//printEmployee(res, err)
 
 	//短语搜索 搜索about字段中有 rock climbing
-	matchPhraseQuery := elastic.NewMatchPhraseQuery("about", "rock climbing")
-	res, err = client.Search("megacorp").Type("employee").Query(matchPhraseQuery).Do(context.Background())
-	printEmployee(res, err)
-
-	//分析 interests
-	aggs := elastic.NewTermsAggregation().Field("interests")
-	res, err = client.Search("megacorp").Type("employee").Aggregation("all_interests", aggs).Do(context.Background())
-	printEmployee(res, err)
+	//matchPhraseQuery := elastic.NewMatchPhraseQuery("about", "rock climbing")
+	//res, err = client.Search("megacorp").Type("employee").Query(matchPhraseQuery).Do(context.Background())
+	//printEmployee(res, err)
+	//
+	////分析 interests
+	//aggs := elastic.NewTermsAggregation().Field("interests")
+	//res, err = client.Search("megacorp").Type("employee").Aggregation("all_interests", aggs).Do(context.Background())
+	//printEmployee(res, err)
 
 }
 
@@ -212,12 +228,12 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 func main() {
 	service.Init()
-	query_by_field("paper","id","5ec82e10f84917d112f4c0e10356b65161eb79b5")
+	query_by_field("paper","authors","James H. Brown")
 //	Create
 //	gets()
 //	//delete()
 
 //	// gets()
-//	// query()
+//	query()
 //	// list(2, 1)
 }
