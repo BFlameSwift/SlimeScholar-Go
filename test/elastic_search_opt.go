@@ -172,6 +172,8 @@ func query() {
 		if err != nil {panic(err)}
 		//paper := service.JsonToPaper(string(json_str))
 		fmt.Printf("%#v\n", t)
+		fmt.Println(len(t["inCitations"].([]interface{})))
+
 		//fmt.Printf("%#v\n",paper)
 		//fmt.Println(reflect.ValueOf(&paper).Elem())
 	}
@@ -228,7 +230,7 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 func main() {
 	service.Init()
-	query_by_field("paper","authors","James H. Brown")
+	query_by_field("paper","authors","Christopher  Quince")
 //	Create
 //	gets()
 //	//delete()

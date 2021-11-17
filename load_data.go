@@ -13,12 +13,12 @@ import (
 	"strconv"
 )
 
-const AUTHOR_DIR = "E:\\Paper"
+const AUTHOR_DIR = "H:\\Scholar"
 const PAPER_DIR = "H:\\Scholar"
 const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
-const BULK_SIZE = 10000
+const BULK_SIZE = 100000
 var fieldsMap  map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
 
@@ -186,6 +186,68 @@ func proc_file(file_path string, index string) {
 	fmt.Println(fieldsMap)
 }
 
+func proc_author(file_path string, index string) {
+	open, err := os.Open(file_path)
+	if err != nil {
+		fmt.Println(file_path + "打开失败")
+		return
+	}
+	scanner := bufio.NewScanner(open)
+	i := 0
+	fin, error := os.OpenFile(file_path, os.O_RDONLY, 0)
+	if error != nil {
+		panic(error)
+	}
+	defer fin.Close()
+	client := service.ESClient
+	bulkRequest := client.Bulk()
+	reader := bufio.NewReader(fin)
+	for  {
+		line,error_read := reader.ReadString('\n')
+		if(len(line) == 0){break;}
+		json_str := line
+
+		//_ = JsonToPaper(json_str)
+		//if(i<5){fmt.Println(paper)}
+		var m map[string]interface{}
+		_ = json.Unmarshal([]byte(json_str), &m)
+		if len(m["author_id"].([]interface{})) == 0{continue} // 数据501行中存在"author_id": [],  过滤
+		m["author_id"] = m["author_id"].([]interface{})[0].(string)
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["author_id"].(string)).Doc(m)
+		bulkRequest.Add(doc)
+		if i%BULK_SIZE == 0 {
+			response, err := bulkRequest.Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+			success_num += len(response.Succeeded())
+			fail_num += len(response.Failed())
+			fmt.Println("success_num", success_num, "fail_num", fail_num)
+
+		}
+
+		if error_read != nil {
+			if err == io.EOF {
+				fmt.Printf("%#v\n", line)
+				break
+			}
+			panic(err)
+		}
+		i++
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+	response, err := bulkRequest.Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	success_num += len(response.Succeeded())
+	fail_num += len(response.Failed())
+	fmt.Println("line sum", i)
+	fmt.Println("success_num", success_num, "fail_num", fail_num)
+	fmt.Println(fieldsMap)
+}
 func load_paper() {
 	service.Init()
 	for i := 0; i < 6000; i++ {
@@ -196,13 +258,23 @@ func load_paper() {
 
 	}
 }
+func load_authors(){
+	service.Init()
+	proc_author("H:\\Scholarauthors.txt","author")
+}
+func load_journal(){
+	service.Init()
+	proc_author("H:\\journal.txt","journal")
+}
 func print1(){
 	for i := 0 ;i<1 ;i++{
 		fmt.Printf("%s\n", fmt.Sprintf("%04d",i))
 	}
 }
 func main() {
-	load_paper()
+	//load_paper()
 	//print1()
-	fmt.Println(fieldsMap)
+	//load_authors()
+	load_journal()
+	//fmt.Println(fieldsMap)
 }
