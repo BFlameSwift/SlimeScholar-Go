@@ -272,7 +272,7 @@ func print1(){
 	}
 }
 func main() {
-	//load_paper()
+	load_paper()
 	//print1()
 	//load_authors()
 	load_journal()

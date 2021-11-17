@@ -124,10 +124,6 @@ paths:
         name: name
         required: true
         type: string
-      - description: name2
-        in: formData
-        name: name
-        type: string
       - description: isPrecise
         in: formData
         name: isPrecise

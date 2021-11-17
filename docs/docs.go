@@ -209,12 +209,6 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "name2",
-                        "name": "name",
-                        "in": "formData"
-                    },
-                    {
                         "type": "integer",
                         "description": "isPrecise",
                         "name": "isPrecise",
