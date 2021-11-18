@@ -230,6 +230,41 @@ paths:
       - Authorization: []
       tags:
       - 社交
+  /social/delete/tag:
+    post:
+      description: 删除标签
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: 标签名称
+        in: formData
+        name: tag_name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "标签删除成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /social/get/tag/paper:
     post:
       description: 查看用户标签的文章列表
