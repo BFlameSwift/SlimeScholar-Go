@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 	_, notFound := service.QueryAUserByUsername(username)
 	if notFound {
 		service.CreateAUser(&user)
-		tag := model.Tag{TagName:"默认", UserID: user.UserID, CreateTime: time.Now()}
+		tag := model.Tag{TagName:"默认", UserID: user.UserID, CreateTime: time.Now(), Username:user.Username}
 		service.CreateATag(&tag)
 		utils.SendRegisterEmail(email, user.ConfirmNumber)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "用户创建成功"})
