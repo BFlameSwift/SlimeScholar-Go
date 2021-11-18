@@ -31,5 +31,6 @@ func InitRouter(Router *gin.RouterGroup) {
 	{
 		SocialRouter.POST("/get/tags",v1.GetUserTag)
 		SocialRouter.POST("/get/tag/paper",v1.GetTagPaper)
+		SocialRouter.POST("/create/tag",v1.CreateATag)
 	}
 }
