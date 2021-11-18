@@ -125,9 +125,19 @@ func GetPaper(c *gin.Context) {
 	body_byte, _ := json.Marshal(ret.Source)
 	var paper = make(map[string]interface{})
 	_ = json.Unmarshal(body_byte, &paper)
-	id_list := paper["OutCitations"].([]string)
-	// reference_info := service.IdsGetPapers(id_list,"paper")
-
+	id_inter_list := paper["outCitations"].([]interface{})
+	var  id_list []string = make([]string,3000)
+	for i,id := range id_inter_list{
+		id_list[i] = id.(string)
+	}
+	fmt.Println(id_list)
+	reference_map := service.IdsGetPapers(id_list,"paper")
+	reference_list := make([]interface{},3000)
+	for i,id := range id_list{
+		var item interface{} = reference_map[id]
+		reference_list[i] = item
+	}
+	paper["reference_msg"] = reference_list
 	fmt.Println(paper)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": paper})
 	return
