@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gorm.io/gorm"
 )
 
 //创建标签
@@ -20,10 +22,42 @@ func QueryTagList(userID uint64) (tags []model.Tag, not bool) {
 	tags = make([]model.Tag, 0)
 	db := global.DB
 	db = db.Where("user_id=?", userID)
-	if err := db.Find(&tags).Error; err != nil {
-		return nil, true
+	err := db.Find(&tags).Error;
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return tags, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return tags, false
 	}
-	return tags, false
+}
+//查询用户某一个标签
+func QueryATag(userID uint64, tagName string)(tag model.Tag, notFound bool){
+	db := global.DB
+	db = db.Where("user_id = ?", userID)
+	db = db.Where("tag_name = ?", tagName)
+	err := db.First(&tag).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return tag, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return tag, false
+	}
+}
+//查询用户标签下的所有文章
+func QueryTagPaper(tagID uint64)(papers []model.TagPaper,not bool){
+	papers = make([]model.TagPaper, 0)
+	db := global.DB
+	db = db.Where("tag_id=?", tagID)
+	err := db.Find(&papers).Error;
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return papers, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return papers, false
+	}
 }
 func JsonToPaper(jsonStr string) model.Paper {
 	var item map[string]interface{} = make(map[string]interface{})

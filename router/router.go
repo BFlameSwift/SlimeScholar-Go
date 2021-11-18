@@ -15,7 +15,6 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.POST("/modify", v1.ModifyUser)
 		UserRouter.POST("/info", v1.TellUserInfo)
 		UserRouter.POST("/confirm", v1.Confirm)
-		UserRouter.POST("/tag", v1.GetUserTag)
 	}
 	EsRouter := Router.Group("/es")
 	{
@@ -25,5 +24,11 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/author", v1.GetAuthor)
 		EsRouter.POST("/get/paper", v1.GetPaper)
 		EsRouter.POST("/query/paper/title", v1.TitleQueryPaper)
+	}
+
+	SocialRouter := Router.Group("/social")
+	{
+		SocialRouter.POST("/get/tags",v1.GetUserTag)
+		SocialRouter.POST("/get/tag/paper",v1.GetTagPaper)
 	}
 }

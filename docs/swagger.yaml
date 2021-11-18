@@ -163,6 +163,83 @@ paths:
             type: string
       tags:
       - template
+  /social/get/tag/paper:
+    post:
+      description: 查看用户标签的文章列表
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: 标签名称
+        in: formData
+        name: tag_name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查看文献成功", "data": "标签下的文章列表"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "402":
+          description: '{"success": false, "message": "标签下没有文章"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "用户未设置该标签"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
+  /social/get/tags:
+    post:
+      description: 查看用户所有标签
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查看用户标签成功", "data": "model.User的所有标签"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "未查询到结果"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /user/confirm:
     post:
       description: 验证邮箱
@@ -339,36 +416,6 @@ paths:
           description: '{"success": false, "message": "用户已存在"}'
           schema:
             type: string
-      tags:
-      - 用户管理
-  /user/tag:
-    post:
-      description: 查看用户所有标签
-      parameters:
-      - description: Authorization
-        in: header
-        name: Authorization
-        type: string
-      - description: 用户ID
-        in: formData
-        name: user_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"success": true, "message": "查看用户标签成功", "data": "model.User的所有标签"}'
-          schema:
-            type: string
-        "403":
-          description: '{"success": false, "message": "用户未设置标签"}'
-          schema:
-            type: string
-        "404":
-          description: '{"success": false, "message": "用户ID不存在"}'
-          schema:
-            type: string
-      security:
-      - Authorization: []
       tags:
       - 用户管理
 schemes:

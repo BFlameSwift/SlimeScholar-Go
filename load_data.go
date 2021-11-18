@@ -190,7 +190,7 @@ func print1(){
 		fmt.Printf("%s\n", fmt.Sprintf("%04d",i))
 	}
 }
-func main() {
+func mainL() {
 	load_paper()
 	//print1()
 }
