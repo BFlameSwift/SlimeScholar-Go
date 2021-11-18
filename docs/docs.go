@@ -418,6 +418,12 @@ var doc = `{
                             "type": "string"
                         }
                     },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"标签不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "404": {
                         "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
                         "schema": {
