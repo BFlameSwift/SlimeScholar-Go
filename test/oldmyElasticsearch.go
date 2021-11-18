@@ -13,7 +13,7 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-type Employee struct {
+type employee struct {
 	FirstName string   `json:"first_name"`
 	LastName  string   `json:"last_name"`
 	Age       int      `json:"age"`
@@ -54,10 +54,10 @@ func OldInit() {
 func OldCreate(index_type string, index string, id string, body string) {
 
 	//使用结构体
-	// e1 := Employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
+	// e1 := employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
 	mytype := MyType{Id: id}
 	fmt.Println("index:", index_type, index, body, mytype)
-	e1 := Employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
+	e1 := employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
 	put1, err := client.Index().
 		Index("megacorp").
 		Type("employee").

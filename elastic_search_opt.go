@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/service"
 	"reflect"
+
+	"gitee.com/online-publish/slime-scholar-go/service"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 
@@ -24,7 +25,6 @@ type Employee struct {
 	About     string   `json:"about"`
 	Interests []string `json:"interests"`
 }
-
 
 //初始化
 func Init() {
@@ -113,7 +113,7 @@ func update() {
 	fmt.Printf("update age %s\n", res.Result)
 }
 
-func query_by_field(index string ,field string,content string)  *elastic.SearchResult{
+func query_by_field(index string, field string, content string) *elastic.SearchResult {
 	client = service.Client
 	//boolQuery := elastic.NewBoolQuery()
 	q := elastic.NewMatchPhraseQuery(field+".name", content) //精确匹配
@@ -131,11 +131,13 @@ func query_by_field(index string ,field string,content string)  *elastic.SearchR
 	var paper_item map[string]interface{} = make(map[string]interface{})
 	for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
 		t := item.(map[string]interface{})
-		json_str,err := json.Marshal(item.(map[string]interface{}))
-		if err != nil {panic(err)}
+		json_str, err := json.Marshal(item.(map[string]interface{}))
+		if err != nil {
+			panic(err)
+		}
 		paper := service.JsonToPaper(string(json_str))
 		fmt.Printf("%#v\n", t)
-		fmt.Printf("%#v\n",paper)
+		fmt.Printf("%#v\n", paper)
 		fmt.Println(reflect.ValueOf(&paper).Elem())
 	}
 	//for i,result := range(searchResult.Hits.Hits){
@@ -149,6 +151,7 @@ func query_by_field(index string ,field string,content string)  *elastic.SearchR
 	//}
 	return searchResult
 }
+
 ////搜索
 func query() {
 	//var res *elastic.SearchResult
@@ -169,7 +172,9 @@ func query() {
 	for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
 		t := item.(map[string]interface{})
 		//json_str,err := json.Marshal(item.(map[string]interface{}))
-		if err != nil {panic(err)}
+		if err != nil {
+			panic(err)
+		}
 		//paper := service.JsonToPaper(string(json_str))
 		fmt.Printf("%#v\n", t)
 		fmt.Println(len(t["inCitations"].([]interface{})))
@@ -228,14 +233,18 @@ func printEmployee(res *elastic.SearchResult, err error) {
 	}
 }
 
+
+
 func main() {
 	service.Init()
-	query_by_field("paper","authors","Christopher  Quince")
-//	Create
-//	gets()
-//	//delete()
+	// query_by_field("paper", "authors", "Christopher  Quince")
+	var str_list = []string{"02d5380d2fb7a81019b124b079306cc5cd3794d3", "d80d307a463df3526bf12ef1974afa7352f7b863"}
+	// IdsGetPapers(str_list, "paper")
+	//	Create
+	//	gets()
+	//	//delete()
 
-//	// gets()
-//	query()
-//	// list(2, 1)
+	//	// gets()
+	//	query()
+	//	// list(2, 1)
 }

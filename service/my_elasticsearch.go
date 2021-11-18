@@ -244,16 +244,16 @@ func Aggregation(Params map[string]string) *elastic.SearchResult {
 	println("func Aggregation here 297")
 	return res
 }
-func GetPaperById(id string){
+func GetPaperById(id string) {
 	// TODO
 }
 
-func QueryByField(index string ,field string,content string,page int,size int)  *elastic.SearchResult{
+func QueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	boolQuery := elastic.NewBoolQuery()
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).
-		From((page-1)*size).Pretty(true).Do(context.Background())
+		From((page - 1) * size).Pretty(true).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -269,6 +269,29 @@ func QueryByField(index string ,field string,content string,page int,size int)  
 	//	}
 	//}
 	return searchResult
+}
+
+// 通过[]string id—list 来获取结果，其中未命中的结果返回为nil 表示此id文件中不存在
+func IdsGetPapers(id_list []string, index string) map[string]interface{} {
+	response, err := Client.Search().Index(index).Query(elastic.NewIdsQuery().Ids(id_list...)).Size(len(id_list)).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	//如果有字段未命中怎么办，可能出现:返回空
+	// TODO 调用接口
+	var result_map map[string]interface{} = make(map[string]interface{})
+	for _, id := range id_list {
+		result_map[id] = nil
+	}
+	for i, hit := range response.Hits.Hits {
+
+		var m map[string]interface{} = make(map[string]interface{})
+		_ = json.Unmarshal(hit.Source, &m)
+		result_map[id_list[i]] = m
+	}
+	fmt.Println(result_map)
+
+	return result_map
 }
 
 func main() {
