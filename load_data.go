@@ -22,6 +22,8 @@ const BULK_SIZE = 100000
 var fieldsMap  map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
 
+var max_citation_num = 0 // 看一下所有论文的最大引用数目
+var max_references_num = 0 //
 type pub struct {
 	id           string `json:"id"`
 	author_order int    `json:"author_order"`
@@ -145,6 +147,17 @@ func proc_file(file_path string, index string) {
 		for _,field := range(fields){
 			fieldsMap[field.(string)] += 1
 			if field.(string) == "Computer Science" || field.(string) == "Mathematics"{
+				m["citation_num"] = len(m["inCitations"].([]interface{}))
+				if m["citation_num"].(int) > max_citation_num{
+					max_citation_num = m["citation_num"].(int)
+				};reference_num := len(m["outCitations"].([]interface{}));
+				m["reference_num"] = reference_num
+				if reference_num > max_references_num{max_references_num = reference_num}
+				// 因为这些数据到es中已经超过了100G 由于io的限制会导致查询的特别慢。。于是杉树一些不必哟啊的属性。 将引用，被引用信息分开存储，减少paper 索引的数据量
+				delete(m,"inCitations") // 去掉被引用的信息，只保留引用数目，减少空间]
+				delete(m,"magId");delete(m,"pmid");delete(m,"entities");delete(m,"pmid");delete(m,"entities");delete(m,"sources"); //删除各种标识只保留id就好
+				delete(m,"s2Url"); /*删除原文url 可以直接用id生成  */ delete(m,"doiUrl") // 同理可以直接根据doi生成
+
 				doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
 
 				bulkRequest.Add(doc)
@@ -187,7 +200,7 @@ func proc_file(file_path string, index string) {
 		fmt.Println(item.Error)
 	}
 	fmt.Println("line sum", i)
-	fmt.Println("success_num", success_num, "fail_num", fail_num)
+	fmt.Println("success_num", success_num, "fail_num", fail_num,"max_citation_num",max_citation_num,"max_references_num",max_references_num)
 	fmt.Println(fieldsMap)
 }
 
@@ -320,7 +333,7 @@ func load_paper() {
 	//cluster_block_exception index [paper] blocked by: [TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark, index has read-only-allow-delete block
 	//考虑磁盘空间问题 ：方法：curl -XPUT -H "Content-Type: application/json" http://10.2.7.70:9204/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
 	service.Init()
-	for i := 5000; i < 6000; i++ {
+	for i := 0; i < 6000; i++ {
 		var str string
 		if(i<1000){str = fmt.Sprintf("%03d",i);}else{str = strconv.Itoa(i)}
 		fmt.Println(str)
