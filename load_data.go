@@ -179,8 +179,13 @@ func proc_file(file_path string, index string) {
 	if err != nil {
 		panic(err)
 	}
+
 	success_num += len(response.Succeeded())
 	fail_num += len(response.Failed())
+	if fail_num > 0{fmt.Println("error:")}
+	for _,item := range (response.Failed()){
+		fmt.Println(item.Error)
+	}
 	fmt.Println("line sum", i)
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
 	fmt.Println(fieldsMap)
@@ -248,9 +253,74 @@ func proc_author(file_path string, index string) {
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
 	fmt.Println(fieldsMap)
 }
+func proc_journal(file_path string, index string) {
+	open, err := os.Open(file_path)
+	if err != nil {
+		fmt.Println(file_path + "打开失败")
+		return
+	}
+	scanner := bufio.NewScanner(open)
+	i := 0
+	fin, error := os.OpenFile(file_path, os.O_RDONLY, 0)
+	if error != nil {
+		panic(error)
+	}
+	defer fin.Close()
+	client := service.ESClient
+	bulkRequest := client.Bulk()
+	reader := bufio.NewReader(fin)
+	for  {
+		line,error_read := reader.ReadString('\n')
+		if(len(line) == 0){break;}
+		json_str := line
+
+		//_ = JsonToPaper(json_str)
+		//if(i<5){fmt.Println(paper)}
+		var m map[string]interface{}
+		_ = json.Unmarshal([]byte(json_str), &m)
+		//if len(m["author_id"].([]interface{})) == 0{continue} // 数据501行中存在"author_id": [],  过滤
+		//m["id"] = m["id"].([]interface{})[0].(string)
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(strconv.Itoa(int(m["id"].(float64)))).Doc(m)
+		bulkRequest.Add(doc)
+		if i%BULK_SIZE == 0 {
+			response, err := bulkRequest.Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+			success_num += len(response.Succeeded())
+			fail_num += len(response.Failed())
+			fmt.Println("success_num", success_num, "fail_num", fail_num)
+
+		}
+
+		if error_read != nil {
+			if err == io.EOF {
+				fmt.Printf("%#v\n", line)
+				break
+			}
+			panic(err)
+		}
+		i++
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+	response, err := bulkRequest.Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	success_num += len(response.Succeeded())
+	fail_num += len(response.Failed())
+
+	fmt.Println("line sum", i)
+	fmt.Println("success_num", success_num, "fail_num", fail_num)
+	fmt.Println(fieldsMap)
+}
 func load_paper() {
+	//cluster_block_exception index [paper] blocked by: [TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark, index has read-only-allow-delete block
+	//考虑磁盘空间问题 ：方法：curl -XPUT -H "Content-Type: application/json" http://10.2.7.70:9204/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
 	service.Init()
-	for i := 0; i < 6000; i++ {
+	for i := 5000; i < 6000; i++ {
 		var str string
 		if(i<1000){str = fmt.Sprintf("%03d",i);}else{str = strconv.Itoa(i)}
 		fmt.Println(str)
@@ -264,7 +334,7 @@ func load_authors(){
 }
 func load_journal(){
 	service.Init()
-	proc_author("H:\\journal.txt","journal")
+	proc_journal("H:\\Scholarjournal.txt","journal")
 }
 func print1(){
 	for i := 0 ;i<1 ;i++{
@@ -275,6 +345,6 @@ func main() {
 	load_paper()
 	//print1()
 	//load_authors()
-	load_journal()
+	//load_journal()
 	//fmt.Println(fieldsMap)
 }
