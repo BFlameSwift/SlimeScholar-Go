@@ -62,11 +62,7 @@ type Paper struct {
 	Authors       []Author `json:"authors"`
 }
 
-func make_simeple_paper(m map[string]interface{}) map[string]interface{} {
-	var ret map[string]interface{} = make(map[string]interface{})
-	ret["id"], ret["authors"], ret["citation_num"], ret["journalName"], ret["paperAbstract"], ret["reference_num"], ret["year"], ret["title"] = m["id"], m["authors"], m["citation_num"], m["journalName"], m["paperAbstract"], m["reference_num"], m["year"], m["title"]
-	return ret
-}
+
 
 func JsonToPaper(jsonStr string) Paper {
 	var item map[string]interface{} = make(map[string]interface{})
@@ -197,7 +193,7 @@ func proc_paper(file_path string, index string) {
 				doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
 
 				bulkRequest.Add(doc)
-				doc = elastic.NewBulkIndexRequest().Index("simple_paper").Id(m["id"].(string)).Doc(make_simeple_paper(m))
+				doc = elastic.NewBulkIndexRequest().Index("simple_paper").Id(m["id"].(string)).Doc(service.SimplifyPaper(m))
 				simpleBulkRequest.Add(doc)
 				if i%BULK_SIZE == 0 {
 					response, err := bulkRequest.Do(context.Background())

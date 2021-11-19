@@ -274,17 +274,16 @@ func QueryByField(index string, field string, content string, page int, size int
 // 通过[]string id—list 来获取结果，其中未命中的结果返回为nil 表示此id文件中不存在
 func IdsGetPapers(id_list []string, index string) map[string]interface{} {
 	mul_item := Client.MultiGet()
-
+	//fmt.Println("len!!!!",len(id_list))
 	for _,id := range(id_list){
+		if len(id) == 0{ break}
 		//res,err := Client.Get().Index(index).Id(id).Do(context.Background())
 		q := elastic.NewMultiGetItem().Index(index).Id(id)
 		mul_item.Add(q)
-
 	}
 	//response, err := Client.Search().Index(index).Query(elastic.NewIdsQuery().Ids(id_list...)).Size(len(id_list)).Do(context.Background())
 	response,err := mul_item.Do(context.Background())
 	if err != nil {
-
 		panic(err)
 	}
 	//如果有字段未命中怎么办，可能出现:返回空
@@ -299,10 +298,17 @@ func IdsGetPapers(id_list []string, index string) map[string]interface{} {
 		_ = json.Unmarshal([]byte(hit.Source), &m)
 		result_map[id_list[i]] = m
 	}
-	fmt.Println(result_map)
-
+	//fmt.Println(result_map)
 	return result_map
 }
+
+func SimplifyPaper(m map[string]interface{}) map[string]interface{} {
+	var ret map[string]interface{} = make(map[string]interface{})
+	ret["id"], ret["authors"], ret["citation_num"], ret["journalName"], ret["paperAbstract"], ret["reference_num"], ret["year"], ret["title"] = m["id"], m["authors"], m["citation_num"], m["journalName"], m["paperAbstract"], m["reference_num"], m["year"], m["title"]
+	return ret
+}
+
+
 
 func main() {
 	Init()
