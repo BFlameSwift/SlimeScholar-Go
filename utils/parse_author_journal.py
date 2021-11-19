@@ -22,6 +22,9 @@ journal_list = []
 journals = {}
 journal_out_list = []
 
+in_citation_dict = {}
+in_citation_list = []
+
 for paper_file in os.listdir(paper_path):
     domain = os.path.abspath(paper_path)
     if paper_file.startswith("s2-corpus") and  not paper_file.endswith(".gz"):
@@ -29,6 +32,7 @@ for paper_file in os.listdir(paper_path):
         file_list.append(paper_file)
 file_list.sort()
 
+# file_list = ["H:\\Scholar\\s2-corpus-000"]
 def proc_file_list(file_list,label):
     global  bad_data_num
     file_num = 0
@@ -46,7 +50,7 @@ def proc_file_list(file_list,label):
                     bad_data_num += 1
                     continue
                 list_itme = list(dict_item["fieldsOfStudy"])
-                if "Computer Science" not in list_itme and "Mathematics" not in list_itme:
+                if "Computer Science" not in list_itme :
                     continue
                 if label == "authors":
                     for author in dict_item['authors']:
@@ -65,17 +69,36 @@ def proc_file_list(file_list,label):
                         if journalName not in journal_list:
                             item = {"name":journalName,"volume":journalVolume,"pages":journalPages,'id':len(journal_list),'venue':venue}
                             item['publish_num'],item['citation_num'] = 1,len(dict_item['inCitations'])
-                            item['submissions_num'] = len(dict_item['authors']) # 投稿人数
+
+                            item['authors'] = []
+                            for author in dict_item['authors']:
+                                item['authors'].append(str(author['ids']))
+                            item['authors_num'] = len(item['authors'])  #
                             journal_list.append(journalName)
                             journals[journalName] = item
                         else:
                             journals[journalName]['publish_num'], journals[journalName]['citation_num'] = journals[journalName]['publish_num']+1, journals[journalName]['citation_num']+len(dict_item['inCitations'])
-                            journals[journalName]['submissions_num'] += len(dict_item['authors'])  # 投稿人数
+                            for author in dict_item['authors']:
+                                if (str(author['ids']) not in journals[journalName]["authors"] ) :
+                                    journals[journalName]['authors'].append(str(author['ids']))
+                            journals[journalName]['authors_num'] = len(journals[journalName]['authors'])  # 投稿人数
 
+                elif label == "inCitations":
+                    item = {"id":dict_item["id"],"inCitations":dict_item["inCitations"],"inCitationsNum":len(dict_item["inCitations"])}
+                    # in_citation_dict[dict_item["id"]] = item
+                    in_citation_list.append(item)
                 i += 1
             file_num += 1
-        # print(file_num,len(author_dict))
-        print(file_num, len(journal_list))
+
+
+        if label == "inCitations":
+            print(file_num,len(in_citation_dict.keys()))
+            write_inCitations_list()
+        elif label == "authors":
+            print(file_num,len(author_dict))
+        elif label == "journal":
+            print(file_num, len(journal_list))
+
 
 def make_author_list():
     print(len(list(author_dict.keys())))
@@ -85,19 +108,29 @@ def write_author_list():
     with codecs.open(data_dir+"authors.txt","w") as f:
         for author in author_list:
             f.write(json.dumps(author)+"\n")
-
+    author_list.clear()
 def make_journal_out_list():
     print(len(list(journals.keys())))
     for key in list(journals.keys()):
-        journal_out_list.append(journals.keys())
+        journal_out_list.append(journals.pop(key))
+
 def write_journal_out_list():
     with codecs.open(data_dir+"journal.txt","w") as f:
         for journal in journal_out_list:
+            del journal['authors']
             f.write(json.dumps(journal)+"\n")
-# proc_file_list(file_list,"authors")
-# make_author_list()
-# write_author_list()
+    journal_out_list.clear()
+def write_inCitations_list():
+    with codecs.open(data_dir+"inCitations.txt","a") as f:
+        for item in in_citation_list:
+            f.write(json.dumps(item)+"\n")
+    in_citation_list.clear()
+proc_file_list(file_list,"authors")
+make_author_list()
+write_author_list()
 
 proc_file_list(file_list,"journal")
 make_journal_out_list()
 write_journal_out_list()
+
+proc_file_list(file_list,"inCitations")
