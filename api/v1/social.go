@@ -119,9 +119,35 @@ func CreateATag (c *gin.Context){
 	}
 	tag = model.Tag{TagName:tagName, UserID: userID, CreateTime: time.Now(), Username:user.Username}
 	service.CreateATag(&tag)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "标签创建成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "标签创建成功"})
 }
 
+
+// DeleteATag doc
+// @description 删除标签
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param tag_name formData string true "标签名称"
+// @Success 200 {string} string "{"success": true, "message": "标签删除成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Failure 403 {string} string "{"success": false, "message": "标签不存在"}"
+// @Router /social/delete/tag [POST]
+func DeleteATag (c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	VerifyLogin(userID,authorization,c)
+	
+	tagName := c.Request.FormValue("tag_name")
+	tag, notFoundTag := service.QueryATag(userID,tagName)
+	if notFoundTag{
+		c.JSON(403, gin.H{"success": false,"status":  403, "message": "标签不存在"})
+	}
+	service.DeleteATag(tag.TagID)
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "标签删除成功"})
+}
 
 func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User){
 	user, notFoundUserByID := service.QueryAUserByID(userID)

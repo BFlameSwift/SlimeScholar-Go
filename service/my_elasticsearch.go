@@ -253,7 +253,7 @@ func QueryByField(index string, field string, content string, page int, size int
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).
-		From((page - 1) * size).Pretty(true).Do(context.Background())
+		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}

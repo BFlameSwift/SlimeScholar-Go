@@ -46,7 +46,7 @@ type Tag struct{
 //标签-文章
 type TagPaper struct{
 	ID		uint64	`gorm:"primary_key;" json:"id"`
-	TagID		uint64	`gorm:"type:varchar(32);" json:"tag_id"`
+	TagID		uint64	`json:"tag_id"`
 	TagName		string	`gorm:"type:varchar(32);" json:"tag_name"`
 	PaperID		string	`gorm:"type:varchar(32);" json:"paper_id"`
 	Title  string `gorm:"type:varchar(256);" json:"title"`

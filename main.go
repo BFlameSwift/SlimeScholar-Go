@@ -5,9 +5,6 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/initialize"
 	"gitee.com/online-publish/slime-scholar-go/service"
 
-	// "gitee.com/online-publish/slime-scholar-go/service"
-
-	// "gitee.com/online-publish/slime-scholar-go/service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

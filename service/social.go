@@ -59,6 +59,16 @@ func QueryTagPaper(tagID uint64)(papers []model.TagPaper,not bool){
 		return papers, false
 	}
 }
+//删除标签
+func DeleteATag(tagID uint64)(err error){
+	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.Tag{}).Error; err != nil {
+		return err
+	}
+	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.TagPaper{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
 func JsonToPaper(jsonStr string) model.Paper {
 	var item map[string]interface{} = make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonStr), &item)
