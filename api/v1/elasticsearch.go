@@ -195,9 +195,10 @@ func TitleQueryPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
-	var paper_sequences map[string]interface{} = make(map[string]interface{})
-	for i, paper := range searchResult.Hits.Hits {
-		paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
+	var paper_sequences []interface{} = make([]interface{},0,1000)
+	for _, paper := range searchResult.Hits.Hits {
+		paper_sequences = append(paper_sequences,paper.Source)
+		//paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
 	}
 	//body_byte,_ := json.Marshal(ret.Source)
 	//var paper = make(map[string]interface{})
