@@ -89,7 +89,7 @@ func Create() {
 //}
 
 //删除
-func delete() {
+func delete(map[string]interface{}, string) {
 	res, err := client.Delete().Index("megacorp").
 		Type("employee").
 		Id("1").
