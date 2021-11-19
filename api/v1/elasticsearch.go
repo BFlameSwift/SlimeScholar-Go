@@ -3,13 +3,14 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
-	"net/http"
-	"strconv"
 )
 
 // TestCreate doc
@@ -22,10 +23,11 @@ import (
 // @Failure 500 {string} string "{"success": false, "message": "创建错误500"}"
 // @Router /es/create/mytype [POST]
 func CreateMyType(c *gin.Context) {
-	c.Header("content-type","application/json")
+	c.Header("content-type", "application/json")
 	this_id := c.Request.FormValue("id")
 	var mytype model.ValueString
-	mytype.Value = this_id; mytype.Stuid = 200
+	mytype.Value = this_id
+	mytype.Stuid = 200
 	json_byte, _ := json.Marshal(mytype)
 	fmt.Println(string(json_byte))
 	var map_param map[string]string = make(map[string]string)
@@ -33,16 +35,16 @@ func CreateMyType(c *gin.Context) {
 
 	get1, error_get := service.Gets(map_param)
 	if error_get == nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引已存在","status":401})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引已存在", "status": 401})
 
 		obj_byte, _ := json.Marshal(get1.Source)
 
-		fmt.Println("field",get1.Fields)
-		fmt.Println("this id "+get1.Id+"has existed",string(obj_byte))
+		fmt.Println("field", get1.Fields)
+		fmt.Println("this id "+get1.Id+"has existed", string(obj_byte))
 		return
 	}
 	ret := service.Create(map_param)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "创建成功"+ret,"status":200})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "创建成功" + ret, "status": 200})
 	return
 }
 
@@ -64,12 +66,12 @@ func UpdateMyType(c *gin.Context) {
 
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
 		return
 	}
 	ret := service.Update(map_param)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "更新成功"+ret,"status":200})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "更新成功" + ret, "status": 200})
 	return
 }
 
@@ -91,17 +93,15 @@ func GetMyType(c *gin.Context) {
 
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
 		return
 	}
-	ret,_ := service.Gets(map_param)
-	body_byte,_ := json.Marshal(ret.Source)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":string(body_byte)})
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": string(body_byte)})
 	return
 }
-
-
 
 // GetPaper doc
 // @description es获取Paper详细信息
@@ -114,19 +114,32 @@ func GetMyType(c *gin.Context) {
 func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	map_param["index"],  map_param["id"] = "paper", this_id
+	map_param["index"], map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在","status":404})
-		fmt.Println("this id %s not existed",this_id)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
 		return
 	}
-	ret,_ := service.Gets(map_param)
-	body_byte,_ := json.Marshal(ret.Source)
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
 	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte,&paper)
+	_ = json.Unmarshal(body_byte, &paper)
+	id_inter_list := paper["outCitations"].([]interface{})
+	var  id_list []string = make([]string,3000)
+	for i,id := range id_inter_list{
+		id_list[i] = id.(string)
+	}
+	fmt.Println(id_list)
+	reference_map := service.IdsGetPapers(id_list,"paper")
+	reference_list := make([]interface{},3000)
+	for i,id := range id_list{
+		var item interface{} = reference_map[id]
+		reference_list[i] = item
+	}
+	paper["reference_msg"] = reference_list
 	fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"details":paper})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": paper})
 	return
 }
 
@@ -157,7 +170,7 @@ func GetAuthor(c *gin.Context) {
 		panic(err)
 	}
 	fmt.Println(author_map)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": author_map,"body":string(body_byte)})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": author_map, "body": string(body_byte)})
 	return
 }
 
@@ -171,24 +184,24 @@ func GetAuthor(c *gin.Context) {
 // @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
 	title := c.Request.FormValue("title")
-	searchResult := service.QueryByField("paper","title",title,1,10)
+	searchResult := service.QueryByField("paper", "title", title, 1, 10)
 
 	if searchResult.TotalHits() == 0 {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在","status":404})
-		fmt.Printf("this title query %s not existed",title)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this title query %s not existed", title)
 		return
 	}
-	fmt.Println("search title",title,"hits :",searchResult.TotalHits())
+	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
 	var paper_sequences map[string]interface{} = make(map[string]interface{})
-	for i,paper:= range(searchResult.Hits.Hits){
-		paper_sequences[strconv.FormatInt(int64(i),10)] = paper.Source
+	for i, paper := range searchResult.Hits.Hits {
+		paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
 	}
 	//body_byte,_ := json.Marshal(ret.Source)
 	//var paper = make(map[string]interface{})
 	//_ = json.Unmarshal(body_byte,&paper)
 	//fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"total_hits":searchResult.TotalHits(),
-		"details":paper_sequences})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences})
 	return
 }
 
@@ -202,35 +215,41 @@ func TitleQueryPaper(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/author/name [POST]
 func NameQueryAuthor(c *gin.Context) {
-	name:= c.Request.FormValue("name")
-	isPrecise ,err:= strconv.Atoi(c.Request.FormValue("isPrecise"))
-	if err != nil {panic(err)}
+	name := c.Request.FormValue("name")
+	isPrecise, err := strconv.Atoi(c.Request.FormValue("isPrecise"))
+	if err != nil {
+		panic(err)
+	}
 	boolQuery := elastic.NewBoolQuery()
-	if isPrecise ==1{
+	if isPrecise == 1 {
 		query := elastic.NewMatchPhraseQuery("authors.name", name)
 		boolQuery.Must(query)
-	}else {
+	} else {
 		query := elastic.NewMatchQuery("authors.name", name)
 		boolQuery.Must(query)
 	}
-	searchResult ,err:= service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
-	if err != nil {panic(err)}
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	if searchResult.TotalHits() == 0 {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在","status":404})
-		fmt.Printf("this authors query %s not existed",name)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this authors query %s not existed", name)
 		return
 	}
-	fmt.Println("search author",name,"hits :",searchResult.TotalHits())
+	fmt.Println("search author", name, "hits :", searchResult.TotalHits())
 	var paper_sequences map[string]interface{} = make(map[string]interface{})
-	for i,paper:= range(searchResult.Hits.Hits){
-		paper_sequences[strconv.FormatInt(int64(i),10)] = paper.Source
-		if(i<10){fmt.Println(paper.Source)}
+	for i, paper := range searchResult.Hits.Hits {
+		paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
+		if i < 10 {
+			fmt.Println(paper.Source)
+		}
 	}
 	//body_byte,_ := json.Marshal(ret.Source)
 	//var paper = make(map[string]interface{})
 	//_ = json.Unmarshal(body_byte,&paper)
 	//fmt.Println(paper)
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功","status":200,"total_hits":searchResult.TotalHits(),
-		"details":paper_sequences})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences})
 	return
 }
