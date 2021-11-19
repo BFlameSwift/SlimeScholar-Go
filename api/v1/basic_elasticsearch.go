@@ -305,3 +305,33 @@ func DoiQueryPaper(c *gin.Context) {
 	return
 }
 
+// MainQueryPaper doc
+// @description es 根据文章标题 与摘要进行模糊搜索
+// @Tags elasticsearch
+// @Param main formData string true "main"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/main [POST]
+func MainQueryPaper(c *gin.Context) {
+	main := c.Request.FormValue("main")
+	boolQuery := elastic.NewBoolQuery()
+	queryAbstract := elastic.NewMatchQuery("paperAbstract", main)
+	queryTitle := elastic.NewMatchQuery("title",main)
+ 	boolQuery.Should(queryAbstract,queryTitle)
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
+	if err != nil {panic(err)}
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this title or abstract query %s not existed", main)
+		return
+	}
+	fmt.Println("search title or abstract", main, "hits :", searchResult.TotalHits())
+	var paper_sequences []interface{} = make([]interface{},0,1000)
+	for _, paper := range searchResult.Hits.Hits {
+		paper_sequences = append(paper_sequences,paper.Source)
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences})
+	return
+}
