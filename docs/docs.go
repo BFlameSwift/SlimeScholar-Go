@@ -762,20 +762,8 @@ var doc = `{
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "{\"success\": false, \"message\": \"用户未登录\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "403": {
                         "description": "{\"success\": false, \"message\": \"评论不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
                         "schema": {
                             "type": "string"
                         }

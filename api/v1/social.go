@@ -203,8 +203,6 @@ func CreateAComment (c *gin.Context){
 // @Param comment_id formData string true "评论id"
 // @Param option formData string true "赞或踩,0-赞,1-踩" 
 // @Success 200 {string} string "{"success": true, "message": "操作成功"}"
-// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
-// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
 // @Router /social/like/comment [POST]
 func LikeorUnlike (c *gin.Context){
