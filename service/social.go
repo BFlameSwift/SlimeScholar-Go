@@ -78,6 +78,28 @@ func CreateAComment(comment *model.Comment) (notCreated bool) {
 	return false
 }
 
+// 根据评论 ID 查询某个评论
+func QueryAComment(commentID uint64) (comment model.Comment, notFound bool) {
+	err := global.DB.Where("comment_id = ?", commentID).First(&comment).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return comment, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return comment, false
+	}
+}
+
+func UpdateCommentLike(comment model.Comment,option uint64)(err error){
+	if option == 0{
+		comment.Like++
+	}else if option == 1{
+		comment.UnLike++
+	}
+	err = global.DB.Save(comment).Error
+	return err
+}
+
 func JsonToPaper(jsonStr string) model.Paper {
 	var item map[string]interface{} = make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonStr), &item)

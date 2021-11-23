@@ -196,3 +196,29 @@ func CreateAComment (c *gin.Context){
 		c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "评论创建成功"})
 	}
 }
+
+// LikeorUnlike doc
+// @description 赞或踩评论
+// @Tags 社交
+// @Param comment_id formData string true "评论id"
+// @Param option formData string true "赞或踩,0-赞,1-踩" 
+// @Success 200 {string} string "{"success": true, "message": "操作成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
+// @Router /social/like/comment [POST]
+func LikeorUnlike (c *gin.Context){
+	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
+	option, _ := strconv.ParseUint(c.Request.FormValue("option"), 0, 64)
+	comment,notFound := service.QueryAComment(commentID)
+	if notFound{
+		c.JSON(403, gin.H{
+			"success": false,
+			"status":  403,
+			"message": "评论不存在",
+		})
+		return
+	}
+	service.UpdateCommentLike(comment,option)
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "操作成功"})
+}

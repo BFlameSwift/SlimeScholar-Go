@@ -733,6 +733,56 @@ var doc = `{
                 }
             }
         },
+        "/social/like/comment": {
+            "post": {
+                "description": "赞或踩评论",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "评论id",
+                        "name": "comment_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "赞或踩,0-赞,1-踩",
+                        "name": "option",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"操作成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"success\": false, \"message\": \"用户未登录\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"评论不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/confirm": {
             "post": {
                 "description": "验证邮箱",
