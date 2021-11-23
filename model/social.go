@@ -15,7 +15,7 @@ type Comment struct {
 	Like        uint64    `gorm:"default:0" json:"like"`
 	UnLike      uint64    `gorm:"default:0" json:"unlike"`
 	UserID      uint64    `gorm:" not null;" json:"user_id"`
-	PaperID     string    `gorm:"size:32" json:"paper_id"`
+	PaperID     string    `gorm:"size:200" json:"paper_id"`
 	CommentTime time.Time `gorm:"type:datetime" json:"comment_time"`
 	Content     string    `gorm:"size:255" json:"content"`
 	OnTop       bool      `gorm:"default:false" json:"on_top"`

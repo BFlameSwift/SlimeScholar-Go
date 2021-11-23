@@ -168,3 +168,31 @@ func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.U
 	}
 	return user
 }
+
+// CreateAComment doc
+// @description 创建评论
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param id formData string true "id"
+// @Param content formData string true "评论内容"
+// @Success 200 {string} string "{"success": true, "message": "评论创建成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Failure 403 {string} string "{"success": false, "message": "评论创建失败"}"
+// @Router /social/create/comment [POST]
+func CreateAComment (c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	VerifyLogin(userID,authorization,c)
+	id := c.Request.FormValue("id")
+	content := c.Request.FormValue("content")
+	comment := model.Comment{UserID:userID, PaperID: id, CommentTime: time.Now(), Content:content}
+	notCreated := service.CreateAComment(&comment)
+	if notCreated{
+		c.JSON(403, gin.H{"success": false,"status":  403, "message": "评论创建失败"})
+	}else{
+		c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "评论创建成功"})
+	}
+}

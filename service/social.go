@@ -69,6 +69,15 @@ func DeleteATag(tagID uint64)(err error){
 	}
 	return nil
 }
+
+//创建评论
+func CreateAComment(comment *model.Comment) (notCreated bool) {
+	if err := global.DB.Create(&comment).Error; err != nil {
+		return true
+	}
+	return false
+}
+
 func JsonToPaper(jsonStr string) model.Paper {
 	var item map[string]interface{} = make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonStr), &item)
