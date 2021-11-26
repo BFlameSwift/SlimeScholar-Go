@@ -17,12 +17,12 @@ type User struct {
 	RegTime       time.Time `gorm:"column:reg_time;type:datetime" json:"reg_time"`
 }
 type Author struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	N_pubs         int    `json:"n_pubs"`
-	N_citation     int    `json:"n_citation"`
-	H_index        int    `json:"h_index"`
-	Papers []string `json:"papers"`
+	AuthorId            string `gorm:"primary_key; not null;" json:"author_id"`
+	Rank                string `gorm:"size :32;" json:"rank"`
+	AuthorName          string `gorm:"size 64" json:"author_name"`
+	AuthorAffiliationId string `gorm:"size :32;" json:"author_affiliation_id"`
+	PaperCount          int    `gorm:"type:int" json:"paper_count"`
+	CitationCount       int    `gorm:"type:int" json:"citation_count"`
 }
 
 //type Author struct {
@@ -37,6 +37,10 @@ type Author struct {
 type Affiliation struct {
 	AffiliationName string `gorm:"type:varchar(150)" json:"affiliation_name"`
 	AffiliationID   string `gorm:"type:varchar(32);primary_key;" json:"affiliation_id"`
+	Rank            string `gorm:"type:varchar(16) json:"rank"`
+	OfficalPage     string `gorm:"type:varchar(64)" json:"offical_page"`
+	PaperCount      int    `gorm:"type:int" json:"paper_count"`
+	CitationCount   int    `gorm:"type:int" json:"citation_count"`
 }
 
 type AuthorConnection struct {

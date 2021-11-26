@@ -22,7 +22,7 @@ func QueryTagList(userID uint64) (tags []model.Tag, not bool) {
 	tags = make([]model.Tag, 0)
 	db := global.DB
 	db = db.Where("user_id=?", userID)
-	err := db.Find(&tags).Error;
+	err := db.Find(&tags).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return tags, true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -31,8 +31,9 @@ func QueryTagList(userID uint64) (tags []model.Tag, not bool) {
 		return tags, false
 	}
 }
+
 //查询用户某一个标签
-func QueryATag(userID uint64, tagName string)(tag model.Tag, notFound bool){
+func QueryATag(userID uint64, tagName string) (tag model.Tag, notFound bool) {
 	db := global.DB
 	db = db.Where("user_id = ?", userID)
 	db = db.Where("tag_name = ?", tagName)
@@ -45,12 +46,13 @@ func QueryATag(userID uint64, tagName string)(tag model.Tag, notFound bool){
 		return tag, false
 	}
 }
+
 //查询用户标签下的所有文章
-func QueryTagPaper(tagID uint64)(papers []model.TagPaper,not bool){
+func QueryTagPaper(tagID uint64) (papers []model.TagPaper, not bool) {
 	papers = make([]model.TagPaper, 0)
 	db := global.DB
 	db = db.Where("tag_id=?", tagID)
-	err := db.Find(&papers).Error;
+	err := db.Find(&papers).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return papers, true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -59,8 +61,9 @@ func QueryTagPaper(tagID uint64)(papers []model.TagPaper,not bool){
 		return papers, false
 	}
 }
+
 //删除标签
-func DeleteATag(tagID uint64)(err error){
+func DeleteATag(tagID uint64) (err error) {
 	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.Tag{}).Error; err != nil {
 		return err
 	}
@@ -90,10 +93,10 @@ func QueryAComment(commentID uint64) (comment model.Comment, notFound bool) {
 	}
 }
 
-func UpdateCommentLike(comment model.Comment,option uint64)(err error){
-	if option == 0{
+func UpdateCommentLike(comment model.Comment, option uint64) (err error) {
+	if option == 0 {
 		comment.Like++
-	}else if option == 1{
+	} else if option == 1 {
 		comment.UnLike++
 	}
 	err = global.DB.Save(comment).Error
@@ -156,7 +159,7 @@ func JsonToPaper(jsonStr string) model.Paper {
 		item["authors"] = make([]map[string]interface{}, 0)
 	}
 	for i, item_author := range item["authors"].([]map[string]interface{}) {
-		author_new := model.Author{Id: item_author["id"].(string), Name: item_author["name"].(string)}
+		author_new := model.Author{AuthorId: item_author["id"].(string), AuthorName: item_author["name"].(string)}
 		authors[i] = author_new
 	}
 	paper.Authors = authors
