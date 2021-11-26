@@ -4,23 +4,22 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/olivere/elastic/v7"
 
+	"golang.org/x/net/context"
 	"io"
 	"os"
-	"strconv"
-
-	"golang.org/x/net/context"
 )
 
 const AUTHOR_DIR = "H:\\Scholar"
-const PAPER_DIR = "H:\\Scholar"
+const PAPER_DIR = "E:\\Paper"
 const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
-const BULK_SIZE = 10000
+const BULK_SIZE = 100000
 
 var fieldsMap map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
@@ -61,8 +60,6 @@ type Paper struct {
 	MagId         string   `json:"mag_id"`
 	Authors       []Author `json:"authors"`
 }
-
-
 
 func JsonToPaper(jsonStr string) Paper {
 	var item map[string]interface{} = make(map[string]interface{})
@@ -135,9 +132,15 @@ func JsonToPaper(jsonStr string) Paper {
 	}
 	return paper
 }
-func proc_paper(file_path string, index string) {
-	//paper 分类情况 Art:6573486 Biology:14546733 Business:4630164 Chemistry:15315107 Computer Science:14677680 Economics:3245978 Engineering:9833270 Environmental Science:3207890 Geography:4940710 Geology:3050448 History:3939537 Materials Science:11375642 Mathematics:5712696 Medicine:48218220 Philosophy:3732071 Physics:8095618 Political Science:7071191 Psychology:8426316 Sociology:5011143
-
+func proc_single_paper(m map[string]interface{}) map[string]interface{} {
+	m["rank"],_ = strconv.ParseInt(m["rank"].(string),10,64)
+	m["citation_count"],_ = strconv.ParseInt(m["citation_count"].(string),10,64)
+	m["reference_count"],_ = strconv.ParseInt(m["reference_count"].(string),10,64)
+	m["paper_id"],_ = strconv.ParseInt(m["paper_id"].(string),10,64)
+	m["year"],_ = strconv.ParseInt(m["year"].(string),10,64)
+	return m
+}
+func proc_file(file_path string, index string) {
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println(file_path + "打开失败")
@@ -152,7 +155,7 @@ func proc_paper(file_path string, index string) {
 	defer fin.Close()
 	client := service.ESClient
 	bulkRequest := client.Bulk()
-	simpleBulkRequest := client.Bulk()
+	//simpleBulkRequest := client.Bulk()
 	reader := bufio.NewReader(fin)
 	for {
 		line, error_read := reader.ReadString('\n')
@@ -160,58 +163,31 @@ func proc_paper(file_path string, index string) {
 			break
 		}
 		json_str := line
-		//TODO 使用python 找到引用的闭包
-		//_ = JsonToPaper(json_str)
-		//if(i<5){fmt.Println(paper)}
-		var m map[string]interface{}
-		_ = json.Unmarshal([]byte(json_str), &m)
-		var fields []interface{} = m["fieldsOfStudy"].([]interface{})
+ 
+		var m map[string]interface{} = make(map[string]interface{})
+		err = json.Unmarshal([]byte(json_str), &m)
+		if err !=nil{panic(err)}
+		reference_count,err := strconv.Atoi(m["reference_count"].(string))
+		if reference_count > max_references_num {
+			max_references_num = reference_count
+		}
+		//m = proc_single_paper(m)
+		// 因为这些数据到es中已经超过了100G 由于io的限制会导致查询的特别慢。。于是杉树一些不必哟啊的属性。 将引用，被引用信息分开存储，减少paper 索引的数据量
+		//m["comment_num"] ,m["download_num"],m["collect_num"],m["browser_num"]= 0,0,0,0
+		//TODO 存到数据库中吧
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["paper_id"].(string)).Doc(m)
+		//simpleBulkRequest.Add(elastic.NewBulkIndexRequest().Index("simple_paper").Id(m["id"].(string)).Doc(service.SimplifyPaper(m)))
 
-		for _, field := range fields {
-			fieldsMap[field.(string)] += 1
-			if field.(string) == "Computer Science" {
-				m["citation_num"] = len(m["inCitations"].([]interface{}))
-				if m["citation_num"].(int) > max_citation_num {
-					max_citation_num = m["citation_num"].(int)
-				}
-				reference_num := len(m["outCitations"].([]interface{}))
-				m["reference_num"] = reference_num
-				if reference_num > max_references_num {
-					max_references_num = reference_num
-				}
-				// 因为这些数据到es中已经超过了100G 由于io的限制会导致查询的特别慢。。于是杉树一些不必哟啊的属性。 将引用，被引用信息分开存储，减少paper 索引的数据量
-				delete(m, "inCitations") // 去掉被引用的信息，只保留引用数目，减少空间]
-				delete(m, "magId")
-				delete(m, "pmid")
-				delete(m, "entities")
-				delete(m, "pmid")
-				delete(m, "entities")
-				delete(m, "sources") //删除各种标识只保留id就好
-				delete(m, "s2Url")   /*删除原文url 可以直接用id生成  */
-				delete(m, "doiUrl")  // 同理可以直接根据doi生成
-
-				doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
-
-				bulkRequest.Add(doc)
-				doc = elastic.NewBulkIndexRequest().Index("simple_paper").Id(m["id"].(string)).Doc(service.SimplifyPaper(m))
-				simpleBulkRequest.Add(doc)
-				if i%BULK_SIZE == 0 {
-					response, err := bulkRequest.Do(context.Background())
-					if err != nil {
-						panic(err)
-					}
-					response, err = simpleBulkRequest.Do(context.Background())
-					if err != nil || len(response.Failed()) > 0 {
-						panic(err)
-					}
-					success_num += len(response.Succeeded())
-					fail_num += len(response.Failed())
-					fmt.Println("success_num", success_num, "fail_num", fail_num)
-
-				}
-				break // 一次数据只处理一次
-
+		bulkRequest.Add(doc)
+		if i%BULK_SIZE == 0 {
+			response, err := bulkRequest.Do(context.Background())
+			if err != nil {
+				panic(err)
 			}
+			success_num += len(response.Succeeded())
+			fail_num += len(response.Failed())
+			fmt.Println("success_num", success_num, "fail_num", fail_num)
+
 		}
 
 		if error_read != nil {
@@ -227,15 +203,15 @@ func proc_paper(file_path string, index string) {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 	response, err := bulkRequest.Do(context.Background())
+
 	if err != nil {
 		panic(err)
 	}
-	response, err = simpleBulkRequest.Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
+
 	success_num += len(response.Succeeded())
 	fail_num += len(response.Failed())
+	//response,err = simpleBulkRequest.Do(context.Background())
+	if(len(response.Failed())>0){panic(err)}
 	if fail_num > 0 {
 		fmt.Println("error:")
 	}
@@ -313,7 +289,7 @@ func proc_author(file_path string, index string) {
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
 	fmt.Println(fieldsMap)
 }
-func proc_file(file_path string, index string) {
+func proc_journal(file_path string, index string) {
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println(file_path + "打开失败")
@@ -342,7 +318,7 @@ func proc_file(file_path string, index string) {
 		_ = json.Unmarshal([]byte(json_str), &m)
 		//if len(m["author_id"].([]interface{})) == 0{continue} // 数据501行中存在"author_id": [],  过滤
 		//m["id"] = m["id"].([]interface{})[0].(string)
-		doc := elastic.NewBulkIndexRequest().Index(index).Id(strconv.Itoa(int(m["id"].(float64)))).Doc(m)
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
 			response, err := bulkRequest.Do(context.Background())
@@ -351,6 +327,7 @@ func proc_file(file_path string, index string) {
 			}
 			success_num += len(response.Succeeded())
 			fail_num += len(response.Failed())
+			if fail_num > 0{fmt.Println((response.Failed()[0].Error))}
 			fmt.Println("success_num", success_num, "fail_num", fail_num)
 
 		}
@@ -381,37 +358,44 @@ func proc_file(file_path string, index string) {
 func load_paper() {
 	//cluster_block_exception index [paper] blocked by: [TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark, index has read-only-allow-delete block
 	//考虑磁盘空间问题 ：方法：curl -XPUT -H "Content-Type: application/json" http://10.2.7.70:9204/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
-	// 本地固态硬盘速度大致为11h ，cspaper 	36.7gb simple paper 18.4gb
+	//max_citation_num 220497 max_references_num 26676
 	service.Init()
-	for i := 0; i < 6000; i++ {
-		var str string
-		if i < 1000 {
-			str = fmt.Sprintf("%03d", i)
-		} else {
-			str = strconv.Itoa(i)
-		}
-		fmt.Println(str)
-		proc_paper(PAPER_DIR+"\\"+PAPER_FILE_PREFIX+str, "paper")
-
-	}
+	proc_file(PAPER_DIR+"\\myPapers.txt", "paper")
+	//for i := 0; i < 6000; i++ {
+	//	var str string
+	//	if i < 1000 {
+	//		str = fmt.Sprintf("%03d", i)
+	//	} else {
+	//		str = strconv.Itoa(i)
+	//	}
+	//	fmt.Println(str)
+	//	proc_file(PAPER_DIR+"\\"+PAPER_FILE_PREFIX+str, "paper")
+	//
+	//}
 }
 func load_authors() {
-	// cs作者数量大致是千万级：10151013 建议bulk使用 十万 ：单位数据量较小十分钟即可存完（不过处理原始数据还是要四五小时的）
 	service.Init()
 	proc_author("H:\\Scholarauthors.txt", "author")
 }
 func load_journal() {
 	service.Init()
-	proc_file("H:\\Scholarjournal.txt", "journal")
+	proc_journal("H:\\Scholarjournal.txt", "journal")
 }
 func load_incitations() {
 	service.Init()
-	proc_file("H:\\inCitations.txt", "inCitations")
+	proc_journal("H:\\ScholarinCitations.txt", "incitations")
+}
+func print1() {
+	for i := 0; i < 1; i++ {
+		fmt.Printf("%s\n", fmt.Sprintf("%04d", i))
+	}
 }
 func main() {
-	//load_paper()
+	service.Init()
+	load_paper()
 	//print1()
-	load_authors()
+	//load_authors()
+
 	//load_journal()
 	//load_incitations()
 }
