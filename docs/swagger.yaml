@@ -263,6 +263,50 @@ paths:
             type: string
       tags:
       - template
+  /social/create/comment:
+    post:
+      description: 创建评论
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: 评论内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "评论创建成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "评论创建失败"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /social/create/tag:
     post:
       description: 新建标签
@@ -416,6 +460,31 @@ paths:
             type: string
       security:
       - Authorization: []
+      tags:
+      - 社交
+  /social/like/comment:
+    post:
+      description: 赞或踩评论
+      parameters:
+      - description: 评论id
+        in: formData
+        name: comment_id
+        required: true
+        type: string
+      - description: 赞或踩,0-赞,1-踩
+        in: formData
+        name: option
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "操作成功"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "评论不存在"}'
+          schema:
+            type: string
       tags:
       - 社交
   /user/confirm:
