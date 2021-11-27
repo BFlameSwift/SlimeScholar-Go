@@ -49,6 +49,7 @@ func GetPaper(c *gin.Context) {
 		panic(err)
 	}
 	paper["authors"] = service.ParseRelPaperAuthor(paper_reference_rel_map)["rel"]
+	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
