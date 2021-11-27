@@ -140,11 +140,11 @@ func make_rel_paper_author(li []string) map[string]interface{} {
 	rel_map["afname"] = affiliation_name
 	return rel_map
 }
-func make_rel_paper_paper(li []string) map[string]interface{} {
+func make_rel_paper_paper(li []string, other_type string) map[string]interface{} {
 	paper_id, reference_id := li[0], li[1]
 	rel_map := make(map[string]interface{})
 	rel_map["pid"] = paper_id
-	rel_map["rid"] = reference_id
+	rel_map[other_type] = reference_id
 	return rel_map
 }
 
@@ -158,11 +158,14 @@ func make_multi_map(lines []string, mytype string, main_type, main_id string, ot
 		if mytype == "rel_paper_author" {
 			signal_map = make_rel_paper_author(line_list)
 			delete(signal_map, "pid")
-		} else if mytype == "rel_paper_reference" {
-			signal_map = make_rel_paper_paper(line_list)
+		} else if mytype == "rel_paper_reference" || mytype == "rel_paper_field" {
+			signal_map = make_rel_paper_paper(line_list, other_type)
 			delete(signal_map, "pid")
 		}
-
+		if len(signal_map) == 1 {
+			other = append(other, signal_map[other_type])
+			continue
+		}
 		other = append(other, signal_map)
 	}
 	multi_map[other_type] = other
@@ -256,26 +259,6 @@ func make_json(filename string, mytype string, is_multi bool, main_type string) 
 	json_list = make([]string, 0, 1000000)
 	fmt.Println(time.Now(), i, line_num)
 }
-func make_multi_json(lines []string, mytype string, main_type, main_id string, other_type string) map[string]interface{} {
-	multi_map := make(map[string]interface{})
-	multi_map[main_type] = main_id
-	other := make([]interface{}, 0, 10010)
-	for _, line := range lines {
-		line_list := strings.Split(line, "\t")
-		signal_map := make(map[string]interface{})
-		if mytype == "rel_paper_author" {
-			signal_map = make_rel_paper_author(line_list)
-			delete(signal_map, "paper_id")
-		} else if main_type == "rel_paper_reference" {
-			signal_map = make_rel_paper_paper(line_list)
-			// delete(signal_map, "paper_id")
-		}
-
-		other = append(other, signal_map)
-	}
-	multi_map[other_type] = other
-	return multi_map
-}
 
 func make_multi_rel(filename string, mytype string, is_multi bool, main_type string) {
 	file, err := os.Open(filename)
@@ -343,9 +326,9 @@ func main() {
 
 	// make_json("Papers.txt", "paper",false,"paper_id")
 	fmt.Println(time.Now(), "load paper end")
-	// make_json("Authors.txt", "author",false,"author_id")
-	make_multi_rel("PaperAuthorAffiliations.txt", "rel_paper_author", true, "paper_id")
+	// make_json("Authors.txt", "author",false,"author_id")	make_multi_rel("PaperAuthorAffiliations.txt", "rel_paper_author", true, "paper_id")//2021-11-26 22:51:14.0211883 +0800 CST m=+11773.545295501 269412162 731587019
 	make_multi_rel("PaperReferences.txt", "rel_paper_reference", true, "paper_id")
 	fmt.Println(time.Now())
-
+	make_multi_rel("PaperFieldsOfStudy.txt", "rel_paper_field", true, "paper_id")
+	make_multi_rel("PaperCitationContexts.txt", "rel_paper_citation", true, "paper_id")
 }
