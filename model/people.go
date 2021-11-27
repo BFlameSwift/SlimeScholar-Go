@@ -25,22 +25,12 @@ type Author struct {
 	CitationCount       int    `gorm:"type:int" json:"citation_count"`
 }
 
-//type Author struct {
-//	AuthorID          string `gorm:"type:varchar(32);primary_key;" json:"author_id"`
-//	AuthorName        string `gorm:"type:varchar(100)" json:"author_name"`
-//	AffiliationName   string `gorm:"type:varchar(150)" json:"affiliation_name"`
-//	PublishNumber     int    `gorm:"default:0" ,json:"publish_number"`
-//	CitationNumber    int    `gorm:"default:0" ,json:"citation_number"`
-//	Position          string `gorm:"type:varchar(32)" ,json:"position"` // 职位
-//	ResearchInterests string `gorm:"type:varchar(64)" ,json:"research_interests"`
-//}
 type Affiliation struct {
 	AffiliationName string `gorm:"type:varchar(150)" json:"affiliation_name"`
-	AffiliationID   string `gorm:"type:varchar(32);primary_key;" json:"affiliation_id"`
-	Rank            string `gorm:"type:varchar(16) json:"rank"`
-	OfficalPage     string `gorm:"type:varchar(64)" json:"offical_page"`
-	PaperCount      int    `gorm:"type:int" json:"paper_count"`
-	CitationCount   int    `gorm:"type:int" json:"citation_count"`
+	AffiliationID   string `gorm:"type:varchar(32);primary_key" json:"affiliation_id"`
+	OfficalPage     string `gorm:"type:varchar(86)" json:"offical_page"`
+	PaperCount      int    `gorm:"type:integer" json:"paper_count"`
+	CitationCount   int    `gorm:"type:integer" json:"citation_count"`
 }
 
 type AuthorConnection struct {

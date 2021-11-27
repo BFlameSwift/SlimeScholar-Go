@@ -43,13 +43,16 @@ func InitMySQL() {
 		&model.Affiliation{},
 		&model.AuthorConnection{},
 		&model.Comment{},
+		&model.Conference{},
 		&model.Follow{},
 		&model.Like{},
 		&model.Message{},
-		//&model.Paper{},
+		&model.Paper{},
 		&model.BrowsingHistory{},
 		&model.Tag{},
 		&model.TagPaper{},
+
 		// 生成新的数据库表
+		&model.PaperReference{},
 	)
 }

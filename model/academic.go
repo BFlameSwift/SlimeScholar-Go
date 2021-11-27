@@ -3,24 +3,21 @@ package model
 // 由于相关数据量过大，数据可能会放在elasti search上，此处暂时保存一下
 
 type Paper struct {
-	Id            string   `json:"id"`
-	Title         string   `json:"title"`
-	Abstract      string   `json:"paperAbstrac"`
-	Url           string   `json:"url"`
-	PdfUrls       []string `json:"pdf_urls"`
-	S2PdfUrl      string   `json:"s2pdf_urls"`
-	InCitations   []string `json:"in_citations"`
-	OutCitations  []string `json:"out_citations"`
-	FieldsOfStudy []string `json:"fieldsOfStudy"`
-	Year          int      `json:"year"`
-	Venue         string   `json:"venue"`
-	JournalName   string   `json:"journal_name"`
-	JournalVolume string   `json:"journal_volume"`
-	JournalPages  string   `json:"journal_pages"`
-	Doi           string   `json:"doi"`
-	DoiUrl        string   `json:"doi_url"`
-	MagId         string   `json:"mag_id"`
-	Authors       []Author `json:"authors"`
+	PaperId       string `gorm:"type:varchar(32); primary_key;" json: "paper_id"`
+	Rank          int    `gorm:"type:integer; " json: "rank"`
+	Doi           string `gorm:"type:varchar(64)" json:"doi"`
+	DocType       string `gorm:"type: varchar(32)" json:"doc_type`
+	title         string `gorm:"type: varchar(32)" json:"title"`
+	BookTitle     string `gorm:"type: varchar(32)" json: "book_title"`
+	Year          int    `gorm:"type: integer; " json:"year"`
+	Date          string `gorm:"type: varchar(16)" json:"date"`
+	JournalId     string `gorm:"type: varchar(32)" json:"journal_id"`
+	ConferenceId  string `gorm:"type: varchar(32)" json:"conference_id"`
+	Volume        string `gorm:"type: varchar(16)" json:" volume"`
+	FirstPage     string `gorm:"type: varchar(8)" json:"first_page"`
+	LastPage      string `gorm:"type:varchar(8)" json:"last_page"`
+	PaperCount    int    `gorm:"type:integer" json:"paper_count"`
+	CitationCount int    `gorm:"type:integer" json:"citation_count"`
 }
 
 type PaperReference struct {
