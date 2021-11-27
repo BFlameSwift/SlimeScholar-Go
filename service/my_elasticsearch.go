@@ -247,6 +247,7 @@ func Aggregation(Params map[string]string) *elastic.SearchResult {
 func GetPaperById(id string) {
 	// TODO
 }
+
 // 匹配搜索，非完全匹配按照index和字段搜索
 func QueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	boolQuery := elastic.NewBoolQuery()
@@ -271,24 +272,29 @@ func QueryByField(index string, field string, content string, page int, size int
 	return searchResult
 }
 
-func MatchPhraseQuery(index string ,field string,content string,page int,size int) *elastic.SearchResult{
-	query := elastic.NewMatchPhraseQuery(field,content)
+func MatchPhraseQuery(index string, field string, content string, page int, size int) *elastic.SearchResult {
+	query := elastic.NewMatchPhraseQuery(field, content)
 	searchResult, err := Client.Search().Index("paper").Query(query).From(0).Size(10).Do(context.Background())
-	if err != nil {panic(err)}
+	if err != nil {
+		panic(err)
+	}
 	return searchResult
 }
+
 // 通过[]string id—list 来获取结果，其中未命中的结果返回为nil 表示此id文件中不存在
 func IdsGetPapers(id_list []string, index string) map[string]interface{} {
 	mul_item := Client.MultiGet()
 	//fmt.Println("len!!!!",len(id_list))
-	for _,id := range(id_list){
-		if len(id) == 0{ break}
+	for _, id := range id_list {
+		if len(id) == 0 {
+			break
+		}
 		//res,err := Client.Get().Index(index).Id(id).Do(context.Background())
 		q := elastic.NewMultiGetItem().Index(index).Id(id)
 		mul_item.Add(q)
 	}
 	//response, err := Client.Search().Index(index).Query(elastic.NewIdsQuery().Ids(id_list...)).Size(len(id_list)).Do(context.Background())
-	response,err := mul_item.Do(context.Background())
+	response, err := mul_item.Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -314,7 +320,24 @@ func SimplifyPaper(m map[string]interface{}) map[string]interface{} {
 	return ret
 }
 
-
+func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
+	var inter []interface{} = m["rel"].([]interface{})
+	// ret_arr := make([]interface{}, 0, len(inter))
+	ret_map := make(map[string]interface{})
+	for _, v := range inter {
+		v_map := v.(map[string]interface{})
+		v_map["author_id"] = v_map["aid"]
+		v_map["author_name"] = v_map["aname"]
+		v_map["affiliation_id"] = v_map["afid"]
+		v_map["affiliation_name"] = v_map["afname"]
+		delete(v_map, "aid")
+		delete(v_map, "afid")
+		delete(v_map, "aname")
+		delete(v_map, "afname")
+	}
+	ret_map["rel"] = inter
+	return ret_map
+}
 
 func main() {
 	Init()

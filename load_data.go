@@ -318,7 +318,7 @@ func proc_journal(file_path string, index string) {
 		_ = json.Unmarshal([]byte(json_str), &m)
 		//if len(m["author_id"].([]interface{})) == 0{continue} // 数据501行中存在"author_id": [],  过滤
 		//m["id"] = m["id"].([]interface{})[0].(string)
-		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
+		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["paper_id"].(string)).Doc(m)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
 			response, err := bulkRequest.Do(context.Background())
@@ -385,6 +385,14 @@ func load_incitations() {
 	service.Init()
 	proc_journal("H:\\ScholarinCitations.txt", "incitations")
 }
+func load_paper_author(){
+	service.Init()
+	proc_journal("H:\\myPaperAuthorAffiliations.txt","paper_author")
+}
+func load_paper_rel(){
+	service.Init()
+	proc_journal("H:\\myPaperReferences.txt","reference")
+}
 func print1() {
 	for i := 0; i < 1; i++ {
 		fmt.Printf("%s\n", fmt.Sprintf("%04d", i))
@@ -392,10 +400,13 @@ func print1() {
 }
 func main() {
 	service.Init()
-	load_paper()
+	//load_paper()
+
 	//print1()
 	//load_authors()
 
 	//load_journal()
 	//load_incitations()
+	load_paper_rel()
+	//load_paper_author()
 }
