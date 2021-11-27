@@ -338,6 +338,22 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	ret_map["rel"] = inter
 	return ret_map
 }
+func PaperGetAuthors(paper_id string ) map[string]interface{} {
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"] = "paper", paper_id
+	map_param["index"] = "paper_author"
+	paper_authors, err := Gets(map_param)
+	if err != nil {
+		panic(err)
+	}
+
+	paper_reference_rel_map := make(map[string]interface{})
+	err = json.Unmarshal(paper_authors.Source, &paper_reference_rel_map)
+	if err != nil {
+		panic(err)
+	}
+	return paper_reference_rel_map
+}
 
 func main() {
 	Init()

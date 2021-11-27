@@ -35,21 +35,14 @@ func GetPaper(c *gin.Context) {
 	var paper = make(map[string]interface{})
 	_ = json.Unmarshal(body_byte, &paper)
 	// 查找信息
-	map_param["index"] = "paper_author"
-	// reference_msg := make(map[string]interface{})
 
-	paper_authors, err := service.Gets(map_param)
-	if err != nil {
-		panic(err)
-	}
 
-	paper_reference_rel_map := make(map[string]interface{})
-	err = json.Unmarshal(paper_authors.Source, &paper_reference_rel_map)
-	if err != nil {
-		panic(err)
-	}
-	paper["authors"] = service.ParseRelPaperAuthor(paper_reference_rel_map)["rel"]
+	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
+	paper["doi_url"] = ""
+	if paper["doi"].(string) != ""{
+		paper["doi_url"]  = "https://dx.doi.org/"+paper["doi"].(string)
+	} // 原文链接 100%
 
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
@@ -122,7 +115,11 @@ func TitleQueryPaper(c *gin.Context) {
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	for _, paper := range searchResult.Hits.Hits {
-		paper_sequences = append(paper_sequences, paper.Source)
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_map["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(paper_map["paper_id"].(string)))["rel"]
+		paper_sequences = append(paper_sequences, paper_map)
 		//paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
 	}
 	//body_byte,_ := json.Marshal(ret.Source)
