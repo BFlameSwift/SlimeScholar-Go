@@ -112,7 +112,7 @@ func GetAuthor(c *gin.Context) {
 // @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
 	title := c.Request.FormValue("title")
-	searchResult := service.QueryByField("paper", "title", title, 1, 10)
+	searchResult := service.QueryByField("paper", "paper_title", title, 1, 10)
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -177,32 +177,32 @@ func NameQueryAuthor(c *gin.Context) {
 	return
 }
 
-// AbstractQueryPaper doc
-// @description es 根据abstract查询论文
-// @Tags elasticsearch
-// @Param paperAbstract formData string true "paperAbstract"
-// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
-// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// @Router /es/query/paper/abstract [POST]
-func AbstractQueryPaper(c *gin.Context) {
-	abstract := c.Request.FormValue("paperAbstract")
-	searchResult := service.QueryByField("paper", "paperAbstract", abstract, 1, 10)
+// // AbstractQueryPaper doc
+// // @description es 根据abstract查询论文
+// // @Tags elasticsearch
+// // @Param paperAbstract formData string true "paperAbstract"
+// // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
+// // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// // @Router /es/query/paper/abstract [POST]
+// func AbstractQueryPaper(c *gin.Context) {
+// 	abstract := c.Request.FormValue("paperAbstract")
+// 	searchResult := service.QueryByField("paper", "paperAbstract", abstract, 1, 10)
 
-	if searchResult.TotalHits() == 0 {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
-		fmt.Printf("this abstract query %s not existed", abstract)
-		return
-	}
-	fmt.Println("search abstract", abstract, "hits :", searchResult.TotalHits())
-	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		paper_sequences = append(paper_sequences, paper.Source)
-	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences})
-	return
-}
+// 	if searchResult.TotalHits() == 0 {
+// 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+// 		fmt.Printf("this abstract query %s not existed", abstract)
+// 		return
+// 	}
+// 	fmt.Println("search abstract", abstract, "hits :", searchResult.TotalHits())
+// 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+// 	for _, paper := range searchResult.Hits.Hits {
+// 		paper_sequences = append(paper_sequences, paper.Source)
+// 	}
+// 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+// 		"details": paper_sequences})
+// 	return
+// }
 
 // DoiQueryPaper doc
 // @description es doi查询论文 精确搜索，结果要么有要么没有
