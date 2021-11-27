@@ -237,43 +237,6 @@ var doc = `{
                 }
             }
         },
-        "/es/query/paper/abstract": {
-            "post": {
-                "description": "es 根据abstract查询论文",
-                "tags": [
-                    "elasticsearch"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "paperAbstract",
-                        "name": "paperAbstract",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"论文不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "{\"success\": false, \"message\": \"错误500\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/es/query/paper/doi": {
             "post": {
                 "description": "es doi查询论文 精确搜索，结果要么有要么没有",
