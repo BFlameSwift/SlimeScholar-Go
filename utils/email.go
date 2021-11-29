@@ -58,3 +58,21 @@ func SendMail(mailTo []string, subject string, body string) error {
 	return err
 
 }
+
+func SendReplyEmail(themail string) {
+	subject := "您在Slime学术成果分享平台的评论收到了一条回复"
+	// 邮件正文
+	mailTo := []string{
+		themail,
+	}
+	//TODO:发送文献链接
+	body := "您评论的文章链接为" + "https://readpaper.com/paper/3001118548"
+	err := SendMail(mailTo, subject, body)
+	if err != nil {
+		log.Println(err)
+		fmt.Println("send fail")
+		return
+	}
+	fmt.Println("sendRegisterEmail successfully")
+	return
+}

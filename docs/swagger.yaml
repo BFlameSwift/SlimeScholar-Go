@@ -487,6 +487,46 @@ paths:
             type: string
       tags:
       - 社交
+  /social/reply/comment:
+    post:
+      description: 回复评论
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: 评论id
+        in: formData
+        name: comment_id
+        required: true
+        type: string
+      - description: 回复内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "回复成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /user/confirm:
     post:
       description: 验证邮箱
