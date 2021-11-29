@@ -69,12 +69,32 @@ func QueryTagPaper(tagID uint64) (papers []model.TagPaper, not bool) {
 	}
 }
 
+//精确查询标签文章
+func QueryATagPaper(tagID uint64, paperID string) (tagPaper model.TagPaper, not bool) {
+	err := global.DB.Where("tag_id = ? AND paper_id = ?", tagID,paperID).First(&tagPaper).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return tagPaper, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return tagPaper, false
+	}
+}
+
 //删除标签
 func DeleteATag(tagID uint64) (err error) {
 	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.Tag{}).Error; err != nil {
 		return err
 	}
 	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.TagPaper{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+//删除标签文章
+func DeleteATagPaper(ID uint64) (err error) {
+	if err = global.DB.Where("id = ?", ID).Delete(model.TagPaper{}).Error; err != nil {
 		return err
 	}
 	return nil

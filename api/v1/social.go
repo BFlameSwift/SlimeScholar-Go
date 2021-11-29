@@ -25,7 +25,10 @@ import (
 func GetUserTag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	_, err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 	
 	tags,notFoundTags := service.QueryTagList(userID)
 	if notFoundTags{
@@ -60,7 +63,10 @@ func GetUserTag(c *gin.Context) {
 func GetTagPaper(c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	_, err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID,tagName)
@@ -106,7 +112,10 @@ func GetTagPaper(c *gin.Context){
 func CreateATag (c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user := VerifyLogin(userID,authorization,c)
+	user,err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 	
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID,tagName)
@@ -139,7 +148,10 @@ func CreateATag (c *gin.Context){
 func DeleteATag (c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	_, err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 	
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID,tagName)
@@ -165,7 +177,10 @@ func DeleteATag (c *gin.Context){
 func CollectAPaper(c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user := VerifyLogin(userID,authorization,c)
+	user, err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 
 	id := c.Request.FormValue("id")
 	tagName := c.Request.FormValue("tag_name")
@@ -182,13 +197,42 @@ func CollectAPaper(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "收藏成功"})
 }
 
-func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User){
+// DeleteATagPaper doc
+// @description 删除某标签下的文章
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param id formData string true "id"
+// @Param tag_name formData string true "标签名称"
+// @Success 200 {string} string "{"success": true, "message": "删除成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/delete/tag/paper [POST]
+func DeleteATagPaper(c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	_,err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
+
+	id := c.Request.FormValue("id")
+	tagName := c.Request.FormValue("tag_name")
+	
+	tag, _ := service.QueryATag(userID,tagName)
+	tagPaper, _ := service.QueryATagPaper(tag.TagID,id)
+	service.DeleteATagPaper(tagPaper.ID)
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "删除成功"})
+}
+
+func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User, err bool){
 	user, notFoundUserByID := service.QueryAUserByID(userID)
 	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
 
 	if authorization == "" || !verify_answer {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
-		return user
+		return user,true
 	}
 
 	if notFoundUserByID {
@@ -197,9 +241,9 @@ func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.U
 			"status":  404,
 			"message": "用户ID不存在",
 		})
-		return user
+		return user,true
 	}
-	return user
+	return user,false
 }
 
 // CreateAComment doc
@@ -218,7 +262,11 @@ func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.U
 func CreateAComment (c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	_,err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
+
 	id := c.Request.FormValue("id")
 	content := c.Request.FormValue("content")
 	comment := model.Comment{UserID:userID, PaperID: id, CommentTime: time.Now(), Content:content}
@@ -269,7 +317,10 @@ func LikeorUnlike (c *gin.Context){
 func ReplyAComment(c *gin.Context)  {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user := VerifyLogin(userID,authorization,c)
+	user,err := VerifyLogin(userID,authorization,c)
+	if err{
+		return
+	}
 
 	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,_ := service.QueryAComment(comment_id)
