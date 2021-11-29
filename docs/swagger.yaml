@@ -397,6 +397,7 @@ paths:
       - description: 标签名称
         in: formData
         name: tag_name
+        required: true
         type: string
       responses:
         "200":

@@ -635,7 +635,8 @@ var doc = `{
                         "type": "string",
                         "description": "标签名称",
                         "name": "tag_name",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
