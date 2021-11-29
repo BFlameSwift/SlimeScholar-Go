@@ -7,6 +7,7 @@ import (
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -219,4 +220,35 @@ func LikeorUnlike (c *gin.Context){
 	}
 	service.UpdateCommentLike(comment,option)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "操作成功"})
+}
+
+// ReplyAComment doc
+// @description 回复评论
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param comment_id formData string true "评论id"
+// @Param content formData string true "回复内容"
+// @Success 200 {string} string "{"success": true, "message": "回复成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/reply/comment [POST]
+func ReplyAComment(c *gin.Context)  {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	VerifyLogin(userID,authorization,c)
+
+	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
+	comment,_ := service.QueryAComment(comment_id)
+
+	content := c.Request.FormValue("content")
+	reply := model.Comment{UserID:userID, PaperID:comment.PaperID, 
+		CommentTime:time.Now(), Content:content, RelateID:comment_id}
+	service.CreateAComment(&reply)
+
+	user, _ := service.QueryAUserByID(comment.UserID)
+	
+	utils.SendReplyEmail(user.Email)
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "回复成功"})
 }

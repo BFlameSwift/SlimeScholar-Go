@@ -19,6 +19,7 @@ type Comment struct {
 	CommentTime time.Time `gorm:"type:datetime" json:"comment_time"`
 	Content     string    `gorm:"size:255" json:"content"`
 	OnTop       bool      `gorm:"default:false" json:"on_top"`
+	RelateID	uint64	  `gorm:"default:0" json:"relate_id"`
 }
 
 type Like struct { // 点赞
