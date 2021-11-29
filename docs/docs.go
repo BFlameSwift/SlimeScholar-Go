@@ -274,43 +274,6 @@ var doc = `{
                 }
             }
         },
-        "/es/query/paper/main": {
-            "post": {
-                "description": "es 根据文章标题 与摘要进行模糊搜索",
-                "tags": [
-                    "elasticsearch"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "main",
-                        "name": "main",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"论文不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "{\"success\": false, \"message\": \"错误500\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/es/query/paper/title": {
             "post": {
                 "description": "es 根据title查询论文",
@@ -378,6 +341,67 @@ var doc = `{
                     },
                     "500": {
                         "description": "{\"success\": false, \"message\": \"创建错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/social/collect/paper": {
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "收藏文献",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签名称",
+                        "name": "tag_name",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"收藏成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"success\": false, \"message\": \"用户未登录\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1123,5 +1147,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

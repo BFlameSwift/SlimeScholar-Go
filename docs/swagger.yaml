@@ -167,30 +167,6 @@ paths:
             type: string
       tags:
       - elasticsearch
-  /es/query/paper/main:
-    post:
-      description: es 根据文章标题 与摘要进行模糊搜索
-      parameters:
-      - description: main
-        in: formData
-        name: main
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"success": true, "message": "获取成功"}'
-          schema:
-            type: string
-        "404":
-          description: '{"success": false, "message": "论文不存在"}'
-          schema:
-            type: string
-        "500":
-          description: '{"success": false, "message": "错误500"}'
-          schema:
-            type: string
-      tags:
-      - elasticsearch
   /es/query/paper/title:
     post:
       description: es 根据title查询论文
@@ -239,6 +215,45 @@ paths:
             type: string
       tags:
       - template
+  /social/collect/paper:
+    post:
+      description: 收藏文献
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: 标签名称
+        in: formData
+        name: tag_name
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "收藏成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /social/create/comment:
     post:
       description: 创建评论

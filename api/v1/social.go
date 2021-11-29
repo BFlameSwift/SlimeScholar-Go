@@ -150,6 +150,38 @@ func DeleteATag (c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "标签删除成功"})
 }
 
+// CollectAPaper doc
+// @description 收藏文献
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param id formData string true "id"
+// @Param tag_name formData string false "标签名称"
+// @Success 200 {string} string "{"success": true, "message": "收藏成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/collect/paper [POST]
+func CollectAPaper(c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	user := VerifyLogin(userID,authorization,c)
+
+	id := c.Request.FormValue("id")
+	tagName := c.Request.FormValue("tag_name")
+	if tagName == ""{
+		tagName = "默认"
+	}
+	tag,notFound := service.QueryATag(userID,tagName)
+	if notFound{
+		tag = model.Tag{TagName:tagName, UserID: userID, CreateTime: time.Now(), Username:user.Username}
+		service.CreateATag(&tag)
+	}
+	tagPaper := model.TagPaper{TagID:tag.TagID, TagName:tag.TagName, PaperID:id, CreateTime:time.Now()}
+	service.CreateATagPaper(&tagPaper)
+	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "收藏成功"})
+}
+
 func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User){
 	user, notFoundUserByID := service.QueryAUserByID(userID)
 	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
@@ -237,7 +269,7 @@ func LikeorUnlike (c *gin.Context){
 func ReplyAComment(c *gin.Context)  {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	user := VerifyLogin(userID,authorization,c)
 
 	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,_ := service.QueryAComment(comment_id)
@@ -246,8 +278,6 @@ func ReplyAComment(c *gin.Context)  {
 	reply := model.Comment{UserID:userID, PaperID:comment.PaperID, 
 		CommentTime:time.Now(), Content:content, RelateID:comment_id}
 	service.CreateAComment(&reply)
-
-	user, _ := service.QueryAUserByID(comment.UserID)
 	
 	utils.SendReplyEmail(user.Email)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "回复成功"})

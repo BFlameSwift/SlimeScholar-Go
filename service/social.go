@@ -16,6 +16,14 @@ func CreateATag(tag *model.Tag) (err error) {
 	return nil
 }
 
+//收藏文章
+func CreateATagPaper(tagPaper *model.TagPaper) (err error) {
+	if err = global.DB.Create(&tagPaper).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 //查询用户所有标签
 func QueryTagList(userID uint64) (tags []model.Tag, not bool) {
 	tags = make([]model.Tag, 0)
