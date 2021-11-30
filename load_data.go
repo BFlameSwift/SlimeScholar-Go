@@ -250,10 +250,13 @@ func proc_author(file_path string, index string) {
 		//if(i<5){fmt.Println(paper)}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
-		if len(m["author_id"].([]interface{})) == 0 {
-			continue
-		} // 数据501行中存在"author_id": [],  过滤
-		m["author_id"] = m["author_id"].([]interface{})[0].(string)
+		//if len(m["author_id"].(interface{})) == 0 {
+		//	continue
+		//} // 数据501行中存在"author_id": [],  过滤
+		//m["author_id"] = m["author_id"].([]interface{})[0].(string)
+		m["paper_count"] ,_= strconv.Atoi(m["paper_count"].(string))
+		m["citation_count"] ,_= strconv.Atoi(m["citation_count"].(string))
+		m["rank"] ,_= strconv.Atoi(m["rank"].(string))
 		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["author_id"].(string)).Doc(m)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
@@ -375,7 +378,7 @@ func load_paper() {
 }
 func load_authors() {
 	service.Init()
-	proc_author("H:\\Scholarauthors.txt", "author")
+	proc_author("H:\\myAuthors.txt", "author")
 }
 func load_journal() {
 	service.Init()
@@ -408,5 +411,5 @@ func main() {
 	//load_journal()
 	//load_incitations()
 	load_paper_rel()
-	//load_paper_author()
+	//load_paper_a uthor()
 }
