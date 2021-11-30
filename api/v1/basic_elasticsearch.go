@@ -36,7 +36,6 @@ func GetPaper(c *gin.Context) {
 	_ = json.Unmarshal(body_byte, &paper)
 	// 查找信息
 
-
 	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 	paper["doi_url"] = ""
@@ -124,7 +123,7 @@ func TitleQueryPaper(c *gin.Context) {
 	}
 	paper_author_map := service.IdsGetPapers(paper_ids,"paper_author")
 	for i,paper_map_item := range paper_sequences{
-		paper_map_item.(map[string]interface{}) ["author"]= paper_author_map[paper_ids[i]]
+		paper_map_item.(map[string]interface{}) ["author"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
 
 	//for _, paper := range searchResult.Hits.Hits {

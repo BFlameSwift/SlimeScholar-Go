@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 
 	"gitee.com/online-publish/slime-scholar-go/model"
 
@@ -335,6 +336,13 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 		delete(v_map, "aname")
 		delete(v_map, "afname")
 	}
+	// 按照作者次序排序
+	sort.Slice(inter, func(i, j int) bool {
+		if inter[i].(map[string]interface{})["order"] == inter[j].(map[string]interface{})["order"] {
+			return inter[i].(map[string]interface{})["author_id"].(string) < inter[j].(map[string]interface{})["author_id"].(string)
+		}
+		return inter[i].(map[string]interface{})["order"].(string) < inter[j].(map[string]interface{})["order"].(string)
+	})
 	ret_map["rel"] = inter
 	return ret_map
 }
