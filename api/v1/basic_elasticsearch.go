@@ -169,13 +169,13 @@ func NameQueryAuthor(c *gin.Context) {
 	}
 	boolQuery := elastic.NewBoolQuery()
 	if isPrecise == 1 {
-		query := elastic.NewMatchPhraseQuery("authors.name", name)
+		query := elastic.NewMatchPhraseQuery("name.keyword", name)
 		boolQuery.Must(query)
 	} else {
-		query := elastic.NewMatchQuery("authors.name", name)
+		query := elastic.NewMatchQuery("name", name)
 		boolQuery.Must(query)
 	}
-	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
+	searchResult, err := service.Client.Search().Index("author").Query(boolQuery).From(0).Size(10).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -233,7 +233,7 @@ func NameQueryAuthor(c *gin.Context) {
 func DoiQueryPaper(c *gin.Context) {
 	doi := c.Request.FormValue("doi")
 
-	searchResult := service.MatchPhraseQuery("paper", "doi", doi, 1, 10)
+	searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this abstract query %s not existed", doi)
