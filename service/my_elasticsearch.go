@@ -302,7 +302,7 @@ func IdsGetPapers(id_list []string, index string) map[string]interface{} {
 	// TODO 调用接口
 	var result_map map[string]interface{} = make(map[string]interface{})
 	for _, id := range id_list {
-		result_map[id] = nil
+		result_map[id] = "null"
 	}
 	for i, hit := range response.Docs {
 		//fmt.Println(hit.Source)

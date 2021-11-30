@@ -122,7 +122,7 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_ids = append(paper_ids,paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	paper_author_map := service.IdsGetPapers(paper_ids,"author")
+	paper_author_map := service.IdsGetPapers(paper_ids,"paper_author")
 	for i,paper_map_item := range paper_sequences{
 		paper_map_item.(map[string]interface{}) ["author"]= paper_author_map[paper_ids[i]]
 	}
