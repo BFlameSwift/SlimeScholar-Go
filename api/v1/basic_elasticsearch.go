@@ -114,15 +114,28 @@ func TitleQueryPaper(c *gin.Context) {
 	}
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string,0,1000)
 	for _, paper := range searchResult.Hits.Hits {
 		body_byte, _ := json.Marshal(paper.Source)
 		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_map["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(paper_map["paper_id"].(string)))["rel"]
+		paper_ids = append(paper_ids,paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
-		//paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
 	}
-	//body_byte,_ := json.Marshal(ret.Source)
+	paper_author_map := service.IdsGetPapers(paper_ids,"author")
+	for i,paper_map_item := range paper_sequences{
+		paper_map_item.(map[string]interface{}) ["author"]= paper_author_map[paper_ids[i]]
+	}
+
+	//for _, paper := range searchResult.Hits.Hits {
+	//	body_byte, _ := json.Marshal(paper.Source)
+	//	var paper_map = make(map[string]interface{})
+	//	_ = json.Unmarshal(body_byte, &paper_map)
+	//	paper_map["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(paper_map["paper_id"].(string)))["rel"]
+	//
+	//	//paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
+	//}
+	////body_byte,_ := json.Marshal(ret.Source)
 	//var paper = make(map[string]interface{})
 	//_ = json.Unmarshal(body_byte,&paper)
 	//fmt.Println(paper)
