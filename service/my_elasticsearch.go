@@ -269,6 +269,23 @@ func QueryByField(index string, field string, content string, page int, size int
 	}
 	fmt.Println(searchResult.TotalHits())
 
+	return searchResult
+}
+func PaperQueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
+	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
+	//TODO 领域
+	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
+	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword") // 设置统计字段
+	boolQuery := elastic.NewBoolQuery()
+	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
+	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference",conference_agg).
+		Aggregation("journal",journal_id_agg).Aggregation("doctype",doc_type_agg).
+		From((page - 1) * size).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(searchResult.TotalHits())
 
 	return searchResult
 }
@@ -283,7 +300,7 @@ func MatchPhraseQuery(index string, field string, content string, page int, size
 }
 
 // 通过[]string id—list 来获取结果，其中未命中的结果返回为nil 表示此id文件中不存在
-func IdsGetPapers(id_list []string, index string) map[string]interface{} {
+func IdsGetItems(id_list []string, index string) map[string]interface{} {
 	mul_item := Client.MultiGet()
 	//fmt.Println("len!!!!",len(id_list))
 	for _, id := range id_list {
@@ -297,6 +314,8 @@ func IdsGetPapers(id_list []string, index string) map[string]interface{} {
 	//response, err := Client.Search().Index(index).Query(elastic.NewIdsQuery().Ids(id_list...)).Size(len(id_list)).Do(context.Background())
 	response, err := mul_item.Do(context.Background())
 	if err != nil {
+		fmt.Println(id_list)
+		fmt.Println(index)
 		panic(err)
 	}
 	//如果有字段未命中怎么办，可能出现:返回空
@@ -361,6 +380,41 @@ func PaperGetAuthors(paper_id string ) map[string]interface{} {
 		panic(err)
 	}
 	return paper_reference_rel_map
+}
+func Paper_Aggregattion(result * elastic.SearchResult, index string)(my_list []interface{}){
+	agg, found := result.Aggregations.Terms(index)
+	if !found {
+		log.Fatal("没有找到聚合数据")
+	}
+	fmt.Println(result.TotalHits())
+	// 遍历桶数据
+	bucket_len := len(agg.Buckets )
+	result_ids := make([]string,0,10000)
+	result_map := make(map[string]interface{})
+	if index == "journal" ||  index == "conference"|| index == "field"{
+		for _, bucket := range agg.Buckets {
+			if(bucket.Key.(string) == ""){
+				continue
+			}
+			result_ids = append(result_ids,bucket.Key.(string))
+		}
+		 result_map = IdsGetItems(result_ids,index)
+	}
+	for _, bucket := range agg.Buckets {
+		m := make(map[string]interface{})
+		// 每一个桶都有一个key值，其实就是分组的值，可以理解为SQL的group by值
+		if(bucket.Key.(string) == "" && bucket_len != 1){
+			continue
+		}
+		if index == "journal" ||  index == "conference"|| index == "field"{
+			m = result_map[bucket.Key.(string)].(map[string]interface{})
+			m["count"] = bucket.DocCount
+		}else{
+			m[bucket.Key.(string)] = bucket.DocCount
+		}
+		my_list = append(my_list,m)
+	}
+	return my_list
 }
 
 func main() {

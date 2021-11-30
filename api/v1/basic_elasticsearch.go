@@ -111,7 +111,8 @@ func GetAuthor(c *gin.Context) {
 // @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
 	title := c.Request.FormValue("title")
-	searchResult := service.QueryByField("paper", "paper_title", title, 1, 10)
+
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, 1, 10)
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -119,6 +120,7 @@ func TitleQueryPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
+
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string,0,1000)
 	for _, paper := range searchResult.Hits.Hits {
@@ -128,25 +130,18 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_ids = append(paper_ids,paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	paper_author_map := service.IdsGetPapers(paper_ids,"paper_author")
+	paper_author_map := service.IdsGetItems(paper_ids,"paper_author")
 	for i,paper_map_item := range paper_sequences{
 		paper_map_item.(map[string]interface{}) ["author"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
+	aggregation := make(map[string]interface{})
+	aggregation["doctype"]  = service.Paper_Aggregattion(searchResult,"doctype")
+	aggregation["journal"]  = service.Paper_Aggregattion(searchResult,"journal")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult,"conference")
 
-	//for _, paper := range searchResult.Hits.Hits {
-	//	body_byte, _ := json.Marshal(paper.Source)
-	//	var paper_map = make(map[string]interface{})
-	//	_ = json.Unmarshal(body_byte, &paper_map)
-	//	paper_map["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(paper_map["paper_id"].(string)))["rel"]
-	//
-	//	//paper_sequences[strconv.FormatInt(int64(i), 10)] = paper.Source
-	//}
-	////body_byte,_ := json.Marshal(ret.Source)
-	//var paper = make(map[string]interface{})
-	//_ = json.Unmarshal(body_byte,&paper)
-	//fmt.Println(paper)
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences})
+		"details": paper_sequences,"aggregation":aggregation})
 	return
 }
 

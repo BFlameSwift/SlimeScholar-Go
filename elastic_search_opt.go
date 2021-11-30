@@ -254,7 +254,7 @@ func main() {
 
 	// 使用ValueCount函数和前面定义的聚合条件名称，查询结果
 	// 使用Terms函数和前面定义的聚合条件名称，查询结果
-	agg, found := searchResult.Aggregations.Terms("doctype")
+	agg, found := searchResult.Aggregations.Terms("doctypee")
 	if !found {
 		log.Fatal("没有找到聚合数据")
 	}
@@ -263,7 +263,6 @@ func main() {
 	for _, bucket := range agg.Buckets {
 		// 每一个桶都有一个key值，其实就是分组的值，可以理解为SQL的group by值
 		bucketValue := bucket.Key
-
 		// 打印结果， 默认桶聚合查询，都是统计文档总数
 		fmt.Printf("bucket = %q 文档总数 = %d\n", bucketValue, bucket.DocCount)
 	}
