@@ -105,14 +105,20 @@ func GetAuthor(c *gin.Context) {
 // @description es 根据title查询论文
 // @Tags elasticsearch
 // @Param title formData string true "title"
+// @Param page formData int true "title"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "page 不是整数"}"
 // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
+	//TODO 多表联查，查id的时候同时查询author
 	title := c.Request.FormValue("title")
-
-	searchResult := service.PaperQueryByField("paper", "paper_title", title, 1, 10)
+	page,err :=strconv.Atoi( c.Request.FormValue("page"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
+	}
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10)
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -135,6 +141,7 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_map_item.(map[string]interface{}) ["author"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
 	aggregation := make(map[string]interface{})
+
 	aggregation["doctype"]  = service.Paper_Aggregattion(searchResult,"doctype")
 	aggregation["journal"]  = service.Paper_Aggregattion(searchResult,"journal")
 	aggregation["conference"] = service.Paper_Aggregattion(searchResult,"conference")
