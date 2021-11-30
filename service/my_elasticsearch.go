@@ -135,7 +135,15 @@ func RealButerrorUpdate(Params map[string]string) string {
 	return res.Result
 
 }
+func GetsByIndexId(index string,id string) (*elastic.GetResult) {
+	//通过id查找
+	var get1 *elastic.GetResult
+	var err error
 
+	get1, err = Client.Get().Index(index).Id(id).Do(context.Background())
+	if err != nil {panic(err)}
+	return get1
+}
 //查找
 func Gets(Params map[string]string) (*elastic.GetResult, error) {
 	//通过id查找
@@ -261,15 +269,7 @@ func QueryByField(index string, field string, content string, page int, size int
 	}
 	fmt.Println(searchResult.TotalHits())
 
-	//for i,result := range(searchResult.Hits.Hits){
-	//	json_str,err := json.Marshal(result.Source)
-	//	if err != nil {panic(err)}
-	//	var m map[string]interface{} = make(map[string]interface{})
-	//	_ = json.Unmarshal([]byte(json_str),&m)
-	//	if i<10{
-	//		fmt.Println(i,m)
-	//	}
-	//}
+
 	return searchResult
 }
 

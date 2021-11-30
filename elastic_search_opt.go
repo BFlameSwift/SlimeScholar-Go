@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-
 	"fmt"
+	"log"
 	"reflect"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
@@ -128,18 +127,18 @@ func query_by_field(index string, field string, content string) *elastic.SearchR
 	}
 	fmt.Println(searchResult.TotalHits())
 	//var paper_ret map[string]interface{} = make(map[string]interface{})
-	var paper_item map[string]interface{} = make(map[string]interface{})
-	for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
-		t := item.(map[string]interface{})
-		json_str, err := json.Marshal(item.(map[string]interface{}))
-		if err != nil {
-			panic(err)
-		}
-		paper := service.JsonToPaper(string(json_str))
-		fmt.Printf("%#v\n", t)
-		fmt.Printf("%#v\n", paper)
-		fmt.Println(reflect.ValueOf(&paper).Elem())
-	}
+	//var paper_item map[string]interface{} = make(map[string]interface{})
+	//for _, item := range searchResult.Each(reflect.TypeOf(paper_item)) { //从搜索结果中取数据的方法
+	//	t := item.(map[string]interface{})
+	//	json_str, err := json.Marshal(item.(map[string]interface{}))
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	paper := service.JsonToPaper(string(json_str))
+	//	fmt.Printf("%#v\n", t)
+	//	fmt.Printf("%#v\n", paper)
+	//	fmt.Println(reflect.ValueOf(&paper).Elem())
+	//}
 	//for i,result := range(searchResult.Hits.Hits){
 	//	json_str,err := json.Marshal(result.Source)
 	//	if err != nil {panic(err)}
@@ -237,8 +236,40 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 func main() {
 	service.Init()
+	aggs := elastic.NewTermsAggregation().
+		Field("doctype.keyword") // 设置统计字段
+
+	searchResult, err := service.Client.Search().
+		Index("paper"). // 设置索引名
+		Query(elastic.NewMatchAllQuery()). // 设置查询条件
+		Aggregation("doctype", aggs). // 设置聚合条件，并为聚合条件设置一个名字, 支持添加多个聚合条件，命名不一样即可。
+		Size(0). // 设置分页参数 - 每页大小,设置为0代表不返回搜索结果，仅返回聚合分析结果
+		Do(context.Background()) // 执行请求
+
+
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+
+	// 使用ValueCount函数和前面定义的聚合条件名称，查询结果
+	// 使用Terms函数和前面定义的聚合条件名称，查询结果
+	agg, found := searchResult.Aggregations.Terms("doctype")
+	if !found {
+		log.Fatal("没有找到聚合数据")
+	}
+	fmt.Println(searchResult.TotalHits())
+	// 遍历桶数据
+	for _, bucket := range agg.Buckets {
+		// 每一个桶都有一个key值，其实就是分组的值，可以理解为SQL的group by值
+		bucketValue := bucket.Key
+
+		// 打印结果， 默认桶聚合查询，都是统计文档总数
+		fmt.Printf("bucket = %q 文档总数 = %d\n", bucketValue, bucket.DocCount)
+	}
+
 	// query_by_field("paper", "authors", "Christopher  Quince")
-	var str_list = []string{"02d5380d2fb7a81019b124b079306cc5cd3794d3", "d80d307a463df3526bf12ef1974afa7352f7b863"}
+	//var str_list = []string{"02d5380d2fb7a81019b124b079306cc5cd3794d3", "d80d307a463df3526bf12ef1974afa7352f7b863"}
 	// IdsGetPapers(str_list, "paper")
 	//	Create
 	//	gets()

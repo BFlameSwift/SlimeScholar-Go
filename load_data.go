@@ -319,6 +319,18 @@ func proc_journal(file_path string, index string,main_id string) {
 		//if(i<5){fmt.Println(paper)}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
+		if m[main_id] == nil{
+			fmt.Println("linenum!!!!",i)
+			continue
+		}
+		if index == "conference" {
+			if m["start"].(string) == ""{
+				m["start"] = "2021-11-30"
+			}
+			if m["end"].(string) == ""{
+				m["end"] = "2021-11-30"
+			}
+		}
 		//if len(m["author_id"].([]interface{})) == 0{continue} // 数据501行中存在"author_id": [],  过滤
 		//m["id"] = m["id"].([]interface{})[0].(string)
 		doc := elastic.NewBulkIndexRequest().Index(index).Id(m[main_id].(string)).Doc(m)
@@ -353,7 +365,11 @@ func proc_journal(file_path string, index string,main_id string) {
 	}
 	success_num += len(response.Succeeded())
 	fail_num += len(response.Failed())
-
+	if fail_num > 0 {
+		for _,fail := range response.Failed() {
+			fmt.Println(fail.Error)
+		}
+	}
 	fmt.Println("line sum", i)
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
 	fmt.Println(fieldsMap)
@@ -398,7 +414,7 @@ func load_paper_rel(){
 }
 func load_conference(){
 	service.Init()
-	proc_journal("H:\\myConferenceInstances.txt","reference","conference_id")
+	proc_journal("H:\\myConferenceInstances.txt","conference","conference_id")
 }
 
 
@@ -418,6 +434,6 @@ func main() {
 	//load_incitations()
 	//load_paper_rel()
 	//load_paper_a uthor()
-	load_conference()
-	load_journal()
+	//load_conference()
+	//load_journal()
 }

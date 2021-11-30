@@ -35,7 +35,14 @@ func GetPaper(c *gin.Context) {
 	var paper = make(map[string]interface{})
 	_ = json.Unmarshal(body_byte, &paper)
 	// 查找信息
-
+	paper["journal"] = ""
+	if paper["journal_id"].(string) != ""{
+		paper["journal"] = service.GetsByIndexId("journal",paper["journal_id"].(string)).Source
+	}
+	paper["conference"] = ""
+	if paper["conference_id"].(string) != ""{
+		paper["conference"] = service.GetsByIndexId("conference",paper["conference_id"].(string)).Source
+	}
 	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 	paper["doi_url"] = ""
