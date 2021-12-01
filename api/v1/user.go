@@ -109,7 +109,7 @@ func Login(c *gin.Context) {
 			} else {
 				claims := &model.JWTClaims{
 					UserID:   user.UserID,
-					Username: username,
+					Username: user.username,
 					Password: password,
 				}
 				claims.IssuedAt = time.Now().Unix()

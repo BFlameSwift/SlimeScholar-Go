@@ -131,14 +131,14 @@ func TitleQueryPaper(c *gin.Context) {
 	paper_ids := make([]string,0,1000)
 	for _, paper := range searchResult.Hits.Hits {
 		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
+		var paper_map = make(map[string]interface{})s
 		_ = json.Unmarshal(body_byte, &paper_map)
 		paper_ids = append(paper_ids,paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 	paper_author_map := service.IdsGetItems(paper_ids,"paper_author")
 	for i,paper_map_item := range paper_sequences{
-		paper_map_item.(map[string]interface{}) ["author"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+		paper_map_item.(map[string]interface{}) ["authors"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
 	aggregation := make(map[string]interface{})
 
