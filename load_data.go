@@ -432,7 +432,7 @@ func main() {
 
 	//load_journal()
 	//load_incitations()
-	//load_paper_rel()
+	load_paper_rel()
 	//load_paper_a uthor()
 	//load_conference()
 	//load_journal()
