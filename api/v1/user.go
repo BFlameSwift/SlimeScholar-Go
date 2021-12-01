@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 	_, notFound := service.QueryAUserByUsername(username)
 	if notFound {
 		service.CreateAUser(&user)
-		tag := model.Tag{TagName:"默认", UserID: user.UserID, CreateTime: time.Now(), Username:user.Username}
+		tag := model.Tag{TagName: "默认", UserID: user.UserID, CreateTime: time.Now(), Username: user.Username}
 		service.CreateATag(&tag)
 		utils.SendRegisterEmail(email, user.ConfirmNumber)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "用户创建成功"})
@@ -92,8 +92,8 @@ func Login(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	email := c.Request.FormValue("email")
 	password := c.Request.FormValue("password")
-	user, notFound := model.User{},true
-	if username != ""{
+	user, notFound := model.User{}, true
+	if username != "" {
 		user, notFound = service.QueryAUserByUsername(username)
 	} else {
 		user, notFound = service.QueryAUserByEmail(email)
@@ -109,7 +109,7 @@ func Login(c *gin.Context) {
 			} else {
 				claims := &model.JWTClaims{
 					UserID:   user.UserID,
-					Username: user.username,
+					Username: user.Username,
 					Password: password,
 				}
 				claims.IssuedAt = time.Now().Unix()
