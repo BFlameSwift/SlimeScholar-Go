@@ -36,18 +36,18 @@ func GetPaper(c *gin.Context) {
 	_ = json.Unmarshal(body_byte, &paper)
 	// 查找信息
 	paper["journal"] = ""
-	if paper["journal_id"].(string) != ""{
-		paper["journal"] = service.GetsByIndexId("journal",paper["journal_id"].(string)).Source
+	if paper["journal_id"].(string) != "" {
+		paper["journal"] = service.GetsByIndexId("journal", paper["journal_id"].(string)).Source
 	}
 	paper["conference"] = ""
-	if paper["conference_id"].(string) != ""{
-		paper["conference"] = service.GetsByIndexId("conference",paper["conference_id"].(string)).Source
+	if paper["conference_id"].(string) != "" {
+		paper["conference"] = service.GetsByIndexId("conference", paper["conference_id"].(string)).Source
 	}
 	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 	paper["doi_url"] = ""
-	if paper["doi"].(string) != ""{
-		paper["doi_url"]  = "https://dx.doi.org/"+paper["doi"].(string)
+	if paper["doi"].(string) != "" {
+		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
 	} // 原文链接 100%
 
 	// id_inter_list := paper["outCitations"].([]interface{})
@@ -114,7 +114,7 @@ func GetAuthor(c *gin.Context) {
 func TitleQueryPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author
 	title := c.Request.FormValue("title")
-	page,err :=strconv.Atoi( c.Request.FormValue("page"))
+	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
 	}
@@ -128,27 +128,26 @@ func TitleQueryPaper(c *gin.Context) {
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
-	paper_ids := make([]string,0,1000)
+	paper_ids := make([]string, 0, 1000)
 	for _, paper := range searchResult.Hits.Hits {
 		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})s
+		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids,paper_map["paper_id"].(string))
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	paper_author_map := service.IdsGetItems(paper_ids,"paper_author")
-	for i,paper_map_item := range paper_sequences{
-		paper_map_item.(map[string]interface{}) ["authors"]= service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	for i, paper_map_item := range paper_sequences {
+		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
 	aggregation := make(map[string]interface{})
 
-	aggregation["doctype"]  = service.Paper_Aggregattion(searchResult,"doctype")
-	aggregation["journal"]  = service.Paper_Aggregattion(searchResult,"journal")
-	aggregation["conference"] = service.Paper_Aggregattion(searchResult,"conference")
-
+	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
+	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences,"aggregation":aggregation})
+		"details": paper_sequences, "aggregation": aggregation})
 	return
 }
 
