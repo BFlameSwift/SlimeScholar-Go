@@ -382,6 +382,16 @@ func PaperGetAuthors(paper_id string) map[string]interface{} {
 	}
 	return paper_reference_rel_map
 }
+func PaperRelMakeMap(str string) ([]interface{}) {
+	ret_map := make(map[string]interface{})
+	err := json.Unmarshal([]byte(str), &ret_map)
+	if err != nil {
+		panic(err)
+	}
+	return ret_map["rel"].([]interface{})
+
+}
+
 func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []interface{}) {
 	agg, found := result.Aggregations.Terms(index)
 	if !found {

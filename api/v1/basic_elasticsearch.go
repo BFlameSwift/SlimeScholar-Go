@@ -49,6 +49,12 @@ func GetPaper(c *gin.Context) {
 	if paper["doi"].(string) != "" {
 		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
 	} // 原文链接 100%
+	reference_ids_interfaces := service.PaperRelMakeMap(string(service.GetsByIndexId("reference", this_id).Source))
+	reference_ids := make([]string, 0, 1000)
+	for _, str := range reference_ids_interfaces {
+		reference_ids = append(reference_ids, str.(string))
+	}
+	paper["reference_msg"] = (service.GetMapAllContent(service.IdsGetItems(reference_ids, "paper")))
 
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
