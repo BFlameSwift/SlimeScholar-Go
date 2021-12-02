@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"time"
 	"encoding/json"
-	"container/list"
+	// "container/list"
+	"fmt"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -346,7 +347,9 @@ func ReplyAComment(c *gin.Context)  {
 func GetPaperComment(c *gin.Context){
 
 	paperID := c.Request.FormValue("paper_id")
+	// fmt.Println(paperID)
 	comments,notFound := service.QueryComsByPaperId(paperID)
+	// fmt.Println(comments)
 	if notFound{
 		c.JSON(403, gin.H{
 			"success": false,
@@ -356,7 +359,7 @@ func GetPaperComment(c *gin.Context){
 		return
 	}
 
-	dataList := list.New()
+	var dataList []map[string]interface{}
 	for _, comment := range comments{
 		var com = make(map[string]interface{})
 		com["id"] = comment.CommentID
@@ -367,8 +370,10 @@ func GetPaperComment(c *gin.Context){
 		com["content"] = comment.Content
 		com["time"] = comment.CommentTime
 		com["reply_count"] = comment.ReplyCount
-		dataList.PushBack(com)
+		// fmt.Println(com)
+		dataList = append(dataList,com)
 	}
+	fmt.Println(dataList)
 
 	var data = make(map[string]interface{})
 	data["paper_id"] = paperID
