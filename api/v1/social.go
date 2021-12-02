@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"encoding/json"
+	"container/list"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -332,4 +334,59 @@ func ReplyAComment(c *gin.Context)  {
 	
 	utils.SendReplyEmail(user.Email)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "回复成功"})
+}
+
+// GetPaperComment doc
+// @description 获取文献所有评论
+// @Tags 社交
+// @Param paper_id formData string true "文献id"
+// @Success 200 {string} string "{"success": true, "message": "查找成功"}"
+// @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
+// @Router /social/get/comments [POST]
+func GetPaperComment(c *gin.Context){
+
+	paperID := c.Request.FormValue("paper_id")
+	comments,notFound := service.QueryComsByPaperId(paperID)
+	if notFound{
+		c.JSON(403, gin.H{
+			"success": false,
+			"status":  403,
+			"message": "评论不存在",
+		})
+		return
+	}
+
+	dataList := list.New()
+	for _, comment := range comments{
+		var com = make(map[string]interface{})
+		com["id"] = comment.CommentID
+		com["like"] = comment.Like
+		user, _ := service.QueryAUserByID(comment.UserID)
+		com["user_id"] = user.UserID
+		com["username"] = user.Username
+		com["content"] = comment.Content
+		com["time"] = comment.CommentTime
+		com["reply_count"] = comment.ReplyCount
+		dataList.PushBack(com)
+	}
+
+	var data = make(map[string]interface{})
+	data["paper_id"] = paperID
+
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"] = "paper", paperID
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
+	var paper = make(map[string]interface{})
+	_ = json.Unmarshal(body_byte, &paper)
+	data["paper_title"] = paper["paper_title"]
+	
+	data["comments"] = dataList
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"status":  200,
+		"message": "查找成功",
+		"data": data,
+	})
 }
