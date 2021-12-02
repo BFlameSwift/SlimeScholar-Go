@@ -140,16 +140,24 @@ func UpdateCommentLike(comment *model.Comment, option uint64) (err error) {
 }
 
 //根据文献id获取文献所有评论
-func QueryComsByPaperId(paperId string)(coms []model.Comment, notFound bool){
+func QueryComsByPaperId(paperId string)(coms []model.Comment){
 	coms = make([]model.Comment, 0)
-	err := global.DB.Where(map[string]interface{}{"paper_id":paperId,"relate_id":0}).Order("comment_time desc").Find(&coms).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return coms, true
-	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(err)
-	} else {
-			return coms, false
+	global.DB.Where(map[string]interface{}{"paper_id":paperId,"relate_id":0}).Order("comment_time desc").Find(&coms)
+	return coms
+}
+
+//查询某条评论的所有回复
+func QueryComReply(relateID uint64)(coms []model.Comment){
+	coms = make([]model.Comment, 0)
+	global.DB.Where("relate_id = ?",relateID).Order("comment_time").Find(&coms)
+	tmp := coms
+	for _, com := range tmp{
+		comcom := QueryComReply(com.CommentID)
+		for _, tmptmp := range comcom{
+			coms = append(coms,tmptmp)
+		}
 	}
+	return coms
 }
 
 // func JsonToPaper(jsonStr string) model.Paper {

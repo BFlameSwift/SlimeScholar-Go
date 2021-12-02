@@ -455,6 +455,26 @@ paths:
             type: string
       tags:
       - 社交
+  /social/get/replies:
+    post:
+      description: 获取某条评论的回复
+      parameters:
+      - description: 评论id
+        in: formData
+        name: comment_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查找成功"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "回复不存在"}'
+          schema:
+            type: string
+      tags:
+      - 社交
   /social/get/tag/paper:
     post:
       description: 查看用户标签的文章列表

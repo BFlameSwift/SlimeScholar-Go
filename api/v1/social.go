@@ -348,9 +348,9 @@ func GetPaperComment(c *gin.Context){
 
 	paperID := c.Request.FormValue("paper_id")
 	// fmt.Println(paperID)
-	comments,notFound := service.QueryComsByPaperId(paperID)
+	comments := service.QueryComsByPaperId(paperID)
 	// fmt.Println(comments)
-	if notFound{
+	if comments == nil{
 		c.JSON(403, gin.H{
 			"success": false,
 			"status":  403,
@@ -387,6 +387,70 @@ func GetPaperComment(c *gin.Context){
 	data["paper_title"] = paper["paper_title"]
 	
 	data["comments"] = dataList
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"status":  200,
+		"message": "查找成功",
+		"data": data,
+	})
+}
+
+// GetComReply doc
+// @description 获取某条评论的回复
+// @Tags 社交
+// @Param comment_id formData string true "评论id"
+// @Success 200 {string} string "{"success": true, "message": "查找成功"}"
+// @Failure 403 {string} string "{"success": false, "message": "回复不存在"}"
+// @Router /social/get/replies [POST]
+func GetComReply(c *gin.Context){
+	ComID,_ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
+	comment,_ := service.QueryAComment(ComID)
+	replies := service.QueryComReply(ComID)
+	if replies == nil{
+		c.JSON(403, gin.H{
+			"success": false,
+			"status":  403,
+			"message": "回复不存在",
+		})
+		return
+	}
+
+	var data = make(map[string]interface{})
+	data["paper_id"] = comment.PaperID
+
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"] = "paper", comment.PaperID
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
+	var paper = make(map[string]interface{})
+	_ = json.Unmarshal(body_byte, &paper)
+	data["paper_title"] = paper["paper_title"]
+
+	var base_comment = make(map[string]interface{})
+	base_comment["id"] = comment.CommentID
+	user, _ := service.QueryAUserByID(comment.UserID)
+	base_comment["username"] = user.Username
+	base_comment["time"] = comment.CommentTime
+	base_comment["content"] = comment.Content
+	data["base_comment"] = base_comment
+
+	var answers []map[string]interface{}
+	for _, reply := range replies{
+		var answer = make(map[string]interface{})
+		answer["reply_id"] = reply.CommentID
+		answer["time"] = reply.CommentTime
+		answer["content"] = reply.Content
+		answer["answerIt"] = false
+		answer["myAnswer"] = " "
+		reply_user, _ := service.QueryAUserByID(reply.UserID)
+		answer["reply_username"] = reply_user.Username
+		comment,_ = service.QueryAComment(reply.RelateID)
+		replied_user,_ := service.QueryAUserByID(comment.UserID)
+		answer["be_replied_username"] = replied_user.Username
+		answers = append(answers,answer)
+	}
+	data["answers"] = answers
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

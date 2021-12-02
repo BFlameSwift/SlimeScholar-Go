@@ -721,6 +721,37 @@ var doc = `{
                 }
             }
         },
+        "/social/get/replies": {
+            "post": {
+                "description": "获取某条评论的回复",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "评论id",
+                        "name": "comment_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"查找成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"回复不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/social/get/tag/paper": {
             "post": {
                 "security": [
