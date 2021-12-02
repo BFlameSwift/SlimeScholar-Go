@@ -14,6 +14,16 @@ paths:
             type: string
       tags:
       - 测试
+  /count/all:
+    post:
+      description: 返回所有文档数目
+      responses:
+        "200":
+          description: '{"success": true, "message": "gcp"}'
+          schema:
+            type: string
+      tags:
+      - 测试
   /es/create/mytype:
     post:
       description: 创建es索引

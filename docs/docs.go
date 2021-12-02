@@ -39,6 +39,22 @@ var doc = `{
                 }
             }
         },
+        "/count/all": {
+            "post": {
+                "description": "返回所有文档数目",
+                "tags": [
+                    "测试"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"gcp\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/create/mytype": {
             "post": {
                 "description": "创建es索引",

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func Get(url string) string {
+func GetUrl(url string) string {
 	res, err := http.Get(url)
 	if err != nil {
 		return ""
@@ -16,6 +16,7 @@ func Get(url string) string {
 	robots, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
+		//panic(err)
 		return ""
 	}
 	return string(robots)
@@ -23,7 +24,7 @@ func Get(url string) string {
 func SemanticScholarApiSingle(mag_id string, field string) string {
 	// 时刻记住go 参数传递数组是复制在传递，直接用指针可以节省开销
 
-	str := Get("https://api.semanticscholar.org/graph/v1/paper/MAG:" + mag_id + "?fields=" + field)
+	str := GetUrl("https://api.semanticscholar.org/graph/v1/paper/MAG:" + mag_id + "?fields=" + field)
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(str), &m)
 	if err != nil {
@@ -46,7 +47,7 @@ func SemanticScholarApiMulti(mag_id string, fields_pointer *[]string) map[string
 			fields_request += ", "
 		}
 	}
-	str := Get("https://api.semanticscholar.org/graph/v1/paper/MAG:" + mag_id + "?fields=" + fields_request)
+	str := GetUrl("https://api.semanticscholar.org/graph/v1/paper/MAG:" + mag_id + "?fields=" + fields_request)
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(str), &m)
 	if err != nil {
@@ -56,10 +57,12 @@ func SemanticScholarApiMulti(mag_id string, fields_pointer *[]string) map[string
 	return m
 }
 
-// func main() {
-// 	fmt.Println(SemanticScholarApiSingle("1582271227","abstract"))
-// 	//requests := make([]string,0,30)
-// 	//requests = append(requests,"abstract")
-// 	//requests = append(requests,"title")
-// 	//fmt.Println(SemanticScholarApi("1582271227",&requests))
-// }
+func main() {
+	//fmt.Println(SemanticScholarApiSingle("1582271227","abstract"))
+	//fmt.Println(GetUrl("127.0.0.1:9200/paper/_count"))
+
+	//requests := make([]string,0,30)
+	//requests = append(requests,"abstract")
+	//requests = append(requests,"title")
+	//fmt.Println(SemanticScholarApi("1582271227",&requests))
+}

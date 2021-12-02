@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"sort"
 
-	"gitee.com/online-publish/slime-scholar-go/model"
-
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
 
@@ -135,15 +133,18 @@ func RealButerrorUpdate(Params map[string]string) string {
 	return res.Result
 
 }
-func GetsByIndexId(index string,id string) (*elastic.GetResult) {
+func GetsByIndexId(index string, id string) *elastic.GetResult {
 	//通过id查找
 	var get1 *elastic.GetResult
 	var err error
 
 	get1, err = Client.Get().Index(index).Id(id).Do(context.Background())
-	if err != nil {panic(err)}
+	if err != nil {
+		panic(err)
+	}
 	return get1
 }
+
 //查找
 func Gets(Params map[string]string) (*elastic.GetResult, error) {
 	//通过id查找
@@ -275,12 +276,12 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	//TODO 领域
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
-	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword") // 设置统计字段
+	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	boolQuery := elastic.NewBoolQuery()
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference",conference_agg).
-		Aggregation("journal",journal_id_agg).Aggregation("doctype",doc_type_agg).
+	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
@@ -365,7 +366,7 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	ret_map["rel"] = inter
 	return ret_map
 }
-func PaperGetAuthors(paper_id string ) map[string]interface{} {
+func PaperGetAuthors(paper_id string) map[string]interface{} {
 	var map_param map[string]string = make(map[string]string)
 	map_param["index"], map_param["id"] = "paper", paper_id
 	map_param["index"] = "paper_author"
@@ -381,52 +382,52 @@ func PaperGetAuthors(paper_id string ) map[string]interface{} {
 	}
 	return paper_reference_rel_map
 }
-func Paper_Aggregattion(result * elastic.SearchResult, index string)(my_list []interface{}){
+func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []interface{}) {
 	agg, found := result.Aggregations.Terms(index)
 	if !found {
 		log.Fatal("没有找到聚合数据")
 	}
 	fmt.Println(result.TotalHits())
 	// 遍历桶数据
-	bucket_len := len(agg.Buckets )
-	result_ids := make([]string,0,10000)
+	bucket_len := len(agg.Buckets)
+	result_ids := make([]string, 0, 10000)
 	result_map := make(map[string]interface{})
-	if index == "journal" ||  index == "conference"|| index == "field"{
+	if index == "journal" || index == "conference" || index == "field" {
 		for _, bucket := range agg.Buckets {
-			if(bucket.Key.(string) == ""){
+			if bucket.Key.(string) == "" {
 				continue
 			}
-			result_ids = append(result_ids,bucket.Key.(string))
+			result_ids = append(result_ids, bucket.Key.(string))
 		}
-		 result_map = IdsGetItems(result_ids,index)
+		result_map = IdsGetItems(result_ids, index)
 	}
 	for _, bucket := range agg.Buckets {
 		m := make(map[string]interface{})
 		// 每一个桶都有一个key值，其实就是分组的值，可以理解为SQL的group by值
-		if(bucket.Key.(string) == "" && bucket_len != 1){
+		if bucket.Key.(string) == "" && bucket_len != 1 {
 			continue
 		}
-		if index == "journal" ||  index == "conference"|| index == "field"{
+		if index == "journal" || index == "conference" || index == "field" {
 			m = result_map[bucket.Key.(string)].(map[string]interface{})
 			m["count"] = bucket.DocCount
-		}else{
+		} else {
 			m[bucket.Key.(string)] = bucket.DocCount
 		}
-		my_list = append(my_list,m)
+		my_list = append(my_list, m)
 	}
 	return my_list
 }
 
-func main() {
-	Init()
-	fmt.Println("123")
-	var map_param map[string]string = make(map[string]string)
-	e1, _ := json.Marshal(model.ValueString{Value: "132"})
+// func main() {
+// 	Init()
+// 	fmt.Println("123")
+// 	var map_param map[string]string = make(map[string]string)
+// 	e1, _ := json.Marshal(model.ValueString{Value: "132"})
 
-	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "megacorp", "employee", "53", string(e1)
-	// ret := Create(map_param)
-	// fmt.Printf(ret)
-	get_ret, _ := Gets(map_param)
-	fmt.Printf(get_ret.Id)
+// 	map_param["index"], map_param["type"], map_param["id"], map_param["bodyJson"] = "megacorp", "employee", "53", string(e1)
+// 	// ret := Create(map_param)
+// 	// fmt.Printf(ret)
+// 	get_ret, _ := Gets(map_param)
+// 	fmt.Printf(get_ret.Id)
 
-}
+// }
