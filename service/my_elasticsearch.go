@@ -420,6 +420,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		if index == "journal" || index == "conference" || index == "field" {
 			m = result_map[bucket.Key.(string)].(map[string]interface{})
 			m["count"] = bucket.DocCount
+			m["id"] = bucket.Key
 		} else {
 			m[bucket.Key.(string)] = bucket.DocCount
 		}

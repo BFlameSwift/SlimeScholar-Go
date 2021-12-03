@@ -109,6 +109,68 @@ func GetAuthor(c *gin.Context) {
 	return
 }
 
+// GetConference doc
+// @description 获取es会议详细信息
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 会议ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/conference [POST]
+func GetConference(c *gin.Context) {
+	this_id := c.Request.FormValue("id")
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"], map_param["bodyJson"] = "conference", this_id, ""
+
+	_, error_get := service.Gets(map_param)
+	if error_get != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
+		return
+	}
+	ret, _ := service.Gets(map_param)
+	var conference_map map[string]interface{} = make(map[string]interface{})
+	body_byte, _ := json.Marshal(ret.Source)
+	err := json.Unmarshal(body_byte, &conference_map)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(conference_map)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": conference_map})
+	return
+}
+
+// GetJournal doc
+// @description 获取es期刊详细信息
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 期刊ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/journal [POST]
+func GetJournal(c *gin.Context) {
+	this_id := c.Request.FormValue("id")
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"], map_param["bodyJson"] = "journal", this_id, ""
+
+	_, error_get := service.Gets(map_param)
+	if error_get != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", this_id)
+		return
+	}
+	ret, _ := service.Gets(map_param)
+	var journal_map map[string]interface{} = make(map[string]interface{})
+	body_byte, _ := json.Marshal(ret.Source)
+	err := json.Unmarshal(body_byte, &journal_map)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(journal_map)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": journal_map})
+	return
+}
+
 // TitleQueryPaper doc
 // @description es 根据title查询论文
 // @Tags elasticsearch
@@ -152,7 +214,8 @@ func TitleQueryPaper(c *gin.Context) {
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
 	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	// 暂时有问题，一数据弄好一起改
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": aggregation})

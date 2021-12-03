@@ -136,6 +136,80 @@ var doc = `{
                 }
             }
         },
+        "/es/get/conference": {
+            "post": {
+                "description": "获取es会议详细信息",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": 会议ID不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/es/get/journal": {
+            "post": {
+                "description": "获取es期刊详细信息",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": 期刊ID不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/get/mytype": {
             "post": {
                 "description": "获取es索引",
@@ -1014,7 +1088,7 @@ var doc = `{
         },
         "/submit/create": {
             "post": {
-                "description": "用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了",
+                "description": "用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领",
                 "tags": [
                     "管理员"
                 ],
@@ -1065,6 +1139,31 @@ var doc = `{
                         "type": "string",
                         "description": "用户id",
                         "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"创建成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/submit/list": {
+            "post": {
+                "description": "列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的",
+                "tags": [
+                    "管理员"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "提交id",
+                        "name": "type",
                         "in": "formData",
                         "required": true
                     }

@@ -59,10 +59,10 @@ type TagPaper struct {
 
 // 浏览记录
 type BrowsingHistory struct {
+	BrowsingID   uint64    `gorm:"primary_key;not null" json:"browsing_id"`
 	BrowsingTime time.Time `gorm:"type:datetime" json:"browsing_time"`
-	UserID       uint64    `gorm:" not null;" json:"user_id"`
+	UserID       int       `gorm:"type:integer" json:"user_id"`
 	PaperID      string    `gorm:"type:varchar(32);" json:"paper_id"`
 	Title        string    `gorm:"type:varchar(256);not null" json:"title"`
 	Authors      string    `gorm:"type:varchar(128);" json:"authors"`
-	BrowsingID   uint64    `gorm:"primary_key;not null" json:"browsing_id"`
 }

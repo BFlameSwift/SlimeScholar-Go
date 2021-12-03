@@ -103,7 +103,7 @@ func SendRegisterEmail(themail string, number int) {
 }
 
 // 发送入驻申请邮件
-func SendCheckAnswer(themail string, success bool) {
+func SendCheckAnswer(themail string, success bool, content string) {
 	subject := "欢迎注册Slime学术成果分享平台"
 	// 邮件正文
 	mailTo := []string{
@@ -112,9 +112,9 @@ func SendCheckAnswer(themail string, success bool) {
 	body := "Hello,This is a email, "
 
 	if success {
-		body += "您的入驻申请已经成功，请登录本网站查看"
+		body += "您的入驻申请已经成功，请登录本网站查看" + "审批意见如下:\n\t" + content
 	} else {
-		body += "抱歉，您的入驻申请存在问题，入驻失败"
+		body += "抱歉，您的入驻申请存在问题，入驻失败" + "审批意见如下:\n\t" + content
 	}
 	err := utils.SendMail(mailTo, subject, body)
 	if err != nil {
@@ -212,12 +212,33 @@ func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bo
 }
 
 func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFound bool) {
-	err := global.DB.Where("author_id = ?", author_id).First(&submit).Error
+	err := global.DB.Where("author_id = ? AND status = 1", author_id).First(&submit).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return submit, true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(err)
 	} else {
 		return submit, false
+	}
+}
+func QueryASubmitExist(author_id string, user_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("author_id = ? AND user_id = ?", author_id, user_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
+
+func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("status = ?", mytype).Find(&submits).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submits, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submits, false
 	}
 }
