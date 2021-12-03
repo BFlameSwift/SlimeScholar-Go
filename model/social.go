@@ -18,7 +18,8 @@ type Comment struct {
 	PaperID     string    `gorm:"size:64" json:"paper_id"`
 	CommentTime time.Time `gorm:"type:datetime" json:"comment_time"`
 	Content     string    `gorm:"size:255" json:"content"`
-	OnTop       bool      `gorm:"default:false" json:"on_top"`
+	// OnTop       bool      `gorm:"default:false" json:"on_top"`
+	ReplyCount	uint64	  `gorm:"default:0" json:"reply_count"`
 	RelateID	uint64	  `gorm:"default:0" json:"relate_id"`
 }
 

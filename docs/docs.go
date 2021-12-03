@@ -690,6 +690,68 @@ var doc = `{
                 }
             }
         },
+        "/social/get/comments": {
+            "post": {
+                "description": "获取文献所有评论",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文献id",
+                        "name": "paper_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"查找成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"评论不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/social/get/replies": {
+            "post": {
+                "description": "获取某条评论的回复",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "评论id",
+                        "name": "comment_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"查找成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"回复不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/social/get/tag/paper": {
             "post": {
                 "security": [
@@ -1238,5 +1300,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

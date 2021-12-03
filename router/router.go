@@ -47,5 +47,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		SocialRouter.POST("/create/comment", v1.CreateAComment)
 		SocialRouter.POST("/like/comment", v1.LikeorUnlike)
 		SocialRouter.POST("/reply/comment", v1.ReplyAComment)
+		SocialRouter.POST("/get/comments", v1.GetPaperComment)
+		SocialRouter.POST("/get/replies", v1.GetComReply)
 	}
 }
