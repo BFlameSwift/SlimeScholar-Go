@@ -13,6 +13,12 @@ func InitRouter(Router *gin.RouterGroup) {
 		BasicRouter.POST("/all", v1.DocumentCount)
 	}
 
+	SubmitRouter := Router.Group("/submit")
+	{
+		SubmitRouter.POST("/create", v1.CreateSubmit)
+		SubmitRouter.POST("/check", v1.CheckSubmit)
+	}
+
 	UserRouter := Router.Group("/user")
 	{
 		UserRouter.POST("/register", v1.Register)

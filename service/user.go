@@ -51,7 +51,7 @@ func QueryAUserByUsername(username string) (user model.User, notFound bool) {
 }
 
 // 根据用户email 查询某个用户
-func QueryAUserByEmail(email string)(user model.User, notFound bool){
+func QueryAUserByEmail(email string) (user model.User, notFound bool) {
 	err := global.DB.Where("email = ?", email).First(&user).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return user, true
@@ -79,7 +79,7 @@ func UpdateConfirmAUser(user *model.User, has_comfirmed bool) error {
 		err := global.DB.Save(user).Error
 		return err
 	}
-	user.HasComfirmed = true
+	user.HasConfirmed = true
 	err := global.DB.Save(user).Error
 	return err
 }
@@ -161,4 +161,22 @@ func VerifyAuthorization(strToken string, userID uint64, username, password stri
 	}
 	return true, nil
 
+}
+func CreateASubmit(submit *model.SubmitScholar) (err error) {
+	if err = global.DB.Create(&submit).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 根据提交Submit ID 查询某个Submit
+func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("submit_id = ?", submit_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
 }

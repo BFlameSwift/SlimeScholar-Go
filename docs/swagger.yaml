@@ -617,6 +617,78 @@ paths:
       - Authorization: []
       tags:
       - 社交
+  /submit/check:
+    post:
+      description: 用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在
+      parameters:
+      - description: 提交id
+        in: formData
+        name: submit_id
+        required: true
+        type: string
+      - description: 用户id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: success
+        in: formData
+        name: success
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "创建成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
+  /submit/create:
+    post:
+      description: 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了
+      parameters:
+      - description: 作者姓名
+        in: formData
+        name: author_name
+        required: true
+        type: string
+      - description: 机构姓名
+        in: formData
+        name: affiliation_name
+        required: true
+        type: string
+      - description: 工作邮箱
+        in: formData
+        name: work_email
+        required: true
+        type: string
+      - description: 领域
+        in: formData
+        name: fields
+        required: true
+        type: string
+      - description: 主页
+        in: formData
+        name: home_page
+        required: true
+        type: string
+      - description: 作者id
+        in: formData
+        name: author_id
+        required: true
+        type: string
+      - description: 用户id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "创建成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
   /user/confirm:
     post:
       description: 验证邮箱
