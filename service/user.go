@@ -102,6 +102,30 @@ func SendRegisterEmail(themail string, number int) {
 	return
 }
 
+// 发送入驻申请邮件
+func SendCheckAnswer(themail string, success bool) {
+	subject := "欢迎注册Slime学术成果分享平台"
+	// 邮件正文
+	mailTo := []string{
+		themail,
+	}
+	body := "Hello,This is a email, "
+
+	if success {
+		body += "您的入驻申请已经成功，请登录本网站查看"
+	} else {
+		body += "抱歉，您的入驻申请存在问题，入驻失败"
+	}
+	err := utils.SendMail(mailTo, subject, body)
+	if err != nil {
+		log.Println(err)
+		fmt.Println("send fail")
+		return
+	}
+	fmt.Println("sendRegisterEmail successfully")
+	return
+}
+
 // 获取Token
 func GetToken(claims *model.JWTClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -168,6 +192,12 @@ func CreateASubmit(submit *model.SubmitScholar) (err error) {
 	}
 	return nil
 }
+func CreateBrowseHistory(browser *model.BrowsingHistory) (err error) {
+	if err = global.DB.Create(&browser).Error; err != nil {
+		return err
+	}
+	return nil
+}
 
 // 根据提交Submit ID 查询某个Submit
 func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bool) {
@@ -181,26 +211,13 @@ func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bo
 	}
 }
 
-// 发送猪猪邮件
-func SendCheckAnswer(themail string, success bool) {
-	subject := "欢迎注册Slime学术成果分享平台"
-	// 邮件正文
-	mailTo := []string{
-		themail,
-	}
-	body := "Hello,This is a email, "
-
-	if success {
-		body += "您的入驻申请已经成功，请登录本网站查看"
+func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("author_id = ?", author_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
 	} else {
-		body += "抱歉，您的入驻申请存在问题，入驻失败"
+		return submit, false
 	}
-	err := utils.SendMail(mailTo, subject, body)
-	if err != nil {
-		log.Println(err)
-		fmt.Println("send fail")
-		return
-	}
-	fmt.Println("sendRegisterEmail successfully")
-	return
 }

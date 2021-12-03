@@ -12,7 +12,7 @@ import (
 )
 
 // Index doc
-// @description 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了
+// @description 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被认领,并直接返回认领了该作者的学者姓名
 // @Tags 管理员
 // @Param author_name formData string true "作者姓名"
 // @Param affiliation_name formData string true "机构姓名"
@@ -42,10 +42,15 @@ func CreateSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有该用户", "status": 404})
 		return
 	}
+	if the_submit, notFound := service.QueryASubmitByAuthor(author_id); !notFound {
 
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "该作者已被认领", "status": 405, "the_authorname": the_submit.AuthorName})
+		return
+	}
 	submit := model.SubmitScholar{AffiliationName: affiliation_name, AuthorName: author_name, WorkEmail: work_email,
 		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "",
 		CreatedTime: time.Now()}
+
 	err = service.CreateASubmit(&submit)
 	if err != nil {
 		panic(err)
@@ -97,7 +102,6 @@ func CheckSubmit(c *gin.Context) {
 	} else if success == "true" {
 		submit.Status = 1
 		service.SendCheckAnswer(user.Email, true)
-		// TODO: 发邮件
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})
 		return
