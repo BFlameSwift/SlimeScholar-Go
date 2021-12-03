@@ -42,7 +42,7 @@ func CreateSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有该用户", "status": 404})
 		return
 	}
-	
+
 	submit := model.SubmitScholar{AffiliationName: affiliation_name, AuthorName: author_name, WorkEmail: work_email,
 		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "",
 		CreatedTime: time.Now()}
@@ -93,8 +93,10 @@ func CheckSubmit(c *gin.Context) {
 
 	if success == "false" {
 		submit.Status = 2
+		service.SendCheckAnswer(user.Email, false)
 	} else if success == "true" {
 		submit.Status = 1
+		service.SendCheckAnswer(user.Email, true)
 		// TODO: 发邮件
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})

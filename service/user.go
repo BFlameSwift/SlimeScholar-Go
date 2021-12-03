@@ -180,3 +180,27 @@ func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bo
 		return submit, false
 	}
 }
+
+// 发送猪猪邮件
+func SendCheckAnswer(themail string, success bool) {
+	subject := "欢迎注册Slime学术成果分享平台"
+	// 邮件正文
+	mailTo := []string{
+		themail,
+	}
+	body := "Hello,This is a email, "
+
+	if success {
+		body += "您的入驻申请已经成功，请登录本网站查看"
+	} else {
+		body += "抱歉，您的入驻申请存在问题，入驻失败"
+	}
+	err := utils.SendMail(mailTo, subject, body)
+	if err != nil {
+		log.Println(err)
+		fmt.Println("send fail")
+		return
+	}
+	fmt.Println("sendRegisterEmail successfully")
+	return
+}
