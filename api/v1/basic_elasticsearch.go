@@ -57,7 +57,7 @@ func GetPaper(c *gin.Context) {
 	paper["reference_msg"] = (service.GetMapAllContent(service.IdsGetItems(reference_ids, "paper")))
 	paper["citation_msg"] = make([]string, 0)
 	paper["fields"] = make([]string, 0)
-	service.BrowerPaper(paper)
+	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
 	// for _, id := range id_inter_list {
