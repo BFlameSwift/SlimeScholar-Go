@@ -684,6 +684,11 @@ paths:
         name: success
         required: true
         type: string
+      - description: content
+        in: formData
+        name: content
+        required: true
+        type: string
       responses:
         "200":
           description: '{"success": true, "message": "创建成功"}'
@@ -749,7 +754,7 @@ paths:
         type: integer
       responses:
         "200":
-          description: '{"success": true, "message": "创建成功"}'
+          description: '{"success": true, "message": "获取成功"}'
           schema:
             type: string
       tags:

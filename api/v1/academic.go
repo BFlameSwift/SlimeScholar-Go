@@ -73,6 +73,7 @@ func CreateSubmit(c *gin.Context) {
 // @Param submit_id formData string true "提交id"
 // @Param user_id formData string true "用户id"
 // @Param success formData string true "success"
+// @Param content formData string true "content"
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/check [POST]
 func CheckSubmit(c *gin.Context) {

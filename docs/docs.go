@@ -1074,6 +1074,13 @@ var doc = `{
                         "name": "success",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1170,7 +1177,7 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"success\": true, \"message\": \"创建成功\"}",
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
                         "schema": {
                             "type": "string"
                         }
