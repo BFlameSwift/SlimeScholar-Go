@@ -1,6 +1,5 @@
 package model
 
-// 本文件记录 主要涉及到人的表：包括人与人的关系
 import "time"
 
 // 用户
@@ -11,8 +10,12 @@ type User struct {
 	UserInfo      string    `gorm:"size:255;" json:"user_info"`
 	UserType      uint64    `gorm:"default:0" json:"user_type"` // 0: 普通用户，1: 认证机构用户,2 管理员
 	Affiliation   string    `gorm:"size:64;" json:"affiliation"`
+	AuthorName    string    `gorm:"size:64;" json:"author_name"`
+	HomePage      string    `gorm:"size:64;" json:"home_page"`
 	Email         string    `gorm:"size:32;" json:"email"`
-	HasComfirmed  bool      `gorm:"default:false" json:"has_comfirmed"`
+	WorkEmail     string    `gorm:"size:32;" json:"work_email"`
+	Fields        string    `gorm:"size:256;" json:"fields"`
+	HasConfirmed  bool      `gorm:"default:false" json:"has_confirmed"`
 	ConfirmNumber int       `gorm:"default:0" json:"confirm_number"`
 	RegTime       time.Time `gorm:"column:reg_time;type:datetime" json:"reg_time"`
 }
@@ -28,7 +31,7 @@ type Author struct {
 type Affiliation struct {
 	AffiliationName string `gorm:"type:varchar(150)" json:"affiliation_name"`
 	AffiliationID   string `gorm:"type:varchar(32);primary_key" json:"affiliation_id"`
-	OfficalPage     string `gorm:"type:varchar(86)" json:"offical_page"`
+	OffcialPage     string `gorm:"type:varchar(86)" json:"offcial_page"`
 	PaperCount      int    `gorm:"type:integer" json:"paper_count"`
 	CitationCount   int    `gorm:"type:integer" json:"citation_count"`
 }

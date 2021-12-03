@@ -51,11 +51,13 @@ func DocumentCount(c *gin.Context) {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200,
-		"paper_count":      paper_map["count"],
-		"author_count":     author_map["count"],
-		"conference_count": conference_map["count"],
-		"journal_count":    journal_map["count"],
-		"fields_count":     0,
+		"paper_count":       paper_map["count"],
+		"author_count":      author_map["count"],
+		"conference_count":  conference_map["count"],
+		"journal_count":     journal_map["count"],
+		"fields_count":      0,
+		"affiliation_count": 0,
+		"topic_count":       0,
 	})
 
 }
