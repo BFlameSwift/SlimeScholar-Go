@@ -242,3 +242,17 @@ func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool
 		return submits, false
 	}
 }
+
+func MakeUserScholar(user model.User, submit model.SubmitScholar) {
+	user.WorkEmail = submit.WorkEmail
+	user.AuthorName = submit.AuthorName
+	user.Affiliation = submit.AffiliationName
+	user.UserType = 1
+	user.Fields = submit.Fields
+	user.HomePage = submit.HomePage
+	user.PaperCount += submit.PaperCount
+	err := global.DB.Save(&user).Error
+	if err != nil {
+		panic(err)
+	}
+}

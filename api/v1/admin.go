@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"database/sql"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -52,8 +53,9 @@ func CreateSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "您已经对该作者提过认领认清，请勿重复申请", "status": 406})
 		return
 	}
+	// TODO Paper COunt根据实际输入。：
 	submit := model.SubmitScholar{AffiliationName: affiliation_name, AuthorName: author_name, WorkEmail: work_email,
-		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "",
+		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "", PaperCount: 12,
 		CreatedTime: time.Now()}
 
 	err = service.CreateASubmit(&submit)
@@ -108,11 +110,13 @@ func CheckSubmit(c *gin.Context) {
 		service.SendCheckAnswer(user.Email, false, content)
 	} else if success == "true" {
 		submit.Status = 1
+		service.MakeUserScholar(user, submit)
 		service.SendCheckAnswer(user.Email, true, content)
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})
 		return
 	}
+	submit.AcceptTime = sql.NullTime{Time: time.Now()}
 	err = global.DB.Save(submit).Error
 	if err != nil {
 		panic(err)
