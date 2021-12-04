@@ -1,5 +1,5 @@
-FROM alpine
+FROM ubuntu
 RUN mkdir /app
-WORKDIR /app
-COPY ./main .
-CMD ./main
+COPY ./main /app/
+RUN chmod +x /app/main
+ENTRYPOINT [ "/app/main" ]
