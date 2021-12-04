@@ -429,6 +429,30 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	return my_list
 }
 
+func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_year int) *elastic.BoolQuery {
+	boolQuery := elastic.NewBoolQuery()
+
+	//fmt.Println(len(doctypes))
+	if len(doctypes) > 0 {
+		doctype_query := elastic.NewBoolQuery()
+		for _, doctype := range doctypes {
+			doctype_query.Should(elastic.NewMatchQuery("doctype", doctype))
+		}
+		boolQuery.Must(doctype_query)
+	}
+
+	if len(journals) > 0 {
+		journal_query := elastic.NewBoolQuery()
+		for journal := range journals {
+			journal_query.Should(elastic.NewTermQuery("journal_id", journal))
+		}
+		boolQuery.Must(journal_query)
+	}
+	boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
+	boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	return boolQuery
+}
+
 // func main() {
 // 	Init()
 // 	fmt.Println("123")
