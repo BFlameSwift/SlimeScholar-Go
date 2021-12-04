@@ -201,6 +201,69 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/query/paper/advanced:
+    post:
+      description: es 高级搜索
+      parameters:
+      - description: musts
+        in: formData
+        name: musts
+        required: true
+        type: string
+      - description: nots
+        in: formData
+        name: nots
+        required: true
+        type: string
+      - description: atleast_words
+        in: formData
+        name: atleast_words
+        required: true
+        type: string
+      - description: min_year
+        in: formData
+        name: min_year
+        required: true
+        type: integer
+      - description: max_year
+        in: formData
+        name: max_year
+        required: true
+        type: integer
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "参数错误"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "论文不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/query/paper/doi:
     post:
       description: es doi查询论文 精确搜索，结果要么有要么没有

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
@@ -454,6 +455,58 @@ func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_yea
 	if max_year < 2022 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
 	} // 尽量优化速度
+
+	return boolQuery
+}
+
+func AdvancedSearch(doctypes []string, min_year int, max_year int, musts []string, shoulds []string, nots []string) *elastic.BoolQuery {
+	boolQuery := elastic.NewBoolQuery()
+	// 很臭。。有办法但是懒得弄了。。should must的逻辑麻烦
+	//fmt.Println(len(doctypes))
+	if len(doctypes) > 0 {
+		doctype_query := elastic.NewBoolQuery()
+		for _, doctype := range doctypes {
+			doctype_query.Should(elastic.NewMatchQuery("doctype", doctype))
+		}
+		boolQuery.Must(doctype_query)
+	}
+	if len(musts) > 0 {
+		musts_query := elastic.NewBoolQuery()
+		for _, must := range musts {
+			must_list := strings.Split(must, " ")
+			for _, must_word := range must_list {
+				musts_query.Must(elastic.NewMatchQuery("paper_title", must_word))
+			}
+		}
+		boolQuery.Must(musts_query)
+	}
+	if len(shoulds) > 0 {
+		shoulds_query := elastic.NewBoolQuery()
+		for _, should := range shoulds {
+			should_words := strings.Split(should, " ")
+			for _, should_word := range should_words {
+				shoulds_query.Should(elastic.NewMatchQuery("paper_title", should_word))
+			}
+		}
+		boolQuery.Must(shoulds_query)
+	}
+	if len(nots) > 0 {
+		nots_query := elastic.NewBoolQuery()
+		for _, not := range nots {
+			not_list := strings.Split(not, " ")
+			for _, not_word := range not_list {
+				nots_query.Should(elastic.NewMatchQuery("paper_title", not_word))
+			}
+		}
+		boolQuery.MustNot(nots_query)
+	}
+
+	if min_year > 10 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
+	}
+	if max_year < 2022 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	} // 尽量减少筛选优化速度
 
 	return boolQuery
 }

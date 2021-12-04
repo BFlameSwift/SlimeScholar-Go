@@ -250,12 +250,12 @@ func TitleSelectPaper(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
 		return
-	};
+	}
 	min_year, err := strconv.Atoi(c.Request.FormValue("min_year"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
 		return
-	};
+	}
 	max_year, err := strconv.Atoi(c.Request.FormValue("max_year"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
@@ -441,3 +441,109 @@ func DoiQueryPaper(c *gin.Context) {
 //		"details": paper_sequences})
 //	return
 //}
+
+// AdvancedSearch doc
+// @description es 高级搜索
+// @Tags elasticsearch
+// @Param musts formData string true "musts"
+// @Param nots formData string true "nots"
+// @Param atleast_words formData string true "atleast_words"
+// @Param min_year formData int true "min_year"
+// @Param max_year formData int true "max_year"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
+// @Param doctypes formData string true "doctypes"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数错误"}"
+// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/advanced [POST]
+func AdvancedSearch(c *gin.Context) {
+	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
+	//title := c.Request.FormValue("title")
+
+	page, err := strconv.Atoi(c.Request.FormValue("page"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
+		return
+	}
+	size, err := strconv.Atoi(c.Request.FormValue("size"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
+		return
+	}
+	min_year, err := strconv.Atoi(c.Request.FormValue("min_year"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
+		return
+	}
+	max_year, err := strconv.Atoi(c.Request.FormValue("max_year"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
+		return
+	}
+
+	doctypes_json := c.Request.FormValue("doctypes")
+	doctypes := make([]string, 0, 100)
+	err = json.Unmarshal([]byte(doctypes_json), &doctypes)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "doctypes格式错误", "status": 401})
+		return
+	}
+	musts_json := c.Request.FormValue("musts")
+	musts := make([]string, 0, 100)
+	err = json.Unmarshal([]byte(musts_json), &musts)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "musts格式错误", "status": 401})
+		return
+	}
+
+	atleast_words_json := c.Request.FormValue("atleast_words")
+	atleast_words := make([]string, 0, 100)
+	err = json.Unmarshal([]byte(atleast_words_json), &atleast_words)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "atleast_words 格式错误", "status": 401})
+		return
+	}
+	nots_json := c.Request.FormValue("nots")
+	nots := make([]string, 0, 100)
+	err = json.Unmarshal([]byte(nots_json), &nots)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "nots格式错误", "status": 401})
+		return
+	}
+
+	boolQuery := service.AdvancedSearch(doctypes, min_year, max_year, musts, atleast_words, nots)
+	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
+
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).
+		From((page - 1) * size).Do(context.Background())
+
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this advanced query %s not existed")
+		return
+	}
+	fmt.Println("search title", "hits :", searchResult.TotalHits())
+
+	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
+	for _, paper := range searchResult.Hits.Hits {
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		paper_sequences = append(paper_sequences, paper_map)
+	}
+	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	for i, paper_map_item := range paper_sequences {
+		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	}
+
+	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	// 暂时有问题，一数据弄好一起改
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences})
+	return
+}
