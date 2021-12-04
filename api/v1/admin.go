@@ -155,7 +155,7 @@ func ListAllSubmit(c *gin.Context) {
 		submit_map := make(map[string]interface{})
 		err = json.Unmarshal(obj_json, &submit_map)
 		submit_map["accept_time"] = submit_map["accept_time"].(map[string]interface{})["Time"]
-		if strings.Index(submit_map["accept_time"].(string), "00") >= 0 {
+		if strings.Index(submit_map["accept_time"].(string), "000") == 0 {
 			submit_map["accept_time"] = ""
 		}
 		submits_arr = append(submits_arr, submit_map)
