@@ -4,11 +4,10 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"strconv"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
-	"github.com/olivere/elastic/v7"
-
 	"golang.org/x/net/context"
 	"io"
 	"os"
@@ -19,7 +18,7 @@ const PAPER_DIR = "E:\\Paper"
 const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
-const BULK_SIZE = 100000
+const BULK_SIZE = 10000
 
 var fieldsMap map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
@@ -133,11 +132,11 @@ func JsonToPaper(jsonStr string) Paper {
 	return paper
 }
 func proc_single_paper(m map[string]interface{}) map[string]interface{} {
-	m["rank"],_ = strconv.ParseInt(m["rank"].(string),10,64)
-	m["citation_count"],_ = strconv.ParseInt(m["citation_count"].(string),10,64)
-	m["reference_count"],_ = strconv.ParseInt(m["reference_count"].(string),10,64)
-	m["paper_id"],_ = strconv.ParseInt(m["paper_id"].(string),10,64)
-	m["year"],_ = strconv.ParseInt(m["year"].(string),10,64)
+	m["rank"], _ = strconv.ParseInt(m["rank"].(string), 10, 64)
+	m["citation_count"], _ = strconv.ParseInt(m["citation_count"].(string), 10, 64)
+	m["reference_count"], _ = strconv.ParseInt(m["reference_count"].(string), 10, 64)
+	m["paper_id"], _ = strconv.ParseInt(m["paper_id"].(string), 10, 64)
+	m["year"], _ = strconv.ParseInt(m["year"].(string), 10, 64)
 	return m
 }
 func proc_file(file_path string, index string) {
@@ -163,11 +162,13 @@ func proc_file(file_path string, index string) {
 			break
 		}
 		json_str := line
- 
+
 		var m map[string]interface{} = make(map[string]interface{})
 		err = json.Unmarshal([]byte(json_str), &m)
-		if err !=nil{panic(err)}
-		reference_count,err := strconv.Atoi(m["reference_count"].(string))
+		if err != nil {
+			panic(err)
+		}
+		reference_count, err := strconv.Atoi(m["reference_count"].(string))
 		if reference_count > max_references_num {
 			max_references_num = reference_count
 		}
@@ -187,7 +188,9 @@ func proc_file(file_path string, index string) {
 			success_num += len(response.Succeeded())
 			fail_num += len(response.Failed())
 			fmt.Println("success_num", success_num, "fail_num", fail_num)
-
+			if fail_num > 0 {
+				fmt.Println(response.Errors)
+			}
 		}
 
 		if error_read != nil {
@@ -211,7 +214,9 @@ func proc_file(file_path string, index string) {
 	success_num += len(response.Succeeded())
 	fail_num += len(response.Failed())
 	//response,err = simpleBulkRequest.Do(context.Background())
-	if(len(response.Failed())>0){panic(err)}
+	if len(response.Failed()) > 0 {
+		panic(err)
+	}
 	if fail_num > 0 {
 		fmt.Println("error:")
 	}
@@ -254,9 +259,9 @@ func proc_author(file_path string, index string) {
 		//	continue
 		//} // 数据501行中存在"author_id": [],  过滤
 		//m["author_id"] = m["author_id"].([]interface{})[0].(string)
-		m["paper_count"] ,_= strconv.Atoi(m["paper_count"].(string))
-		m["citation_count"] ,_= strconv.Atoi(m["citation_count"].(string))
-		m["rank"] ,_= strconv.Atoi(m["rank"].(string))
+		m["paper_count"], _ = strconv.Atoi(m["paper_count"].(string))
+		m["citation_count"], _ = strconv.Atoi(m["citation_count"].(string))
+		m["rank"], _ = strconv.Atoi(m["rank"].(string))
 		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["author_id"].(string)).Doc(m)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
@@ -292,7 +297,7 @@ func proc_author(file_path string, index string) {
 	fmt.Println("success_num", success_num, "fail_num", fail_num)
 	fmt.Println(fieldsMap)
 }
-func proc_journal(file_path string, index string,main_id string) {
+func proc_journal(file_path string, index string, main_id string) {
 	open, err := os.Open(file_path)
 	if err != nil {
 		fmt.Println(file_path + "打开失败")
@@ -315,19 +320,17 @@ func proc_journal(file_path string, index string,main_id string) {
 		}
 		json_str := line
 
-		//_ = JsonToPaper(json_str)
-		//if(i<5){fmt.Println(paper)}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
-		if m[main_id] == nil{
-			fmt.Println("linenum!!!!",i)
+		if m[main_id] == nil {
+			fmt.Println("linenum!!!!", i)
 			continue
 		}
 		if index == "conference" {
-			if m["start"].(string) == ""{
+			if m["start"].(string) == "" {
 				m["start"] = "2021-11-30"
 			}
-			if m["end"].(string) == ""{
+			if m["end"].(string) == "" {
 				m["end"] = "2021-11-30"
 			}
 		}
@@ -342,11 +345,11 @@ func proc_journal(file_path string, index string,main_id string) {
 			}
 			success_num += len(response.Succeeded())
 			fail_num += len(response.Failed())
-			if fail_num > 0{fmt.Println((response.Failed()[0].Error))}
+			if fail_num > 0 {
+				fmt.Println((response.Failed()[0].Error))
+			}
 			fmt.Println("success_num", success_num, "fail_num", fail_num)
-
 		}
-
 		if error_read != nil {
 			if err == io.EOF {
 				fmt.Printf("%#v\n", line)
@@ -366,7 +369,81 @@ func proc_journal(file_path string, index string,main_id string) {
 	success_num += len(response.Succeeded())
 	fail_num += len(response.Failed())
 	if fail_num > 0 {
-		for _,fail := range response.Failed() {
+		for _, fail := range response.Failed() {
+			fmt.Println(fail.Error)
+		}
+	}
+	fmt.Println("line sum", i)
+	fmt.Println("success_num", success_num, "fail_num", fail_num)
+	fmt.Println(fieldsMap)
+}
+func proc_paper_rel(file_path string, index string, main_id string, other_type string) {
+	open, err := os.Open(file_path)
+	if err != nil {
+		fmt.Println(file_path + "打开失败")
+		return
+	}
+	scanner := bufio.NewScanner(open)
+	i := 0
+	fin, error := os.OpenFile(file_path, os.O_RDONLY, 0)
+	if error != nil {
+		panic(error)
+	}
+	defer fin.Close()
+	client := service.ESClient
+	bulkRequest := client.Bulk()
+	reader := bufio.NewReader(fin)
+	for {
+		line, error_read := reader.ReadString('\n')
+		if len(line) == 0 {
+			break
+		}
+		json_str := line
+
+		var m map[string]interface{}
+		_ = json.Unmarshal([]byte(json_str), &m)
+		if m[main_id] == nil {
+			fmt.Println("linenum!!!!", i)
+			continue
+		}
+		m[other_type] = m["rel"]
+		id := m[main_id].(string)
+		delete(m, "rel")
+		delete(m, main_id)
+		doc := elastic.NewBulkUpdateRequest().Index(index).Id(id).Doc(m).DocAsUpsert(true)
+		bulkRequest.Add(doc)
+		if i%BULK_SIZE == 0 {
+			response, err := bulkRequest.Do(context.Background())
+			if err != nil {
+				panic(err)
+			}
+			success_num += len(response.Succeeded())
+			fail_num += len(response.Failed())
+			if fail_num > 0 {
+				fmt.Println((response.Failed()[0].Error))
+			}
+			fmt.Println("success_num", success_num, "fail_num", fail_num)
+		}
+		if error_read != nil {
+			if err == io.EOF {
+				fmt.Printf("%#v\n", line)
+				break
+			}
+			panic(err)
+		}
+		i++
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+	response, err := bulkRequest.Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	success_num += len(response.Succeeded())
+	fail_num += len(response.Failed())
+	if fail_num > 0 {
+		for _, fail := range response.Failed() {
 			fmt.Println(fail.Error)
 		}
 	}
@@ -398,26 +475,29 @@ func load_authors() {
 }
 func load_journal() {
 	service.Init()
-	proc_journal("H:\\myJournals.txt", "journal","journal_id")
+	proc_journal("H:\\myJournals.txt", "journal", "journal_id")
 }
+
 //func load_incitations() {
 //	service.Init()
 //	proc_journal("H:\\ScholarinCitations.txt", "incitations")
 //}
-func load_paper_author(){
+func load_paper_author() {
 	service.Init()
-	proc_journal("H:\\myPaperAuthorAffiliations.txt","paper_author","paper_id")
+	proc_journal("H:\\myPaperAuthorAffiliations.txt", "paper_author", "paper_id")
 }
-func load_paper_rel(){
+func load_paper_rel() {
 	service.Init()
-	proc_journal("H:\\myPaperReferences.txt","reference","paper_id")
+	proc_journal("H:\\myPaperReferences.txt", "reference", "paper_id")
 }
-func load_conference(){
+func load_conference() {
 	service.Init()
-	proc_journal("H:\\myConferenceInstances.txt","conference","conference_id")
+	proc_journal("H:\\myConferenceInstances.txt", "conference", "conference_id")
 }
-
-
+func load_fields() {
+	service.Init()
+	proc_paper_rel("H:\\myPaperFields.txt", "paper", "paper_id", "fields")
+}
 func print1() {
 	for i := 0; i < 1; i++ {
 		fmt.Printf("%s\n", fmt.Sprintf("%04d", i))
@@ -425,6 +505,7 @@ func print1() {
 }
 func main() {
 	service.Init()
+	load_fields()
 	//load_paper()
 
 	//print1()
@@ -432,7 +513,7 @@ func main() {
 
 	//load_journal()
 	//load_incitations()
-	load_paper_rel()
+	//load_paper_rel()
 	//load_paper_a uthor()
 	//load_conference()
 	//load_journal()

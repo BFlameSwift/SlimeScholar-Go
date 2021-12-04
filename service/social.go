@@ -103,13 +103,21 @@ func DeleteATagPaper(ID uint64) (err error) {
 //创建评论
 func CreateAComment(comment *model.Comment) (notCreated bool) {
 	if err := global.DB.Create(&comment).Error; err != nil {
+		//更新回复数量
+		com := comment
+		for com.RelateID != 0{
+			relateCom,_ := QueryAComment(com.RelateID)
+			relateCom.ReplyCount++;
+			global.DB.Save(relateCom)
+			com = relateCom
+		}
 		return true
 	}
 	return false
 }
 
 // 根据评论 ID 查询某个评论
-func QueryAComment(commentID uint64) (comment model.Comment, notFound bool) {
+func QueryAComment(commentID uint64) (comment *model.Comment, notFound bool) {
 	err := global.DB.Where("comment_id = ?", commentID).First(&comment).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return comment, true
@@ -120,7 +128,8 @@ func QueryAComment(commentID uint64) (comment model.Comment, notFound bool) {
 	}
 }
 
-func UpdateCommentLike(comment model.Comment, option uint64) (err error) {
+//点赞或拉踩
+func UpdateCommentLike(comment *model.Comment, option uint64) (err error) {
 	if option == 0 {
 		comment.Like++
 	} else if option == 1 {
@@ -128,6 +137,27 @@ func UpdateCommentLike(comment model.Comment, option uint64) (err error) {
 	}
 	err = global.DB.Save(comment).Error
 	return err
+}
+
+//根据文献id获取文献所有评论
+func QueryComsByPaperId(paperId string)(coms []model.Comment){
+	coms = make([]model.Comment, 0)
+	global.DB.Where(map[string]interface{}{"paper_id":paperId,"relate_id":0}).Order("comment_time desc").Find(&coms)
+	return coms
+}
+
+//查询某条评论的所有回复
+func QueryComReply(relateID uint64)(coms []model.Comment){
+	coms = make([]model.Comment, 0)
+	global.DB.Where("relate_id = ?",relateID).Order("comment_time").Find(&coms)
+	tmp := coms
+	for _, com := range tmp{
+		comcom := QueryComReply(com.CommentID)
+		for _, tmptmp := range comcom{
+			coms = append(coms,tmptmp)
+		}
+	}
+	return coms
 }
 
 // func JsonToPaper(jsonStr string) model.Paper {

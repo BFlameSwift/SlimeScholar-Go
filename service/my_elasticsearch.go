@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
@@ -133,15 +134,26 @@ func RealButerrorUpdate(Params map[string]string) string {
 	return res.Result
 
 }
-func GetsByIndexId(index string, id string) *elastic.GetResult {
+func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
 	var err error
 
 	get1, err = Client.Get().Index(index).Id(id).Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
+	return get1, err
+}
+func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
+	//通过id查找
+	var get1 *elastic.GetResult
+	//var err error
+
+	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
+	//if err != nil {
+	//	panic(err)
+	//}
 	return get1
 }
 
@@ -338,7 +350,7 @@ func IdsGetItems(id_list []string, index string) map[string]interface{} {
 
 func SimplifyPaper(m map[string]interface{}) map[string]interface{} {
 	var ret map[string]interface{} = make(map[string]interface{})
-	ret["id"], ret["authors"], ret["citation_num"], ret["journalName"], ret["paperAbstract"], ret["reference_num"], ret["year"], ret["title"] = m["id"], m["authors"], m["citation_num"], m["journalName"], m["paperAbstract"], m["reference_num"], m["year"], m["title"]
+	ret["id"], ret["authors"], ret["citation_count"], ret["journalName"], ret["paperAbstract"], ret["reference_count"], ret["year"], ret["title"] = m["id"], m["authors"], m["citation_num"], m["journalName"], m["paperAbstract"], m["reference_num"], m["year"], m["title"]
 	return ret
 }
 
@@ -421,12 +433,94 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		if index == "journal" || index == "conference" || index == "field" {
 			m = result_map[bucket.Key.(string)].(map[string]interface{})
 			m["count"] = bucket.DocCount
+			m["id"] = bucket.Key
 		} else {
 			m[bucket.Key.(string)] = bucket.DocCount
 		}
 		my_list = append(my_list, m)
 	}
 	return my_list
+}
+
+func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_year int) *elastic.BoolQuery {
+	boolQuery := elastic.NewBoolQuery()
+
+	//fmt.Println(len(doctypes))
+	if len(doctypes) > 0 {
+		doctype_query := elastic.NewBoolQuery()
+		for _, doctype := range doctypes {
+			doctype_query.Should(elastic.NewMatchQuery("doctype", doctype))
+		}
+		boolQuery.Must(doctype_query)
+	}
+
+	if len(journals) > 0 {
+		journal_query := elastic.NewBoolQuery()
+		for _, journal := range journals {
+			journal_query.Should(elastic.NewTermQuery("journal_id", journal))
+		}
+		boolQuery.Must(journal_query)
+	}
+	if min_year > 10 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
+	}
+	if max_year < 2022 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	} // 尽量优化速度
+
+	return boolQuery
+}
+
+func AdvancedSearch(doctypes []string, min_year int, max_year int, musts []string, shoulds []string, nots []string) *elastic.BoolQuery {
+	boolQuery := elastic.NewBoolQuery()
+	// 很臭。。有办法但是懒得弄了。。should must的逻辑麻烦
+	//fmt.Println(len(doctypes))
+	if len(doctypes) > 0 {
+		doctype_query := elastic.NewBoolQuery()
+		for _, doctype := range doctypes {
+			doctype_query.Should(elastic.NewMatchQuery("doctype", doctype))
+		}
+		boolQuery.Must(doctype_query)
+	}
+	if len(musts) > 0 {
+		musts_query := elastic.NewBoolQuery()
+		for _, must := range musts {
+			must_list := strings.Split(must, " ")
+			for _, must_word := range must_list {
+				musts_query.Must(elastic.NewMatchQuery("paper_title", must_word))
+			}
+		}
+		boolQuery.Must(musts_query)
+	}
+	if len(shoulds) > 0 {
+		shoulds_query := elastic.NewBoolQuery()
+		for _, should := range shoulds {
+			should_words := strings.Split(should, " ")
+			for _, should_word := range should_words {
+				shoulds_query.Should(elastic.NewMatchQuery("paper_title", should_word))
+			}
+		}
+		boolQuery.Must(shoulds_query)
+	}
+	if len(nots) > 0 {
+		nots_query := elastic.NewBoolQuery()
+		for _, not := range nots {
+			not_list := strings.Split(not, " ")
+			for _, not_word := range not_list {
+				nots_query.Should(elastic.NewMatchQuery("paper_title", not_word))
+			}
+		}
+		boolQuery.MustNot(nots_query)
+	}
+
+	if min_year > 10 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
+	}
+	if max_year < 2022 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	} // 尽量减少筛选优化速度
+
+	return boolQuery
 }
 
 // func main() {
