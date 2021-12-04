@@ -443,13 +443,18 @@ func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_yea
 
 	if len(journals) > 0 {
 		journal_query := elastic.NewBoolQuery()
-		for journal := range journals {
+		for _, journal := range journals {
 			journal_query.Should(elastic.NewTermQuery("journal_id", journal))
 		}
 		boolQuery.Must(journal_query)
 	}
-	boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
-	boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	if min_year > 10 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
+	}
+	if max_year < 2022 {
+		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
+	} // 尽量优化速度
+
 	return boolQuery
 }
 
