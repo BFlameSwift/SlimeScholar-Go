@@ -258,6 +258,65 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/select/paper/title:
+    post:
+      description: es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401
+        参数格式错误
+      parameters:
+      - description: title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: min_year
+        in: formData
+        name: min_year
+        required: true
+        type: integer
+      - description: max_year
+        in: formData
+        name: max_year
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      - description: doctypes
+        in: formData
+        name: journals
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "page 不是整数"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "论文不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/update/mytype:
     post:
       description: 更新es索引

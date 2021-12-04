@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 // 用户
 type User struct {
@@ -18,6 +21,7 @@ type User struct {
 	HasConfirmed  bool      `gorm:"default:false" json:"has_confirmed"`
 	ConfirmNumber int       `gorm:"default:0" json:"confirm_number"`
 	RegTime       time.Time `gorm:"column:reg_time;type:datetime" json:"reg_time"`
+	PaperCount    int       `gorm:"default:0" json:"paper_count"`
 }
 type Author struct {
 	AuthorId            string `gorm:"primary_key; not null;" json:"author_id"`
@@ -44,15 +48,17 @@ type AuthorConnection struct {
 
 // TOOD 申请成为认证学者的申请表
 type SubmitScholar struct {
-	SubmitID        uint64    `gorm:"primary_key; not null" json:"submit_id"`
-	UserID          uint64    `gorm:"not null;" json:"user_id"`
-	AuthorName      string    `gorm:"not null;type:varchar(32)" json:"real_name"`
-	Status          int       `gorm:"default:0" json:"status"`                    // 0:未处理，1，同意申请，2拒绝申请
-	Content         string    `gorm:"type:varchar(256)" json:"content"`           // 填写内容
-	AuthorID        string    `gorm:"type:varchar(32);not null" json:"author_id"` // 被申请的作者ID
-	Fields          string    `gorm:"type:varchar(256);" json:"fields"`
-	HomePage        string    `gorm:"type:varchar(64);" json:"home_page"`
-	WorkEmail       string    `gorm:"type:varchar(64)" json:"work_email"`
-	AffiliationName string    `gorm:"type:varchar(64)" json:"affiliation_name"`
-	CreatedTime     time.Time `gorm:"column:reg_time;type:datetime" json:"created_time"`
+	SubmitID        uint64       `gorm:"primary_key; not null" json:"submit_id"`
+	UserID          uint64       `gorm:"not null;" json:"user_id"`
+	AuthorName      string       `gorm:"not null;type:varchar(32)" json:"real_name"`
+	Status          int          `gorm:"default:0" json:"status"`                    // 0:未处理，1，同意申请，2拒绝申请
+	Content         string       `gorm:"type:varchar(256)" json:"content"`           // 填写内容
+	AuthorID        string       `gorm:"type:varchar(32);not null" json:"author_id"` // 被申请的作者ID
+	Fields          string       `gorm:"type:varchar(256);" json:"fields"`
+	HomePage        string       `gorm:"type:varchar(64);" json:"home_page"`
+	WorkEmail       string       `gorm:"type:varchar(64)" json:"work_email"`
+	AffiliationName string       `gorm:"type:varchar(64)" json:"affiliation_name"`
+	CreatedTime     time.Time    `gorm:"column:reg_time;type:datetime" json:"created_time"`
+	AcceptTime      sql.NullTime `gorm:"type:TIMESTAMP NULL" json:"accept_time"`
+	PaperCount      int          `gorm:"type:integer;null" json:"paper_count"`
 }
