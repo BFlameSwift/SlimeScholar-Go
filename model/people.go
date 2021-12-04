@@ -59,6 +59,6 @@ type SubmitScholar struct {
 	WorkEmail       string       `gorm:"type:varchar(64)" json:"work_email"`
 	AffiliationName string       `gorm:"type:varchar(64)" json:"affiliation_name"`
 	CreatedTime     time.Time    `gorm:"column:reg_time;type:datetime" json:"created_time"`
-	AcceptTime      sql.NullTime `gorm:"column:accept_time;type:datetime" json:"accept_time"`
+	AcceptTime      sql.NullTime `gorm:"type:TIMESTAMP NULL" json:"accept_time"`
 	PaperCount      int          `gorm:"type:integer;null" json:"paper_count"`
 }

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -112,12 +114,15 @@ func CheckSubmit(c *gin.Context) {
 		submit.Status = 1
 		service.MakeUserScholar(user, submit)
 		service.SendCheckAnswer(user.Email, true, content)
+		submit.AcceptTime = sql.NullTime{Time: time.Now(), Valid: true}
+
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})
 		return
 	}
-	submit.AcceptTime = sql.NullTime{Time: time.Now()}
+
 	err = global.DB.Save(submit).Error
+	fmt.Println(submit.AcceptTime)
 	if err != nil {
 		panic(err)
 	}
@@ -140,10 +145,24 @@ func ListAllSubmit(c *gin.Context) {
 	}
 
 	submits, _ := service.QuerySubmitByType(mytype)
-
+	submits_arr := make([]interface{}, 0)
+	for _, obj := range submits {
+		// accept_time 是sql。Nulltime h格式，一下的操作只是为了将这个格式转化为要求的格式罢了
+		obj_json, err := json.Marshal(obj)
+		if err != nil {
+			panic(err)
+		}
+		submit_map := make(map[string]interface{})
+		err = json.Unmarshal(obj_json, &submit_map)
+		submit_map["accept_time"] = submit_map["accept_time"].(map[string]interface{})["Time"]
+		if strings.Index(submit_map["accept_time"].(string), "00") >= 0 {
+			submit_map["accept_time"] = ""
+		}
+		submits_arr = append(submits_arr, submit_map)
+	}
 	if err != nil {
 		panic(err)
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "submits": submits, "submit_count": len(submits)})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "submits": submits_arr, "submit_count": len(submits)})
 	return
 }
