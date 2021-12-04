@@ -24,6 +24,6 @@ func main() {
 	//gin.DefaultWriter = io.MultiWriter(f)
 	r := initialize.SetupRouter()
 	service.Init()
-	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/backend/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
 }
