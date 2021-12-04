@@ -134,15 +134,26 @@ func RealButerrorUpdate(Params map[string]string) string {
 	return res.Result
 
 }
-func GetsByIndexId(index string, id string) *elastic.GetResult {
+func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
 	var err error
 
 	get1, err = Client.Get().Index(index).Id(id).Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
+	return get1, err
+}
+func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
+	//通过id查找
+	var get1 *elastic.GetResult
+	//var err error
+
+	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
+	//if err != nil {
+	//	panic(err)
+	//}
 	return get1
 }
 
