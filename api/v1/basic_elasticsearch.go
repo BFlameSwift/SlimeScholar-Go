@@ -220,7 +220,6 @@ func TitleQueryPaper(c *gin.Context) {
 	}
 	aggregation := make(map[string]interface{})
 
-	fmt.Println(len(agg.Buckets))
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
 	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
 	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")

@@ -294,7 +294,7 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("paper_id", paper_id_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
