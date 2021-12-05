@@ -716,8 +716,8 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "id",
-                        "name": "id",
+                        "description": "文献id",
+                        "name": "paper_id",
                         "in": "formData",
                         "required": true
                     },
@@ -943,7 +943,7 @@ var doc = `{
         },
         "/social/get/comments": {
             "post": {
-                "description": "获取文献所有评论",
+                "description": "获取文献所有评论，时间倒序",
                 "tags": [
                     "社交"
                 ],

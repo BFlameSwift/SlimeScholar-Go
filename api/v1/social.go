@@ -239,7 +239,7 @@ func DeleteATagPaper(c *gin.Context){
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
-// @Param id formData string true "id"
+// @Param paper_id formData string true "文献id"
 // @Param content formData string true "评论内容"
 // @Success 200 {string} string "{"success": true, "message": "评论创建成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
@@ -249,14 +249,22 @@ func DeleteATagPaper(c *gin.Context){
 func CreateAComment (c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID,authorization,c)
-	if err{
-		return
-	}
+	user,_ := VerifyLogin(userID,authorization,c)
 
-	id := c.Request.FormValue("id")
+	id := c.Request.FormValue("paper_id")
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"] = "paper", id
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
+	var paper = make(map[string]interface{})
+	_ = json.Unmarshal(body_byte, &paper)
+
 	content := c.Request.FormValue("content")
-	comment := model.Comment{UserID:userID, PaperID: id, CommentTime: time.Now(), Content:content}
+
+	comment := model.Comment{UserID:user.UserID, Username:user.Username,
+		PaperID: paper["paper_id"], PaperTitle:paper["paper_title"],
+		CommentTime: time.Now(), Content:content}
+
 	notCreated := service.CreateAComment(&comment)
 	if notCreated{
 		c.JSON(403, gin.H{"success": false,"status":  403, "message": "评论创建失败"})
@@ -304,25 +312,32 @@ func LikeorUnlike (c *gin.Context){
 func ReplyAComment(c *gin.Context)  {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,err := VerifyLogin(userID,authorization,c)
-	if err{
-		return
-	}
+	user,_ := VerifyLogin(userID,authorization,c)
 
 	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,_ := service.QueryAComment(comment_id)
 
 	content := c.Request.FormValue("content")
-	reply := model.Comment{UserID:userID, PaperID:comment.PaperID, 
+	reply := model.Comment{UserID:user.UserID, Username:user.Username, 
+		PaperID:comment.PaperID, PaperTitle:comment.PaperTitle,
 		CommentTime:time.Now(), Content:content, RelateID:comment_id}
 	service.CreateAComment(&reply)
-	
-	utils.SendReplyEmail(user.Email)
+
+	var map_param map[string]string = make(map[string]string)
+	map_param["index"], map_param["id"] = "paper", comment.PaperID
+	ret, _ := service.Gets(map_param)
+	body_byte, _ := json.Marshal(ret.Source)
+	var paper = make(map[string]interface{})
+	_ = json.Unmarshal(body_byte, &paper)
+	paper_url := "https://dx.doi.org/" + paper["doi"].(string)
+
+	be_reply_user = service.QueryAUserByID(comment.Username)
+	utils.SendReplyEmail(be_reply_user.Email,paper_url)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "回复成功"})
 }
 
 // GetPaperComment doc
-// @description 获取文献所有评论
+// @description 获取文献所有评论，时间倒序
 // @Tags 社交
 // @Param paper_id formData string true "文献id"
 // @Success 200 {string} string "{"success": true, "message": "查找成功"}"
@@ -348,27 +363,26 @@ func GetPaperComment(c *gin.Context){
 		var com = make(map[string]interface{})
 		com["id"] = comment.CommentID
 		com["like"] = comment.Like
-		user, _ := service.QueryAUserByID(comment.UserID)
-		com["user_id"] = user.UserID
-		com["username"] = user.Username
+		com["user_id"] = comment.UserID
+		com["username"] = comment.Username
 		com["content"] = comment.Content
 		com["time"] = comment.CommentTime
 		com["reply_count"] = comment.ReplyCount
 		// fmt.Println(com)
 		dataList = append(dataList,com)
 	}
-	fmt.Println(dataList)
+	// fmt.Println(dataList)
 
 	var data = make(map[string]interface{})
 	data["paper_id"] = paperID
 
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["id"] = "paper", paperID
-	ret, _ := service.Gets(map_param)
-	body_byte, _ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte, &paper)
-	data["paper_title"] = paper["paper_title"]
+	// var map_param map[string]string = make(map[string]string)
+	// map_param["index"], map_param["id"] = "paper", paperID
+	// ret, _ := service.Gets(map_param)
+	// body_byte, _ := json.Marshal(ret.Source)
+	// var paper = make(map[string]interface{})
+	// _ = json.Unmarshal(body_byte, &paper)
+	data["paper_title"] = comments[0].PaperTitle
 	
 	data["comments"] = dataList
 
@@ -403,18 +417,18 @@ func GetComReply(c *gin.Context){
 	var data = make(map[string]interface{})
 	data["paper_id"] = comment.PaperID
 
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["id"] = "paper", comment.PaperID
-	ret, _ := service.Gets(map_param)
-	body_byte, _ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte, &paper)
-	data["paper_title"] = paper["paper_title"]
+	// var map_param map[string]string = make(map[string]string)
+	// map_param["index"], map_param["id"] = "paper", comment.PaperID
+	// ret, _ := service.Gets(map_param)
+	// body_byte, _ := json.Marshal(ret.Source)
+	// var paper = make(map[string]interface{})
+	// _ = json.Unmarshal(body_byte, &paper)
+	data["paper_title"] = comment.PaperTitle
 
 	var base_comment = make(map[string]interface{})
 	base_comment["id"] = comment.CommentID
-	user, _ := service.QueryAUserByID(comment.UserID)
-	base_comment["username"] = user.Username
+	// user, _ := service.QueryAUserByID(comment.UserID)
+	base_comment["username"] = xomment.Username
 	base_comment["time"] = comment.CommentTime
 	base_comment["content"] = comment.Content
 	data["base_comment"] = base_comment
@@ -427,11 +441,11 @@ func GetComReply(c *gin.Context){
 		answer["content"] = reply.Content
 		answer["answerIt"] = false
 		answer["myAnswer"] = " "
-		reply_user, _ := service.QueryAUserByID(reply.UserID)
-		answer["reply_username"] = reply_user.Username
+		// reply_user, _ := service.QueryAUserByID(reply.UserID)
+		answer["reply_username"] = reply.Username
 		comment,_ = service.QueryAComment(reply.RelateID)
-		replied_user,_ := service.QueryAUserByID(comment.UserID)
-		answer["be_replied_username"] = replied_user.Username
+		// replied_user,_ := service.QueryAUserByID(comment.UserID)
+		answer["be_replied_username"] = comment.Username
 		answers = append(answers,answer)
 	}
 	data["answers"] = answers
