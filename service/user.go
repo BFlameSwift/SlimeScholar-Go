@@ -221,8 +221,8 @@ func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFoun
 		return submit, false
 	}
 }
-func QueryASubmitExist(author_id string, user_id uint64) (submit model.SubmitScholar, notFound bool) {
-	err := global.DB.Where("author_id = ? AND user_id = ?", author_id, user_id).First(&submit).Error
+func QueryASubmitExist(user_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("user_id = ?", user_id).First(&submit).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return submit, true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {

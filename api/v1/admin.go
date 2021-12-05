@@ -46,13 +46,11 @@ func CreateSubmit(c *gin.Context) {
 		return
 	}
 	if the_submit, notFound := service.QueryASubmitByAuthor(author_id); !notFound {
-
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "该作者已被认领", "status": 405, "the_authorname": the_submit.AuthorName})
 		return
 	}
-	if _, notFound := service.QueryASubmitExist(author_id, user_id_u64); !notFound {
-
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "您已经对该作者提过认领认清，请勿重复申请", "status": 406})
+	if _, notFound := service.QueryASubmitExist(user_id_u64); !notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "您已经是认证学者，请勿重复申请", "status": 406})
 		return
 	}
 	// TODO Paper COunt根据实际输入。：
