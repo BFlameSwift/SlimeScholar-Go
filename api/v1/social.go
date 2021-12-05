@@ -6,7 +6,7 @@ import (
 	"time"
 	"encoding/json"
 	// "container/list"
-	"fmt"
+	// "fmt"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -262,7 +262,7 @@ func CreateAComment (c *gin.Context){
 	content := c.Request.FormValue("content")
 
 	comment := model.Comment{UserID:user.UserID, Username:user.Username,
-		PaperID: paper["paper_id"], PaperTitle:paper["paper_title"],
+		PaperID: paper["paper_id"].(string), PaperTitle:paper["paper_title"].(string),
 		CommentTime: time.Now(), Content:content}
 
 	notCreated := service.CreateAComment(&comment)
@@ -331,7 +331,7 @@ func ReplyAComment(c *gin.Context)  {
 	_ = json.Unmarshal(body_byte, &paper)
 	paper_url := "https://dx.doi.org/" + paper["doi"].(string)
 
-	be_reply_user = service.QueryAUserByID(comment.Username)
+	be_reply_user,_ := service.QueryAUserByID(comment.UserID)
 	utils.SendReplyEmail(be_reply_user.Email,paper_url)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "回复成功"})
 }
@@ -428,7 +428,7 @@ func GetComReply(c *gin.Context){
 	var base_comment = make(map[string]interface{})
 	base_comment["id"] = comment.CommentID
 	// user, _ := service.QueryAUserByID(comment.UserID)
-	base_comment["username"] = xomment.Username
+	base_comment["username"] = comment.Username
 	base_comment["time"] = comment.CommentTime
 	base_comment["content"] = comment.Content
 	data["base_comment"] = base_comment
