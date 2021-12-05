@@ -28,10 +28,10 @@ import (
 func GetUserTag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_, err := VerifyLogin(userID,authorization,c)
-	if err{
-		return
-	}
+	VerifyLogin(userID,authorization,c)
+	// if err{
+	// 	return
+	// }
 	
 	tags,notFoundTags := service.QueryTagList(userID)
 	if notFoundTags{
@@ -60,30 +60,18 @@ func GetUserTag(c *gin.Context) {
 // @Success 200 {string} string "{"success": true, "message": "查看文献成功", "data": "标签下的文章列表"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
-// @Failure 403 {string} string "{"success": false, "message": "用户未设置该标签"}"
 // @Failure 402 {string} string "{"success": false, "message": "标签下没有文章"}"
 // @Router /social/get/tag/paper [POST]
 func GetTagPaper(c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_, err := VerifyLogin(userID,authorization,c)
-	if err{
-		return
-	}
+	VerifyLogin(userID,authorization,c)
 
 	tagName := c.Request.FormValue("tag_name")
-	tag, notFoundTag := service.QueryATag(userID,tagName)
-	if notFoundTag{
-		c.JSON(403, gin.H{
-			"success": false,
-			"status":  403,
-			"message": "用户未设置该标签",
-		})
-		return
-	}
+	tag,_ := service.QueryATag(userID,tagName)
 
-	papers,notFoundpaper := service.QueryTagPaper(tag.TagID)
-	if notFoundpaper{
+	papers := service.QueryTagPaper(tag.TagID)
+	if papers == nil {
 		c.JSON(402, gin.H{
 			"success": false,
 			"status":  402,
@@ -91,11 +79,27 @@ func GetTagPaper(c *gin.Context){
 		})
 		return
 	}
+
+	var data []map[string]interface{}
+	for _, tag_paper := range papers{
+		var tmp = make(map[string]interface{})
+		tmp["collect_time"] = tag_paper.CreateTime
+
+		var map_param map[string]string = make(map[string]string)
+		map_param["index"], map_param["id"] = "paper", tag_paper.PaperID
+		ret, _ := service.Gets(map_param)
+		body_byte, _ := json.Marshal(ret.Source)
+		var paper = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper)
+
+		tmp["paper"] = paper
+		data = append(data,tmp)
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查看文献成功",
-		"data":    papers,
+		"data":    data,
 	})
 
 }
@@ -227,26 +231,6 @@ func DeleteATagPaper(c *gin.Context){
 	tagPaper, _ := service.QueryATagPaper(tag.TagID,id)
 	service.DeleteATagPaper(tagPaper.ID)
 	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "删除成功"})
-}
-
-func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User, err bool){
-	user, notFoundUserByID := service.QueryAUserByID(userID)
-	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
-
-	if authorization == "" || !verify_answer {
-		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
-		return user,true
-	}
-
-	if notFoundUserByID {
-		c.JSON(404, gin.H{
-			"success": false,
-			"status":  404,
-			"message": "用户ID不存在",
-		})
-		return user,true
-	}
-	return user,false
 }
 
 // CreateAComment doc
@@ -458,4 +442,24 @@ func GetComReply(c *gin.Context){
 		"message": "查找成功",
 		"data": data,
 	})
+}
+
+func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User, err bool){
+	user, notFoundUserByID := service.QueryAUserByID(userID)
+	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
+
+	if authorization == "" || !verify_answer {
+		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
+		return user,true
+	}
+
+	if notFoundUserByID {
+		c.JSON(404, gin.H{
+			"success": false,
+			"status":  404,
+			"message": "用户ID不存在",
+		})
+		return user,true
+	}
+	return user,false
 }

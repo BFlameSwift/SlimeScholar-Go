@@ -51,9 +51,9 @@ type TagPaper struct{
 	TagID		uint64	`json:"tag_id"`
 	TagName		string	`gorm:"type:varchar(32);" json:"tag_name"`
 	PaperID		string	`gorm:"type:varchar(32);" json:"paper_id"`
-	Title  string `gorm:"type:varchar(256);" json:"title"`
-	Abstract string `gorm:"type:varchar(1000);" json:"paperAbstrac"`
-	JournalName string `gorm:"type:varchar(256);" json:"journal_name"`
+	// Title  string `gorm:"type:varchar(256);" json:"title"`
+	// Abstract string `gorm:"type:varchar(1000);" json:"paperAbstrac"`
+	// JournalName string `gorm:"type:varchar(256);" json:"journal_name"`
 	CreateTime	time.Time	`gorm:"type:datetime" json:"create_time"`
 }
 
