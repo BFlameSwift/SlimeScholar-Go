@@ -35,11 +35,11 @@ func GetPaper(c *gin.Context) {
 	var paper = make(map[string]interface{})
 	_ = json.Unmarshal(body_byte, &paper)
 	// 查找信息
-	paper["journal"] = ""
+	paper["journal"] = make(map[string]interface{})
 	if paper["journal_id"].(string) != "" {
 		paper["journal"] = service.GetsByIndexIdWithout("journal", paper["journal_id"].(string)).Source
 	}
-	paper["conference"] = ""
+	paper["conference"] = make(map[string]interface{})
 	if paper["conference_id"].(string) != "" {
 		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
@@ -191,6 +191,7 @@ func TitleQueryPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
+
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
 		return
@@ -219,6 +220,7 @@ func TitleQueryPaper(c *gin.Context) {
 	}
 	aggregation := make(map[string]interface{})
 
+	fmt.Println(len(agg.Buckets))
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
 	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
 	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
