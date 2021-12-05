@@ -51,7 +51,7 @@ func QueryAUserByUsername(username string) (user model.User, notFound bool) {
 }
 
 // 根据用户email 查询某个用户
-func QueryAUserByEmail(email string)(user model.User, notFound bool){
+func QueryAUserByEmail(email string) (user model.User, notFound bool) {
 	err := global.DB.Where("email = ?", email).First(&user).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return user, true
@@ -79,7 +79,7 @@ func UpdateConfirmAUser(user *model.User, has_comfirmed bool) error {
 		err := global.DB.Save(user).Error
 		return err
 	}
-	user.HasComfirmed = true
+	user.HasConfirmed = true
 	err := global.DB.Save(user).Error
 	return err
 }
@@ -92,6 +92,30 @@ func SendRegisterEmail(themail string, number int) {
 		themail,
 	}
 	body := "Hello,This is a email,这是你的注册码" + strconv.Itoa(number)
+	err := utils.SendMail(mailTo, subject, body)
+	if err != nil {
+		log.Println(err)
+		fmt.Println("send fail")
+		return
+	}
+	fmt.Println("sendRegisterEmail successfully")
+	return
+}
+
+// 发送入驻申请邮件
+func SendCheckAnswer(themail string, success bool, content string) {
+	subject := "欢迎注册Slime学术成果分享平台"
+	// 邮件正文
+	mailTo := []string{
+		themail,
+	}
+	body := "Hello,This is a email, "
+
+	if success {
+		body += "您的入驻申请已经成功，请登录本网站查看" + "审批意见如下:\n\t" + content
+	} else {
+		body += "抱歉，您的入驻申请存在问题，入驻失败" + "审批意见如下:\n\t" + content
+	}
 	err := utils.SendMail(mailTo, subject, body)
 	if err != nil {
 		log.Println(err)
@@ -161,4 +185,74 @@ func VerifyAuthorization(strToken string, userID uint64, username, password stri
 	}
 	return true, nil
 
+}
+func CreateASubmit(submit *model.SubmitScholar) (err error) {
+	if err = global.DB.Create(&submit).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func CreateBrowseHistory(browser *model.BrowsingHistory) (err error) {
+	if err = global.DB.Create(&browser).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 根据提交Submit ID 查询某个Submit
+func QueryASubmitByID(submit_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("submit_id = ?", submit_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
+
+func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("author_id = ? AND status = 1", author_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
+func QueryASubmitExist(author_id string, user_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("author_id = ? AND user_id = ?", author_id, user_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
+
+func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("status = ?", mytype).Find(&submits).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submits, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submits, false
+	}
+}
+
+func MakeUserScholar(user model.User, submit model.SubmitScholar) {
+	user.WorkEmail = submit.WorkEmail
+	user.AuthorName = submit.AuthorName
+	user.Affiliation = submit.AffiliationName
+	user.UserType = 1
+	user.Fields = submit.Fields
+	user.HomePage = submit.HomePage
+	user.PaperCount += submit.PaperCount
+	err := global.DB.Save(&user).Error
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,7 +1,9 @@
 package model
 
-// 本文件记录 主要涉及到人的表：包括人与人的关系
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 // 用户
 type User struct {
@@ -11,10 +13,15 @@ type User struct {
 	UserInfo      string    `gorm:"size:255;" json:"user_info"`
 	UserType      uint64    `gorm:"default:0" json:"user_type"` // 0: 普通用户，1: 认证机构用户,2 管理员
 	Affiliation   string    `gorm:"size:64;" json:"affiliation"`
+	AuthorName    string    `gorm:"size:64;" json:"author_name"`
+	HomePage      string    `gorm:"size:64;" json:"home_page"`
 	Email         string    `gorm:"size:32;" json:"email"`
-	HasComfirmed  bool      `gorm:"default:false" json:"has_comfirmed"`
+	WorkEmail     string    `gorm:"size:32;" json:"work_email"`
+	Fields        string    `gorm:"size:256;" json:"fields"`
+	HasConfirmed  bool      `gorm:"default:false" json:"has_confirmed"`
 	ConfirmNumber int       `gorm:"default:0" json:"confirm_number"`
 	RegTime       time.Time `gorm:"column:reg_time;type:datetime" json:"reg_time"`
+	PaperCount    int       `gorm:"default:0" json:"paper_count"`
 }
 type Author struct {
 	AuthorId            string `gorm:"primary_key; not null;" json:"author_id"`
@@ -28,7 +35,7 @@ type Author struct {
 type Affiliation struct {
 	AffiliationName string `gorm:"type:varchar(150)" json:"affiliation_name"`
 	AffiliationID   string `gorm:"type:varchar(32);primary_key" json:"affiliation_id"`
-	OfficalPage     string `gorm:"type:varchar(86)" json:"offical_page"`
+	OffcialPage     string `gorm:"type:varchar(86)" json:"offcial_page"`
 	PaperCount      int    `gorm:"type:integer" json:"paper_count"`
 	CitationCount   int    `gorm:"type:integer" json:"citation_count"`
 }
@@ -41,10 +48,17 @@ type AuthorConnection struct {
 
 // TOOD 申请成为认证学者的申请表
 type SubmitScholar struct {
-	SubmitID uint64 `gorm:"primary_key; not null" json:"submit_id"`
-	UserID   uint64 `gorm:"not null;" json:"user_id"`
-	RealName string `gorm:"not null;type:varchar(32)" json:"real_name"`
-	Status   int    `gorm:"default" json:"status"`                      // 0:未处理，1，同意申请，2拒绝申请
-	Content  string `gorm:"type:varchar(256)" json:"content"`           // 填写内容
-	AuthorID string `gorm:"type:varchar(32);not null" json:"author_id"` // 被申请的作者ID
+	SubmitID        uint64       `gorm:"primary_key; not null" json:"submit_id"`
+	UserID          uint64       `gorm:"not null;" json:"user_id"`
+	AuthorName      string       `gorm:"not null;type:varchar(32)" json:"real_name"`
+	Status          int          `gorm:"default:0" json:"status"`                    // 0:未处理，1，同意申请，2拒绝申请
+	Content         string       `gorm:"type:varchar(256)" json:"content"`           // 填写内容
+	AuthorID        string       `gorm:"type:varchar(32);not null" json:"author_id"` // 被申请的作者ID
+	Fields          string       `gorm:"type:varchar(256);" json:"fields"`
+	HomePage        string       `gorm:"type:varchar(64);" json:"home_page"`
+	WorkEmail       string       `gorm:"type:varchar(64)" json:"work_email"`
+	AffiliationName string       `gorm:"type:varchar(64)" json:"affiliation_name"`
+	CreatedTime     time.Time    `gorm:"column:reg_time;type:datetime" json:"created_time"`
+	AcceptTime      sql.NullTime `gorm:"type:TIMESTAMP NULL" json:"accept_time"`
+	PaperCount      int          `gorm:"type:integer;null" json:"paper_count"`
 }

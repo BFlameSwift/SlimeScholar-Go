@@ -77,6 +77,54 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/get/conference:
+    post:
+      description: 获取es会议详细信息
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 会议ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/get/journal:
+    post:
+      description: 获取es期刊详细信息
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 期刊ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/get/mytype:
     post:
       description: 获取es索引
@@ -153,6 +201,69 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/query/paper/advanced:
+    post:
+      description: es 高级搜索
+      parameters:
+      - description: musts
+        in: formData
+        name: musts
+        required: true
+        type: string
+      - description: nots
+        in: formData
+        name: nots
+        required: true
+        type: string
+      - description: atleast_words
+        in: formData
+        name: atleast_words
+        required: true
+        type: string
+      - description: min_year
+        in: formData
+        name: min_year
+        required: true
+        type: integer
+      - description: max_year
+        in: formData
+        name: max_year
+        required: true
+        type: integer
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "参数错误"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "论文不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/query/paper/doi:
     post:
       description: es doi查询论文 精确搜索，结果要么有要么没有
@@ -191,6 +302,65 @@ paths:
         name: page
         required: true
         type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "page 不是整数"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "论文不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/select/paper/title:
+    post:
+      description: es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401
+        参数格式错误
+      parameters:
+      - description: title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: min_year
+        in: formData
+        name: min_year
+        required: true
+        type: integer
+      - description: max_year
+        in: formData
+        name: max_year
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      - description: doctypes
+        in: formData
+        name: journals
+        required: true
+        type: string
       responses:
         "200":
           description: '{"success": true, "message": "获取成功"}'
@@ -613,6 +783,100 @@ paths:
       - Authorization: []
       tags:
       - 社交
+  /submit/check:
+    post:
+      description: 用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在
+      parameters:
+      - description: 提交id
+        in: formData
+        name: submit_id
+        required: true
+        type: string
+      - description: 用户id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: success
+        in: formData
+        name: success
+        required: true
+        type: string
+      - description: content
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "创建成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
+  /submit/create:
+    post:
+      description: 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406
+        该用户已经提交过对该学者的认领
+      parameters:
+      - description: 作者姓名
+        in: formData
+        name: author_name
+        required: true
+        type: string
+      - description: 机构姓名
+        in: formData
+        name: affiliation_name
+        required: true
+        type: string
+      - description: 工作邮箱
+        in: formData
+        name: work_email
+        required: true
+        type: string
+      - description: 领域
+        in: formData
+        name: fields
+        required: true
+        type: string
+      - description: 主页
+        in: formData
+        name: home_page
+        required: true
+        type: string
+      - description: 作者id
+        in: formData
+        name: author_id
+        required: true
+        type: string
+      - description: 用户id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "创建成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
+  /submit/list:
+    post:
+      description: 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的
+      parameters:
+      - description: 提交id
+        in: formData
+        name: type
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
   /user/confirm:
     post:
       description: 验证邮箱

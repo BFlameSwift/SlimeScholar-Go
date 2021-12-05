@@ -3,7 +3,7 @@ package utils
 // token var
 var (
 	Secret     = "SlimeScholar" // 加盐
-	ExpireTime = 3600           // token有效期
+	ExpireTime = 3600 * 72      // token有效期
 )
 
 // error reason

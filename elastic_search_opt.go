@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/service"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"log"
 	"reflect"
-
-	"gitee.com/online-publish/slime-scholar-go/service"
-
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"strconv"
 
 	"github.com/olivere/elastic/v7"
 )
@@ -52,11 +52,10 @@ func Init() {
 func Create() {
 
 	//使用结构体
-	e1 := Employee{"zht", "zhou", 18, "zht tql!!!!", []string{"coding"}}
+	e1 := Employee{"Jane", "Smith", 32, "I like to collect rock albums", []string{"music"}}
 	put1, err := client.Index().
 		Index("megacorp").
-		Type("employee").
-		Id("5").
+		Id("1").
 		BodyJson(e1).
 		Do(context.Background())
 	if err != nil {
@@ -65,27 +64,48 @@ func Create() {
 	fmt.Printf("Indexed tweet %s to index s%s, type %s\n", put1.Id, put1.Index, put1.Type)
 
 	//使用字符串
+	e2 := `{"first_name":"John","last_name":"Smith","age":25,"about":"I love to go rock climbing","interests":["sports","music"]}`
+	put2, err := client.Index().
+		Index("megacorp").
+		Id("2").
+		BodyJson(e2).
+		Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Indexed tweet %s to index s%s, type %s\n", put2.Id, put2.Index, put2.Type)
+
+	e3 := `{"first_name":"Douglas","last_name":"Fir","age":35,"about":"I like to build cabinets","interests":["forestry"]}`
+	put3, err := client.Index().
+		Index("megacorp").
+		Id("3").
+		BodyJson(e3).
+		Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Indexed tweet %s to index s%s, type %s\n", put3.Id, put3.Index, put3.Type)
 
 }
 
 //查找
-//func gets() {
-//	//通过id查找
-//	get1, err := client.Get().Index("megacorp").Type("employee").Id("1").Do(context.Background())
-//	if err != nil {
-//		panic(err)
-//	}
-//	if get1.Found {
-//		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
-//		var bb Employee
-//		err := json.Unmarshal(*get1.Source, &bb) // 个人修改，原来模板存在问题
-//		if err != nil {
-//			fmt.Println(err)
-//		}
-//		fmt.Println(bb.FirstName)
-//		fmt.Println(string(*get1.Source))
-//	}
-//}
+func gets(id string) {
+	//通过id查找
+	get1, err := client.Get().Index("megacorp").Id(id).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	if get1.Found {
+		fmt.Printf("Got document %s in version %d from index %s, type %s\n", get1.Id, get1.Version, get1.Index, get1.Type)
+		var bb Employee
+		err := json.Unmarshal(get1.Source, &bb) // 个人修改，原来模板存在问题
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(bb.FirstName)
+		fmt.Println(string(get1.Source))
+	}
+}
 
 //删除
 func delete(map[string]interface{}, string) {
@@ -234,7 +254,7 @@ func printEmployee(res *elastic.SearchResult, err error) {
 
 
 
-func main() {
+func test_aggregation() {
 	service.Init()
 	aggs := elastic.NewTermsAggregation().
 		Field("doctype.keyword") // 设置统计字段
@@ -273,8 +293,28 @@ func main() {
 	//	Create
 	//	gets()
 	//	//delete()
-
 	//	// gets()
 	//	query()
 	//	// list(2, 1)
 }
+
+func main(){
+	//result, err := service.Client.Search().Index("paper").Query(elastic.NewMatchAllQuery())
+	Init()
+	//Create()
+	bulkRequest := client.Bulk()
+		//gets()
+	var m map[string]interface{} = make(map[string]interface{})
+	m["test11"] = 1
+	doc := elastic.NewBulkUpdateRequest().Index("megacorp").Id(strconv.Itoa(1)).Doc(m).DocAsUpsert(true)
+	bulkRequest.Add(doc)
+	response, err := bulkRequest.Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+gets(strconv.Itoa(1))
+	gets(strconv.Itoa(2))
+	fmt.Println(len(response.Succeeded()))
+
+}
+

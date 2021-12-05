@@ -19,8 +19,8 @@ type Comment struct {
 	CommentTime time.Time `gorm:"type:datetime" json:"comment_time"`
 	Content     string    `gorm:"size:255" json:"content"`
 	// OnTop       bool      `gorm:"default:false" json:"on_top"`
-	ReplyCount	uint64	  `gorm:"default:0" json:"reply_count"`
-	RelateID	uint64	  `gorm:"default:0" json:"relate_id"`
+	ReplyCount uint64 `gorm:"default:0" json:"reply_count"`
+	RelateID   uint64 `gorm:"default:0" json:"relate_id"`
 }
 
 type Like struct { // 点赞
@@ -37,30 +37,32 @@ type Follow struct {
 }
 
 //标签
-type Tag struct{
-	TagID		uint64	`gorm:"primary_key;" json:"tag_id"`
-	TagName		string	`gorm:"type:varchar(32);" json:"tag_name"`
-	UserID		uint64	`gorm:" not null;" json:"user_id"`
-	Username      string    `gorm:"type:varchar(32); unique" json:"username"`
-	CreateTime	time.Time	`gorm:"type:datetime" json:"create_time"`
+type Tag struct {
+	TagID      uint64    `gorm:"primary_key;" json:"tag_id"`
+	TagName    string    `gorm:"type:varchar(32);" json:"tag_name"`
+	UserID     uint64    `gorm:" not null;" json:"user_id"`
+	Username   string    `gorm:"type:varchar(32); unique" json:"username"`
+	CreateTime time.Time `gorm:"type:datetime" json:"create_time"`
 }
 
 //标签-文章
-type TagPaper struct{
-	ID		uint64	`gorm:"primary_key;" json:"id"`
-	TagID		uint64	`json:"tag_id"`
-	TagName		string	`gorm:"type:varchar(32);" json:"tag_name"`
-	PaperID		string	`gorm:"type:varchar(32);" json:"paper_id"`
-	// Title  string `gorm:"type:varchar(256);" json:"title"`
-	// Abstract string `gorm:"type:varchar(1000);" json:"paperAbstrac"`
-	// JournalName string `gorm:"type:varchar(256);" json:"journal_name"`
-	CreateTime	time.Time	`gorm:"type:datetime" json:"create_time"`
+type TagPaper struct {
+	ID          uint64    `gorm:"primary_key;" json:"id"`
+	TagID       uint64    `json:"tag_id"`
+	TagName     string    `gorm:"type:varchar(32);" json:"tag_name"`
+	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
+	Title       string    `gorm:"type:varchar(256);" json:"title"`
+	Abstract    string    `gorm:"type:varchar(1000);" json:"paperAbstrac"`
+	JournalName string    `gorm:"type:varchar(256);" json:"journal_name"`
+	CreateTime  time.Time `gorm:"type:datetime" json:"create_time"`
 }
 
 // 浏览记录
 type BrowsingHistory struct {
+	BrowsingID   uint64    `gorm:"primary_key;not null" json:"browsing_id"`
 	BrowsingTime time.Time `gorm:"type:datetime" json:"browsing_time"`
-	UserID       uint64    `gorm:" not null;" json:"user_id"`
+	UserID       int       `gorm:"type:integer" json:"user_id"`
 	PaperID      string    `gorm:"type:varchar(32);" json:"paper_id"`
-	Title  string `gorm:"type:varchar(256);not null" json:"title"`
+	Title        string    `gorm:"type:varchar(256);not null" json:"title"`
+	Authors      string    `gorm:"type:varchar(128);" json:"authors"`
 }

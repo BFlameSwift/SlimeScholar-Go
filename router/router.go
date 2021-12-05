@@ -13,6 +13,13 @@ func InitRouter(Router *gin.RouterGroup) {
 		BasicRouter.POST("/all", v1.DocumentCount)
 	}
 
+	SubmitRouter := Router.Group("/submit")
+	{
+		SubmitRouter.POST("/create", v1.CreateSubmit)
+		SubmitRouter.POST("/check", v1.CheckSubmit)
+		SubmitRouter.POST("/list", v1.ListAllSubmit)
+	}
+
 	UserRouter := Router.Group("/user")
 	{
 		UserRouter.POST("/register", v1.Register)
@@ -28,7 +35,11 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/mytype", v1.GetMyType)
 		EsRouter.POST("/get/author", v1.GetAuthor)
 		EsRouter.POST("/get/paper", v1.GetPaper)
+		EsRouter.POST("/get/conference", v1.GetConference)
+		EsRouter.POST("/get/journal", v1.GetJournal)
 		EsRouter.POST("/query/paper/title", v1.TitleQueryPaper)
+		EsRouter.POST("/query/paper/advanced", v1.AdvancedSearch)
+		EsRouter.POST("/select/paper/title", v1.TitleSelectPaper)
 		EsRouter.POST("/query/author/name", v1.NameQueryAuthor)
 		EsRouter.POST("/query/paper/doi", v1.DoiQueryPaper)
 		//EsRouter.POST("/query/paper/abstract", v1.AbstractQueryPaper)

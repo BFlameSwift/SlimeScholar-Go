@@ -63,7 +63,7 @@ func Confirm(c *gin.Context) {
 	if notFound {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在", "status": 404})
 	} else {
-		if user.HasComfirmed == true {
+		if user.HasConfirmed == true {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户已验证", "status": 401})
 		} else {
 			num, _ := strconv.Atoi(confirm_number)
@@ -104,7 +104,7 @@ func Login(c *gin.Context) {
 		if user.Password != password {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误", "status": 402})
 		} else {
-			if user.HasComfirmed == false {
+			if user.HasConfirmed == false {
 				c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户尚未确认邮箱", "status": 403})
 			} else {
 				claims := &model.JWTClaims{
