@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/olivere/elastic/v7"
 	"log"
 	"reflect"
-	"strconv"
-
-	"github.com/olivere/elastic/v7"
 )
 
 var client *elastic.Client
@@ -252,20 +250,17 @@ func printEmployee(res *elastic.SearchResult, err error) {
 	}
 }
 
-
-
 func test_aggregation() {
 	service.Init()
 	aggs := elastic.NewTermsAggregation().
 		Field("doctype.keyword") // 设置统计字段
 
 	searchResult, err := service.Client.Search().
-		Index("paper"). // 设置索引名
+		Index("paper").                    // 设置索引名
 		Query(elastic.NewMatchAllQuery()). // 设置查询条件
-		Aggregation("doctype", aggs). // 设置聚合条件，并为聚合条件设置一个名字, 支持添加多个聚合条件，命名不一样即可。
-		Size(0). // 设置分页参数 - 每页大小,设置为0代表不返回搜索结果，仅返回聚合分析结果
-		Do(context.Background()) // 执行请求
-
+		Aggregation("doctype", aggs).      // 设置聚合条件，并为聚合条件设置一个名字, 支持添加多个聚合条件，命名不一样即可。
+		Size(0).                           // 设置分页参数 - 每页大小,设置为0代表不返回搜索结果，仅返回聚合分析结果
+		Do(context.Background())           // 执行请求
 
 	if err != nil {
 		// Handle error
@@ -297,24 +292,28 @@ func test_aggregation() {
 	//	query()
 	//	// list(2, 1)
 }
-
-func main(){
-	//result, err := service.Client.Search().Index("paper").Query(elastic.NewMatchAllQuery())
-	Init()
-	//Create()
-	bulkRequest := client.Bulk()
-		//gets()
-	var m map[string]interface{} = make(map[string]interface{})
-	m["test11"] = 1
-	doc := elastic.NewBulkUpdateRequest().Index("megacorp").Id(strconv.Itoa(1)).Doc(m).DocAsUpsert(true)
-	bulkRequest.Add(doc)
-	response, err := bulkRequest.Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
-gets(strconv.Itoa(1))
-	gets(strconv.Itoa(2))
-	fmt.Println(len(response.Succeeded()))
-
+func main() {
+	service.Init()
+	result := service.GetsByIndexIdWithout("test_paper_fields", "22367272")
+	fmt.Println(string(result.Source))
 }
 
+//func main(){
+//	//result, err := service.Client.Search().Index("paper").Query(elastic.NewMatchAllQuery())
+//	Init()
+//	//Create()
+//	bulkRequest := client.Bulk()
+//		//gets()
+//	var m map[string]interface{} = make(map[string]interface{})
+//	m["test11"] = 1
+//	doc := elastic.NewBulkUpdateRequest().Index("megacorp").Id(strconv.Itoa(1)).Doc(m).DocAsUpsert(true)
+//	bulkRequest.Add(doc)
+//	response, err := bulkRequest.Do(context.Background())
+//	if err != nil {
+//		panic(err)
+//	}
+//gets(strconv.Itoa(1))
+//	gets(strconv.Itoa(2))
+//	fmt.Println(len(response.Succeeded()))
+//
+//}

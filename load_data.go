@@ -503,18 +503,19 @@ func print1() {
 		fmt.Printf("%s\n", fmt.Sprintf("%04d", i))
 	}
 }
-func main() {
-	service.Init()
-	load_fields()
-	//load_paper()
 
-	//print1()
-	//load_authors()
-
-	//load_journal()
-	//load_incitations()
-	//load_paper_rel()
-	//load_paper_a uthor()
-	//load_conference()
-	//load_journal()
-}
+//func main() {
+//	service.Init()
+//	load_fields()
+//	//load_paper()
+//
+//	//print1()
+//	//load_authors()
+//
+//	//load_journal()
+//	//load_incitations()
+//	//load_paper_rel()
+//	//load_paper_a uthor()
+//	//load_conference()
+//	//load_journal()
+//}
