@@ -268,7 +268,7 @@ func CreateAComment (c *gin.Context){
 
 	notCreated := service.CreateAComment(&comment)
 	if notCreated{
-		c.JSON(403, gin.H{"success": false,"status":  403, "message": "评论创建失败"})
+		c.JSON(http.StatusOK, gin.H{"success": false,"status":  403, "message": "评论创建失败"})
 	}else{
 		paperID := comment.PaperID
 		// fmt.Println(paperID)
@@ -328,7 +328,7 @@ func LikeComment (c *gin.Context){
 	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,notFound := service.QueryAComment(commentID)
 	if notFound{
-		c.JSON(403, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
 			"message": "评论不存在",
@@ -359,7 +359,7 @@ func CancelLike (c *gin.Context){
 
 	notFound := service.CancelLike(comment,user)
 	if notFound{
-		c.JSON(403, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
 			"message": "用户未点赞",
@@ -468,7 +468,7 @@ func GetPaperComment(c *gin.Context){
 	comments := service.QueryComsByPaperId(paperID)
 	fmt.Println(comments)
 	if len(comments) == 0{
-		c.JSON(403, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
 			"message": "评论不存在",
@@ -521,17 +521,6 @@ func GetPaperComment(c *gin.Context){
 func GetComReply(c *gin.Context){
 	ComID,_ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,_ := service.QueryAComment(ComID)
-	replies := service.QueryComReply(ComID)
-	if len(replies) == 0{
-		c.JSON(403, gin.H{
-			"success": false,
-			"status":  403,
-			"message": "回复不存在",
-		})
-		return
-	}
-
-	fmt.Println(replies)
 
 	var data = make(map[string]interface{})
 	data["paper_id"] = comment.PaperID
@@ -544,6 +533,19 @@ func GetComReply(c *gin.Context){
 	base_comment["time"] = comment.CommentTime
 	base_comment["content"] = comment.Content
 	data["base_comment"] = base_comment
+
+	replies := service.QueryComReply(ComID)
+	if len(replies) == 0{
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"status":  403,
+			"message": "回复不存在",
+			"data": data,
+		})
+		return
+	}
+
+	fmt.Println(replies)
 
 	var answers []map[string]interface{}
 	for _, reply := range replies{
@@ -586,7 +588,7 @@ func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.U
 	}
 
 	if notFoundUserByID {
-		c.JSON(404, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  404,
 			"message": "用户ID不存在",
