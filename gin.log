@@ -39,4 +39,4 @@
 [GIN-debug] POST   /api/v1/social/get/replies --> gitee.com/online-publish/slime-scholar-go/api/v1.GetComReply (4 handlers)
 [GIN-debug] GET    /backend/api/swagger/*any --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)
 [GIN-debug] Listening and serving HTTP on :8000
-[GIN] 2021/12/06 - 08:19:21 | 200 |    915.8915ms |       127.0.0.1 | POST     "/api/v1/es/get/paper"
+[GIN] 2021/12/06 - 17:16:56 | 200 |   31.7582066s |       127.0.0.1 | POST     "/api/v1/es/query/paper/title"
