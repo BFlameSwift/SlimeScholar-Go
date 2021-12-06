@@ -639,8 +639,13 @@ var doc = `{
                         "type": "integer",
                         "description": "user_id",
                         "name": "user_id",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "author_id",
+                        "name": "author_id",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

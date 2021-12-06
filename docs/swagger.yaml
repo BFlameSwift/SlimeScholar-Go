@@ -411,7 +411,10 @@ paths:
       - description: user_id
         in: formData
         name: user_id
-        required: true
+        type: integer
+      - description: author_id
+        in: formData
+        name: author_id
         type: integer
       responses:
         "200":
