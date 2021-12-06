@@ -242,7 +242,16 @@ func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool
 		return submits, false
 	}
 }
-
+func SelectASubmitValid(user_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("user_id = ? AND status = 1", user_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
 func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 	user.WorkEmail = submit.WorkEmail
 	user.AuthorName = submit.AuthorName

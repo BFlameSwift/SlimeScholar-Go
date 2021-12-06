@@ -34,7 +34,7 @@ func GetScholar(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不是学者", "status": 402})
 		return
 	}
-	submit, notFound := service.QueryASubmitExist(user_id)
+	submit, notFound := service.SelectASubmitValid(user_id)
 	if notFound {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "找不到用户的申请表", "status": 402})
 		return
@@ -59,6 +59,6 @@ func GetScholar(c *gin.Context) {
 			paper_list = append(paper_list, paper_id_map[id])
 		}
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 401, "user": user, "papers": paper_list})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "user": user, "papers": paper_list})
 	return
 }
