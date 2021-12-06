@@ -682,7 +682,7 @@ paths:
           description: '{"success": true, "message": "查找成功"}'
           schema:
             type: string
-        "403":
+        "400":
           description: '{"success": false, "message": "回复不存在"}'
           schema:
             type: string

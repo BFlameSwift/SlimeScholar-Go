@@ -1061,7 +1061,7 @@ var doc = `{
                             "type": "string"
                         }
                     },
-                    "403": {
+                    "400": {
                         "description": "{\"success\": false, \"message\": \"回复不存在\"}",
                         "schema": {
                             "type": "string"
