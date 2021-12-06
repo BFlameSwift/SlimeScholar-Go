@@ -56,7 +56,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		SocialRouter.POST("/delete/tag/paper", v1.DeleteATagPaper)
 
 		SocialRouter.POST("/create/comment", v1.CreateAComment)
-		SocialRouter.POST("/like/comment", v1.LikeorUnlike)
+		SocialRouter.POST("/like/comment", v1.LikeComment)
+		SocialRouter.POST("/like/cancel", v1.CancelLike)
 		SocialRouter.POST("/reply/comment", v1.ReplyAComment)
 		SocialRouter.POST("/get/comments", v1.GetPaperComment)
 		SocialRouter.POST("/get/replies", v1.GetComReply)

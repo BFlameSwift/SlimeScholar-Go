@@ -120,15 +120,46 @@ func QueryAComment(commentID uint64) (comment *model.Comment, notFound bool) {
 	}
 }
 
-//点赞或拉踩
-func UpdateCommentLike(comment *model.Comment, option uint64) (err error) {
-	if option == 0 {
-		comment.Like++
-	} else if option == 1 {
-		comment.UnLike++
-	}
+//点赞
+func UpdateCommentLike(comment *model.Comment, user model.User) (err error) {
+	comment.Like++
 	err = global.DB.Save(comment).Error
+	if err != nil{
+		return err
+	}
+	
+	like := model.Like{UserID:user.UserID, CommentID:comment.CommentID}
+	err = global.DB.Create(&like).Error
 	return err
+}
+
+//查询用户是否点赞评论
+func UserLike(userID uint64, commentID uint64)(isLike bool){
+	like := model.Like{}
+	err := global.DB.Where("user_id = ? AND comment_id = ?", userID,commentID).First(&like).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return false
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return true
+	}
+}
+
+//取消点赞
+func CancelLike(comment *model.Comment, user model.User)(notFound bool){
+	like := model.Like{}
+	err := global.DB.Where("user_id = ? AND comment_id = ?", user.UserID,comment.CommentID).First(&like).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		global.DB.Delete(&like)
+		comment.Like--;
+		global.DB.Save(&comment)
+		return false
+	}
 }
 
 //根据文献id获取文献所有评论
@@ -136,6 +167,15 @@ func QueryComsByPaperId(paperId string)(coms []model.Comment){
 	coms = make([]model.Comment, 0)
 	global.DB.Where(map[string]interface{}{"paper_id":paperId,"relate_id":0}).Order("comment_time desc").Find(&coms)
 	return coms
+}
+
+//查询回复对应的最初的评论
+func QueryABaseCom(comment *model.Comment)(base *model.Comment){
+	for comment.RelateID != 0{
+		id := comment.RelateID
+		comment,_ = QueryAComment(id)
+	}
+	return comment
 }
 
 //查询某条评论的所有回复

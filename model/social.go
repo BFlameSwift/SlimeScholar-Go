@@ -13,7 +13,7 @@ type Message struct {
 type Comment struct {
 	CommentID   uint64    `gorm:"primary_key;not null" json:"comment_id"`
 	Like        uint64    `gorm:"default:0" json:"like"`
-	UnLike      uint64    `gorm:"default:0" json:"unlike"`
+	// UnLike      uint64    `gorm:"default:0" json:"unlike"`
 	UserID      uint64    `gorm:" not null;" json:"user_id"`
 	Username	string	  `gorm:"type:varchar(32)" json:"username"`
 	PaperID     string    `gorm:"size:64" json:"paper_id"`
@@ -26,7 +26,7 @@ type Comment struct {
 }
 
 type Like struct { // 点赞
-	IsLike    bool   `gorm:"default:false" json:"is_like"`
+	// IsLike    bool   `gorm:"default:false" json:"is_like"`
 	CommentID uint64 `gorm:"primary_key;" json:"comment_id"`
 	UserID    uint64 `gorm:"primary_key;" json:"user_id"`
 }
@@ -54,6 +54,7 @@ type TagPaper struct {
 	TagName     string    `gorm:"type:varchar(32);" json:"tag_name"`
 	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
 	PaperTitle  string    `gorm:"type:varchar(256);" json:"paper_title"`
+	
 	Abstract    string    `gorm:"type:varchar(1000);" json:"paperAbstrac"`
 	JournalName string    `gorm:"type:varchar(256);" json:"journal_name"`
 	CreateTime  time.Time `gorm:"type:datetime" json:"create_time"`

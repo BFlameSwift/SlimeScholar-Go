@@ -943,11 +943,29 @@ var doc = `{
         },
         "/social/get/comments": {
             "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
                 "description": "获取文献所有评论，时间倒序",
                 "tags": [
                     "社交"
                 ],
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "文献id",
@@ -1118,24 +1136,84 @@ var doc = `{
                 }
             }
         },
-        "/social/like/comment": {
+        "/social/like/cancel": {
             "post": {
-                "description": "赞或踩评论",
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "取消点赞",
                 "tags": [
                     "社交"
                 ],
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "评论id",
-                        "name": "comment_id",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "user_id",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "赞或踩,0-赞,1-踩",
-                        "name": "option",
+                        "description": "评论id",
+                        "name": "comment_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"操作成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "{\"success\": false, \"message\": \"用户未点赞\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/social/like/comment": {
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "点赞评论",
+                "tags": [
+                    "社交"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "评论id",
+                        "name": "comment_id",
                         "in": "formData",
                         "required": true
                     }
