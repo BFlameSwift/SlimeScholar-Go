@@ -498,24 +498,32 @@ func load_fields() {
 	service.Init()
 	proc_paper_rel("H:\\myPaperFields.txt", "paper", "paper_id", "fields")
 }
+func loadabstract() {
+	service.Init()
+	for i := 0; i < 1; i++ {
+		proc_journal("H:\\myPaperAbstractsInvertedIndex.txt.1", "abstract", "paper_id")
+	}
+}
 func print1() {
 	for i := 0; i < 1; i++ {
 		fmt.Printf("%s\n", fmt.Sprintf("%04d", i))
 	}
 }
 
-//func main() {
-//	service.Init()
-//	load_fields()
-//	//load_paper()
-//
-//	//print1()
-//	//load_authors()
-//
-//	//load_journal()
-//	//load_incitations()
-//	//load_paper_rel()
-//	//load_paper_a uthor()
-//	//load_conference()
-//	//load_journal()
-//}
+func main() {
+
+	loadabstract()
+	//	service.Init()
+	//	load_fields()
+	//	//load_paper()
+	//
+	//	//print1()
+	//	//load_authors()
+	//
+	//	//load_journal()
+	//	//load_incitations()
+	//	//load_paper_rel()
+	//	//load_paper_a uthor()
+	//	//load_conference()
+	//	//load_journal()
+}

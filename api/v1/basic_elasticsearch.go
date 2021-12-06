@@ -43,7 +43,7 @@ func GetPaper(c *gin.Context) {
 	if paper["conference_id"].(string) != "" {
 		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
-	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
+	//paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 	paper["doi_url"] = ""
 	if paper["doi"].(string) != "" {
@@ -62,7 +62,7 @@ func GetPaper(c *gin.Context) {
 	}
 
 	paper["citation_msg"] = make([]string, 0)
-	paper["fields"] = make([]string, 0)
+	//paper["fields"] = make([]string, 0)
 	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
