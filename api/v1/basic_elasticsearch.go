@@ -3,12 +3,12 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"net/http"
 	"strconv"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
-	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
 )
 
@@ -43,7 +43,7 @@ func GetPaper(c *gin.Context) {
 	if paper["conference_id"].(string) != "" {
 		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
-	paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
+	//paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
 	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
 	paper["doi_url"] = ""
 	if paper["doi"].(string) != "" {
@@ -62,7 +62,7 @@ func GetPaper(c *gin.Context) {
 	}
 
 	paper["citation_msg"] = make([]string, 0)
-	paper["fields"] = make([]string, 0)
+	//paper["fields"] = make([]string, 0)
 	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})
 	// var id_list []string = make([]string, 0, 3000)
@@ -212,17 +212,26 @@ func TitleQueryPaper(c *gin.Context) {
 		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		if paper_map["authors"] != nil {
+			authors_map := make(map[string]interface{})
+			authors_map["rel"] = paper_map["authors"]
+			paper_map["authors"] = service.ParseRelPaperAuthor(authors_map)
+		} else {
+			paper_map["authors"] = make([]interface{}, 0, 0)
+		}
+
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	for i, paper_map_item := range paper_sequences {
-		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	}
+
+	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	//for i, paper_map_item := range paper_sequences {
+	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	//}
 	aggregation := make(map[string]interface{})
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
 	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 	// 暂时有问题，一数据弄好一起改
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),

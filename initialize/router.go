@@ -9,9 +9,11 @@ import (
 )
 
 // 配置组路由
+// 配置组路由
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.Cors())
+	r.Use(middleware.LoggerToFile())
 	r.GET("/", v1.Index)
 	Group := r.Group("api/v1/")
 	{

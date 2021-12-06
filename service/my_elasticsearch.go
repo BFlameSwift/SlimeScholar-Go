@@ -330,7 +330,8 @@ func IdsGetItems(id_list []string, index string) map[string]interface{} {
 	if err != nil {
 		fmt.Println(id_list)
 		fmt.Println(index)
-		panic(err)
+		return make(map[string]interface{})
+		//panic(err)
 	}
 	//如果有字段未命中怎么办，可能出现:返回空
 	// TODO 调用接口
@@ -411,6 +412,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		log.Fatal("没有找到聚合数据")
 	}
 	fmt.Println(result.TotalHits())
+
 	// 遍历桶数据
 	bucket_len := len(agg.Buckets)
 	result_ids := make([]string, 0, 10000)
@@ -423,6 +425,9 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 			result_ids = append(result_ids, bucket.Key.(string))
 		}
 		result_map = IdsGetItems(result_ids, index)
+	}
+	if len(result_map) == 0 {
+		return make([]interface{}, 0, 0)
 	}
 	for _, bucket := range agg.Buckets {
 		m := make(map[string]interface{})
