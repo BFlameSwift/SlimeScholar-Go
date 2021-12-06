@@ -433,7 +433,9 @@ func ReplyAComment(c *gin.Context)  {
 		answer["be_replied_username"] = comment.Username
 		answers = append(answers,answer)
 	}
-	answers = MapSort(answers,"comment_time")
+	sort.Slice(answers, func(i, j int) bool {
+		return (answers[i]["time"].(time.Time)).Before(answers[j]["time"].(time.Time)) //顺序
+    })
 	data["answers"] = answers
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -556,7 +558,14 @@ func GetComReply(c *gin.Context){
 		answer["be_replied_username"] = comment.Username
 		answers = append(answers,answer)
 	}
-	answers = MapSort(answers,"time")
+	// answers = MapSort(answers,"time")
+	sort.Slice(answers, func(i, j int) bool {
+        // if answer[i]["no"] == answer[j]["no"] {
+        //     return s1[i]["score"] < s1[j]["score"]
+        // }
+        // return answers[i]["reply_id"].(uint64) < answers[j]["reply_id"].(uint64)
+		return (answers[i]["time"].(time.Time)).Before(answers[j]["time"].(time.Time)) //顺序
+    })
 	data["answers"] = answers
 
 	c.JSON(http.StatusOK, gin.H{
@@ -606,30 +615,32 @@ func (m *MapsSort) Less(i, j int) bool {
 	switch m.MapList[i][m.Key].(type) {
 	case string:
 	   ivalue,err = strconv.ParseFloat(m.MapList[i][m.Key].(string),64)
+	   fmt.Println(ivalue)
 	   if err != nil {
 		//   logger.Error("map数组排序string转float失败：%v",err)
 		  return true
 	   }
-	case int:
-	   ivalue = float64(m.MapList[i][m.Key].(int))
-	case float64:
-	   ivalue = m.MapList[i][m.Key].(float64)
-	case int64:
-	   ivalue = float64(m.MapList[i][m.Key].(int64))
+	// case int:
+	//    ivalue = float64(m.MapList[i][m.Key].(int))
+	// case float64:
+	//    ivalue = m.MapList[i][m.Key].(float64)
+	// case int64:
+	//    ivalue = float64(m.MapList[i][m.Key].(int64))
 	}
 	switch m.MapList[j][m.Key].(type) {
 	case string:
 	   jvalue,err = strconv.ParseFloat(m.MapList[j][m.Key].(string),64)
+	   fmt.Println(jvalue)
 	   if err != nil {
 		//   logger.Error("map数组排序string转float失败：%v",err)
 		  return true
 	   }
-	case int:
-	   jvalue = float64(m.MapList[j][m.Key].(int))
-	case float64:
-	   jvalue = m.MapList[j][m.Key].(float64)
-	case int64:
-	   jvalue = float64(m.MapList[j][m.Key].(int64))
+	// case int:
+	//    jvalue = float64(m.MapList[j][m.Key].(int))
+	// case float64:
+	//    jvalue = m.MapList[j][m.Key].(float64)
+	// case int64:
+	//    jvalue = float64(m.MapList[j][m.Key].(int64))
 	}
 	return ivalue > jvalue
  }
