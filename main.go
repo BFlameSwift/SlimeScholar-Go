@@ -4,6 +4,9 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/docs"
 	"gitee.com/online-publish/slime-scholar-go/initialize"
 	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/gin-gonic/gin"
+	"io"
+	"os"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -20,8 +23,8 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	initialize.InitMySQL()
-	//f, _ := os.Create("gin.log")
-	//gin.DefaultWriter = io.MultiWriter(f)
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 	r := initialize.SetupRouter()
 	service.Init()
 	r.GET("/backend/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

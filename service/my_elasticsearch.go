@@ -426,7 +426,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		}
 		result_map = IdsGetItems(result_ids, index)
 	}
-	if len(result_map) == 0 {
+	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "field") {
 		return make([]interface{}, 0, 0)
 	}
 	for _, bucket := range agg.Buckets {
