@@ -33,10 +33,18 @@
 [GIN-debug] POST   /api/v1/social/collect/paper --> gitee.com/online-publish/slime-scholar-go/api/v1.CollectAPaper (4 handlers)
 [GIN-debug] POST   /api/v1/social/delete/tag/paper --> gitee.com/online-publish/slime-scholar-go/api/v1.DeleteATagPaper (4 handlers)
 [GIN-debug] POST   /api/v1/social/create/comment --> gitee.com/online-publish/slime-scholar-go/api/v1.CreateAComment (4 handlers)
-[GIN-debug] POST   /api/v1/social/like/comment --> gitee.com/online-publish/slime-scholar-go/api/v1.LikeorUnlike (4 handlers)
+[GIN-debug] POST   /api/v1/social/like/comment --> gitee.com/online-publish/slime-scholar-go/api/v1.LikeComment (4 handlers)
+[GIN-debug] POST   /api/v1/social/like/cancel --> gitee.com/online-publish/slime-scholar-go/api/v1.CancelLike (4 handlers)
 [GIN-debug] POST   /api/v1/social/reply/comment --> gitee.com/online-publish/slime-scholar-go/api/v1.ReplyAComment (4 handlers)
 [GIN-debug] POST   /api/v1/social/get/comments --> gitee.com/online-publish/slime-scholar-go/api/v1.GetPaperComment (4 handlers)
 [GIN-debug] POST   /api/v1/social/get/replies --> gitee.com/online-publish/slime-scholar-go/api/v1.GetComReply (4 handlers)
 [GIN-debug] GET    /backend/api/swagger/*any --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)
 [GIN-debug] Listening and serving HTTP on :8000
-[GIN] 2021/12/06 - 17:16:56 | 200 |   31.7582066s |       127.0.0.1 | POST     "/api/v1/es/query/paper/title"
+[GIN] 2021/12/06 - 21:56:56 | 200 |         227µs |       127.0.0.1 | GET      "/backend/api/swagger/index.html"
+[GIN] 2021/12/06 - 21:56:56 | 200 |            0s |       127.0.0.1 | GET      "/backend/api/swagger/swagger-ui.css"
+[GIN] 2021/12/06 - 21:56:56 | 200 |      1.4544ms |       127.0.0.1 | GET      "/backend/api/swagger/swagger-ui-bundle.js"
+[GIN] 2021/12/06 - 21:56:56 | 200 |       525.4µs |       127.0.0.1 | GET      "/backend/api/swagger/swagger-ui-standalone-preset.js"
+[GIN] 2021/12/06 - 21:56:56 | 200 |       212.5µs |       127.0.0.1 | GET      "/backend/api/swagger/doc.json"
+[GIN] 2021/12/06 - 21:56:56 | 200 |       866.7µs |       127.0.0.1 | GET      "/backend/api/swagger/favicon-32x32.png"
+[GIN] 2021/12/06 - 21:57:14 | 200 |    536.9474ms |       127.0.0.1 | POST     "/api/v1/social/get/replies"
+[GIN] 2021/12/06 - 21:57:16 | 200 |     35.8576ms |       127.0.0.1 | POST     "/api/v1/social/get/replies"
