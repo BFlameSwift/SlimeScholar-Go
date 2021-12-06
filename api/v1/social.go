@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"sort"
 	// "container/list"
-	// "fmt"
+	"fmt"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
@@ -464,8 +464,8 @@ func GetPaperComment(c *gin.Context){
 	paperID := c.Request.FormValue("paper_id")
 	// fmt.Println(paperID)
 	comments := service.QueryComsByPaperId(paperID)
-	// fmt.Println(comments)
-	if comments == nil{
+	fmt.Println(comments)
+	if len(comments) == 0{
 		c.JSON(403, gin.H{
 			"success": false,
 			"status":  403,
@@ -520,7 +520,7 @@ func GetComReply(c *gin.Context){
 	ComID,_ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment,_ := service.QueryAComment(ComID)
 	replies := service.QueryComReply(ComID)
-	if replies == nil{
+	if len(replies) == 0{
 		c.JSON(403, gin.H{
 			"success": false,
 			"status":  403,
@@ -529,6 +529,7 @@ func GetComReply(c *gin.Context){
 		return
 	}
 
+	fmt.Println(replies)
 
 	var data = make(map[string]interface{})
 	data["paper_id"] = comment.PaperID
@@ -555,7 +556,7 @@ func GetComReply(c *gin.Context){
 		answer["be_replied_username"] = comment.Username
 		answers = append(answers,answer)
 	}
-	answers = MapSort(answers,"comment_time")
+	answers = MapSort(answers,"time")
 	data["answers"] = answers
 
 	c.JSON(http.StatusOK, gin.H{
@@ -598,8 +599,40 @@ func (m *MapsSort) Len() int {
 
 //如果index为i的元素小于index为j的元素，则返回true，否则返回false
 func (m *MapsSort) Less(i, j int) bool {
-	return m.MapList[i][m.Key].(float64) > m.MapList[j][m.Key].(float64)
-}
+	var ivalue float64
+	var jvalue float64
+	var err error
+	fmt.Println(m.Key)
+	switch m.MapList[i][m.Key].(type) {
+	case string:
+	   ivalue,err = strconv.ParseFloat(m.MapList[i][m.Key].(string),64)
+	   if err != nil {
+		//   logger.Error("map数组排序string转float失败：%v",err)
+		  return true
+	   }
+	case int:
+	   ivalue = float64(m.MapList[i][m.Key].(int))
+	case float64:
+	   ivalue = m.MapList[i][m.Key].(float64)
+	case int64:
+	   ivalue = float64(m.MapList[i][m.Key].(int64))
+	}
+	switch m.MapList[j][m.Key].(type) {
+	case string:
+	   jvalue,err = strconv.ParseFloat(m.MapList[j][m.Key].(string),64)
+	   if err != nil {
+		//   logger.Error("map数组排序string转float失败：%v",err)
+		  return true
+	   }
+	case int:
+	   jvalue = float64(m.MapList[j][m.Key].(int))
+	case float64:
+	   jvalue = m.MapList[j][m.Key].(float64)
+	case int64:
+	   jvalue = float64(m.MapList[j][m.Key].(int64))
+	}
+	return ivalue > jvalue
+ }
 
 //Swap 交换索引为 i 和 j 的元素
 func (m *MapsSort) Swap(i, j int) {
