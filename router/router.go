@@ -19,7 +19,10 @@ func InitRouter(Router *gin.RouterGroup) {
 		SubmitRouter.POST("/check", v1.CheckSubmit)
 		SubmitRouter.POST("/list", v1.ListAllSubmit)
 	}
-
+	SchoalrRouter := Router.Group("/scholar")
+	{
+		SchoalrRouter.POST("/info", v1.GetScholar)
+	}
 	UserRouter := Router.Group("/user")
 	{
 		UserRouter.POST("/register", v1.Register)

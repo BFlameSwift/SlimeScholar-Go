@@ -224,10 +224,10 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	//for i, paper_map_item := range paper_sequences {
-	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	//}
+	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	for i, paper_map_item := range paper_sequences {
+		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	}
 	aggregation := make(map[string]interface{})
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
@@ -324,10 +324,10 @@ func TitleSelectPaper(c *gin.Context) {
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	//for i, paper_map_item := range paper_sequences {
-	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	//}
+	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	for i, paper_map_item := range paper_sequences {
+		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	}
 
 	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 	// 暂时有问题，一数据弄好一起改

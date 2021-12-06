@@ -628,6 +628,55 @@ var doc = `{
                 }
             }
         },
+        "/scholar/info": {
+            "post": {
+                "description": "获取学者信息",
+                "tags": [
+                    "学者门户"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"用户验证邮箱成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"userid 不是整数\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "402": {
+                        "description": "{\"success\": false, \"message\": \"用户不是学者}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户不存在}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "600": {
+                        "description": "{\"success\": false, \"message\": \"用户待修改，传入false 更新验证码，否则为验证正确}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/social/collect/paper": {
             "post": {
                 "security": [
@@ -1761,5 +1810,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }
