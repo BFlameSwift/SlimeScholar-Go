@@ -50,7 +50,8 @@ func GetScholar(c *gin.Context) {
 		}
 		ret_author_id = submit.AuthorID
 		paper_result = service.QueryByField("paper_author", "rel.aid.keyword", submit.AuthorID, 1, 10)
-		people_msg = user
+		people_msg = service.UserScholarInfo(service.StructToMap(user))
+
 	} else {
 		author_id := c.Request.FormValue("author_id")
 		if author_id == "" {
@@ -82,6 +83,7 @@ func GetScholar(c *gin.Context) {
 			paper_list = append(paper_list, paper_id_map[id])
 		}
 	}
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": paper_list, "author_id": ret_author_id, "people": people_msg})
 	return
 }

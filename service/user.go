@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitee.com/online-publish/slime-scholar-go/global"
@@ -264,4 +265,11 @@ func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func UserScholarInfo(m map[string]interface{}) (ret_map map[string]interface{}) {
+	ret_map = m
+	ret_map["fields"] = strings.Split(ret_map["fields"].(string), ",")
+
+	return ret_map
 }

@@ -1,16 +1,16 @@
 package v1
 
 import (
+	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
-	"encoding/json"
-	"sort"
 	// "container/list"
 	"fmt"
 
-	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -29,13 +29,13 @@ import (
 func GetUserTag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
+	VerifyLogin(userID, authorization, c)
 	// if err{
 	// 	return
 	// }
-	
-	tags,notFoundTags := service.QueryTagList(userID)
-	if notFoundTags{
+
+	tags, notFoundTags := service.QueryTagList(userID)
+	if notFoundTags {
 		c.JSON(403, gin.H{
 			"success": false,
 			"status":  403,
@@ -63,13 +63,12 @@ func GetUserTag(c *gin.Context) {
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 402 {string} string "{"success": false, "message": "标签下没有文章"}"
 // @Router /social/get/tag/paper [POST]
-func GetTagPaper(c *gin.Context){
+func GetTagPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID,authorization,c)
-
+	VerifyLogin(userID, authorization, c)
 	tagName := c.Request.FormValue("tag_name")
-	tag,_ := service.QueryATag(userID,tagName)
+	tag, _ := service.QueryATag(userID, tagName)
 
 	papers := service.QueryTagPaper(tag.TagID)
 	if papers == nil {
@@ -82,7 +81,7 @@ func GetTagPaper(c *gin.Context){
 	}
 
 	var data []map[string]interface{}
-	for _, tag_paper := range papers{
+	for _, tag_paper := range papers {
 		var tmp = make(map[string]interface{})
 		tmp["collect_time"] = tag_paper.CreateTime
 
@@ -94,7 +93,7 @@ func GetTagPaper(c *gin.Context){
 		_ = json.Unmarshal(body_byte, &paper)
 
 		tmp["paper"] = paper
-		data = append(data,tmp)
+		data = append(data, tmp)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -117,17 +116,17 @@ func GetTagPaper(c *gin.Context){
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 402 {string} string "{"success": false, "message": "已创建该标签"}"
 // @Router /social/create/tag [POST]
-func CreateATag (c *gin.Context){
+func CreateATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,err := VerifyLogin(userID,authorization,c)
-	if err{
+	user, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
-	
+
 	tagName := c.Request.FormValue("tag_name")
-	tag, notFoundTag := service.QueryATag(userID,tagName)
-	if !notFoundTag{
+	tag, notFoundTag := service.QueryATag(userID, tagName)
+	if !notFoundTag {
 		c.JSON(402, gin.H{
 			"success": false,
 			"status":  402,
@@ -135,11 +134,10 @@ func CreateATag (c *gin.Context){
 		})
 		return
 	}
-	tag = model.Tag{TagName:tagName, UserID: userID, CreateTime: time.Now(), Username:user.Username}
+	tag = model.Tag{TagName: tagName, UserID: userID, CreateTime: time.Now(), Username: user.Username}
 	service.CreateATag(&tag)
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "标签创建成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签创建成功"})
 }
-
 
 // DeleteATag doc
 // @description 删除标签
@@ -153,21 +151,21 @@ func CreateATag (c *gin.Context){
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 403 {string} string "{"success": false, "message": "标签不存在"}"
 // @Router /social/delete/tag [POST]
-func DeleteATag (c *gin.Context){
+func DeleteATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_, err := VerifyLogin(userID,authorization,c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
-	
+
 	tagName := c.Request.FormValue("tag_name")
-	tag, notFoundTag := service.QueryATag(userID,tagName)
-	if notFoundTag{
-		c.JSON(403, gin.H{"success": false,"status":  403, "message": "标签不存在"})
+	tag, notFoundTag := service.QueryATag(userID, tagName)
+	if notFoundTag {
+		c.JSON(403, gin.H{"success": false, "status": 403, "message": "标签不存在"})
 	}
 	service.DeleteATag(tag.TagID)
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "标签删除成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签删除成功"})
 }
 
 // CollectAPaper doc
@@ -182,27 +180,27 @@ func DeleteATag (c *gin.Context){
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Router /social/collect/paper [POST]
-func CollectAPaper(c *gin.Context){
+func CollectAPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, err := VerifyLogin(userID,authorization,c)
-	if err{
+	user, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
 	id := c.Request.FormValue("id")
 	tagName := c.Request.FormValue("tag_name")
-	if tagName == ""{
+	if tagName == "" {
 		tagName = "默认"
 	}
-	tag,notFound := service.QueryATag(userID,tagName)
-	if notFound{
-		tag = model.Tag{TagName:tagName, UserID: userID, CreateTime: time.Now(), Username:user.Username}
+	tag, notFound := service.QueryATag(userID, tagName)
+	if notFound {
+		tag = model.Tag{TagName: tagName, UserID: userID, CreateTime: time.Now(), Username: user.Username}
 		service.CreateATag(&tag)
 	}
-	tagPaper := model.TagPaper{TagID:tag.TagID, TagName:tag.TagName, PaperID:id, CreateTime:time.Now()}
+	tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
 	service.CreateATagPaper(&tagPaper)
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "收藏成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "收藏成功"})
 }
 
 // DeleteATagPaper doc
@@ -217,21 +215,21 @@ func CollectAPaper(c *gin.Context){
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Router /social/delete/tag/paper [POST]
-func DeleteATagPaper(c *gin.Context){
+func DeleteATagPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID,authorization,c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
 	id := c.Request.FormValue("id")
 	tagName := c.Request.FormValue("tag_name")
-	
-	tag, _ := service.QueryATag(userID,tagName)
-	tagPaper, _ := service.QueryATagPaper(tag.TagID,id)
+
+	tag, _ := service.QueryATag(userID, tagName)
+	tagPaper, _ := service.QueryATagPaper(tag.TagID, id)
 	service.DeleteATagPaper(tagPaper.ID)
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "删除成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "删除成功"})
 }
 
 // CreateAComment doc
@@ -247,10 +245,10 @@ func DeleteATagPaper(c *gin.Context){
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 403 {string} string "{"success": false, "message": "评论创建失败"}"
 // @Router /social/create/comment [POST]
-func CreateAComment (c *gin.Context){
+func CreateAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID,authorization,c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	id := c.Request.FormValue("paper_id")
 	var map_param map[string]string = make(map[string]string)
@@ -262,27 +260,27 @@ func CreateAComment (c *gin.Context){
 
 	content := c.Request.FormValue("content")
 
-	comment := model.Comment{UserID:user.UserID, Username:user.Username,
-		PaperID: paper["paper_id"].(string), PaperTitle:paper["paper_title"].(string),
-		CommentTime: time.Now(), Content:content}
+	comment := model.Comment{UserID: user.UserID, Username: user.Username,
+		PaperID: paper["paper_id"].(string), PaperTitle: paper["paper_title"].(string),
+		CommentTime: time.Now(), Content: content}
 
 	notCreated := service.CreateAComment(&comment)
-	if notCreated{
-		c.JSON(http.StatusOK, gin.H{"success": false,"status":  403, "message": "评论创建失败"})
-	}else{
+	if notCreated {
+		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "评论创建失败"})
+	} else {
 		paperID := comment.PaperID
 		// fmt.Println(paperID)
 		comments := service.QueryComsByPaperId(paperID)
 		// fmt.Println(comments)
 
 		var dataList []map[string]interface{}
-		for _, comment := range comments{
+		for _, comment := range comments {
 			var com = make(map[string]interface{})
 			com["id"] = comment.CommentID
 			com["like"] = comment.Like
 			com["is_animating"] = false
 			com["is_like"] = false
-			if service.UserLike(userID,comment.CommentID){
+			if service.UserLike(userID, comment.CommentID) {
 				com["is_like"] = true
 			}
 			com["user_id"] = comment.UserID
@@ -291,7 +289,7 @@ func CreateAComment (c *gin.Context){
 			com["time"] = comment.CommentTime
 			com["reply_count"] = comment.ReplyCount
 			// fmt.Println(com)
-			dataList = append(dataList,com)
+			dataList = append(dataList, com)
 		}
 		// fmt.Println(dataList)
 
@@ -299,13 +297,13 @@ func CreateAComment (c *gin.Context){
 		data["paper_id"] = paperID
 
 		data["paper_title"] = comments[0].PaperTitle
-	
+
 		data["comments"] = dataList
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"status":  200,
 			"message": "评论创建成功",
-			"data": data,
+			"data":    data,
 		})
 	}
 }
@@ -316,18 +314,18 @@ func CreateAComment (c *gin.Context){
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
-// @Param comment_id formData string true "评论id" 
+// @Param comment_id formData string true "评论id"
 // @Success 200 {string} string "{"success": true, "message": "操作成功"}"
 // @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
 // @Router /social/like/comment [POST]
-func LikeComment (c *gin.Context){
+func LikeComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID,authorization,c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
-	comment,notFound := service.QueryAComment(commentID)
-	if notFound{
+	comment, notFound := service.QueryAComment(commentID)
+	if notFound {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
@@ -335,8 +333,8 @@ func LikeComment (c *gin.Context){
 		})
 		return
 	}
-	service.UpdateCommentLike(comment,user)
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "操作成功"})
+	service.UpdateCommentLike(comment, user)
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "操作成功"})
 }
 
 // CancelLike doc
@@ -345,20 +343,20 @@ func LikeComment (c *gin.Context){
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
-// @Param comment_id formData string true "评论id" 
+// @Param comment_id formData string true "评论id"
 // @Success 200 {string} string "{"success": true, "message": "操作成功"}"
 // @Failure 403 {string} string "{"success": false, "message": "用户未点赞"}"
 // @Router /social/like/cancel [POST]
-func CancelLike (c *gin.Context){
+func CancelLike(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID,authorization,c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
-	comment,_ := service.QueryAComment(commentID)
+	comment, _ := service.QueryAComment(commentID)
 
-	notFound := service.CancelLike(comment,user)
-	if notFound{
+	notFound := service.CancelLike(comment, user)
+	if notFound {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
@@ -366,7 +364,7 @@ func CancelLike (c *gin.Context){
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true,"status":  200, "message": "操作成功"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "操作成功"})
 }
 
 // ReplyAComment doc
@@ -381,18 +379,18 @@ func CancelLike (c *gin.Context){
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Router /social/reply/comment [POST]
-func ReplyAComment(c *gin.Context)  {
+func ReplyAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID,authorization,c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
-	comment,_ := service.QueryAComment(comment_id)
+	comment, _ := service.QueryAComment(comment_id)
 
 	content := c.Request.FormValue("content")
-	reply := model.Comment{UserID:user.UserID, Username:user.Username, 
-		PaperID:comment.PaperID, PaperTitle:comment.PaperTitle,
-		CommentTime:time.Now(), Content:content, RelateID:comment_id}
+	reply := model.Comment{UserID: user.UserID, Username: user.Username,
+		PaperID: comment.PaperID, PaperTitle: comment.PaperTitle,
+		CommentTime: time.Now(), Content: content, RelateID: comment_id}
 	service.CreateAComment(&reply)
 
 	var map_param map[string]string = make(map[string]string)
@@ -403,8 +401,8 @@ func ReplyAComment(c *gin.Context)  {
 	_ = json.Unmarshal(body_byte, &paper)
 	paper_url := "https://dx.doi.org/" + paper["doi"].(string)
 
-	be_reply_user,_ := service.QueryAUserByID(comment.UserID)
-	utils.SendReplyEmail(be_reply_user.Email,paper_url)
+	be_reply_user, _ := service.QueryAUserByID(comment.UserID)
+	utils.SendReplyEmail(be_reply_user.Email, paper_url)
 
 	bas_comment := service.QueryABaseCom(comment)
 	replies := service.QueryComReply(bas_comment.CommentID)
@@ -421,7 +419,7 @@ func ReplyAComment(c *gin.Context)  {
 	data["base_comment"] = base_comment
 
 	var answers []map[string]interface{}
-	for _, reply := range replies{
+	for _, reply := range replies {
 		var answer = make(map[string]interface{})
 		answer["reply_id"] = reply.CommentID
 		answer["time"] = reply.CommentTime
@@ -429,19 +427,19 @@ func ReplyAComment(c *gin.Context)  {
 		answer["answerIt"] = false
 		answer["myAnswer"] = " "
 		answer["reply_username"] = reply.Username
-		comment,_ = service.QueryAComment(reply.RelateID)
+		comment, _ = service.QueryAComment(reply.RelateID)
 		answer["be_replied_username"] = comment.Username
-		answers = append(answers,answer)
+		answers = append(answers, answer)
 	}
 	sort.Slice(answers, func(i, j int) bool {
 		return (answers[i]["time"].(time.Time)).Before(answers[j]["time"].(time.Time)) //顺序
-    })
+	})
 	data["answers"] = answers
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "回复成功",
-		"data": data,
+		"data":    data,
 	})
 }
 
@@ -455,19 +453,19 @@ func ReplyAComment(c *gin.Context)  {
 // @Success 200 {string} string "{"success": true, "message": "查找成功"}"
 // @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
 // @Router /social/get/comments [POST]
-func GetPaperComment(c *gin.Context){
+func GetPaperComment(c *gin.Context) {
 
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
-	if userID != 0{
+	if userID != 0 {
 		authorization := c.Request.Header.Get("Authorization")
-		VerifyLogin(userID,authorization,c)
+		VerifyLogin(userID, authorization, c)
 	}
-	
+
 	paperID := c.Request.FormValue("paper_id")
 	// fmt.Println(paperID)
 	comments := service.QueryComsByPaperId(paperID)
 	fmt.Println(comments)
-	if len(comments) == 0{
+	if len(comments) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
@@ -477,13 +475,13 @@ func GetPaperComment(c *gin.Context){
 	}
 
 	var dataList []map[string]interface{}
-	for _, comment := range comments{
+	for _, comment := range comments {
 		var com = make(map[string]interface{})
 		com["id"] = comment.CommentID
 		com["like"] = comment.Like
 		com["is_animating"] = false
 		com["is_like"] = false
-		if service.UserLike(userID,comment.CommentID){
+		if service.UserLike(userID, comment.CommentID) {
 			com["is_like"] = true
 		}
 		com["user_id"] = comment.UserID
@@ -492,7 +490,7 @@ func GetPaperComment(c *gin.Context){
 		com["time"] = comment.CommentTime
 		com["reply_count"] = comment.ReplyCount
 		// fmt.Println(com)
-		dataList = append(dataList,com)
+		dataList = append(dataList, com)
 	}
 	// fmt.Println(dataList)
 
@@ -500,14 +498,14 @@ func GetPaperComment(c *gin.Context){
 	data["paper_id"] = paperID
 
 	data["paper_title"] = comments[0].PaperTitle
-	
+
 	data["comments"] = dataList
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查找成功",
-		"data": data,
+		"data":    data,
 	})
 }
 
@@ -518,9 +516,9 @@ func GetPaperComment(c *gin.Context){
 // @Success 200 {string} string "{"success": true, "message": "查找成功"}"
 // @Failure 403 {string} string "{"success": false, "message": "回复不存在"}"
 // @Router /social/get/replies [POST]
-func GetComReply(c *gin.Context){
-	ComID,_ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
-	comment,_ := service.QueryAComment(ComID)
+func GetComReply(c *gin.Context) {
+	ComID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
+	comment, _ := service.QueryAComment(ComID)
 
 	var data = make(map[string]interface{})
 	data["paper_id"] = comment.PaperID
@@ -535,12 +533,12 @@ func GetComReply(c *gin.Context){
 	data["base_comment"] = base_comment
 
 	replies := service.QueryComReply(ComID)
-	if len(replies) == 0{
+	if len(replies) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  403,
 			"message": "回复不存在",
-			"data": data,
+			"data":    data,
 		})
 		return
 	}
@@ -548,7 +546,7 @@ func GetComReply(c *gin.Context){
 	fmt.Println(replies)
 
 	var answers []map[string]interface{}
-	for _, reply := range replies{
+	for _, reply := range replies {
 		var answer = make(map[string]interface{})
 		answer["reply_id"] = reply.CommentID
 		answer["time"] = reply.CommentTime
@@ -556,35 +554,35 @@ func GetComReply(c *gin.Context){
 		answer["answerIt"] = false
 		answer["myAnswer"] = " "
 		answer["reply_username"] = reply.Username
-		comment,_ = service.QueryAComment(reply.RelateID)
+		comment, _ = service.QueryAComment(reply.RelateID)
 		answer["be_replied_username"] = comment.Username
-		answers = append(answers,answer)
+		answers = append(answers, answer)
 	}
 	// answers = MapSort(answers,"time")
 	sort.Slice(answers, func(i, j int) bool {
-        // if answer[i]["no"] == answer[j]["no"] {
-        //     return s1[i]["score"] < s1[j]["score"]
-        // }
-        // return answers[i]["reply_id"].(uint64) < answers[j]["reply_id"].(uint64)
+		// if answer[i]["no"] == answer[j]["no"] {
+		//     return s1[i]["score"] < s1[j]["score"]
+		// }
+		// return answers[i]["reply_id"].(uint64) < answers[j]["reply_id"].(uint64)
 		return (answers[i]["time"].(time.Time)).Before(answers[j]["time"].(time.Time)) //顺序
-    })
+	})
 	data["answers"] = answers
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查找成功",
-		"data": data,
+		"data":    data,
 	})
 }
 
-func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.User, err bool){
+func VerifyLogin(userID uint64, authorization string, c *gin.Context) (user model.User, err bool) {
 	user, notFoundUserByID := service.QueryAUserByID(userID)
 	verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
 
 	if authorization == "" || !verify_answer {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 400, "message": "用户未登录"})
-		return user,true
+		return user, true
 	}
 
 	if notFoundUserByID {
@@ -593,19 +591,19 @@ func VerifyLogin(userID uint64,authorization string,c *gin.Context)(user model.U
 			"status":  404,
 			"message": "用户ID不存在",
 		})
-		return user,true
+		return user, true
 	}
-	return user,false
+	return user, false
 }
 
 type MapsSort struct {
-	Key string
-	MapList []map[string] interface{}
+	Key     string
+	MapList []map[string]interface{}
 }
 
 // Len 为集合内元素的总数
 func (m *MapsSort) Len() int {
-	return len(m.MapList) 
+	return len(m.MapList)
 }
 
 //如果index为i的元素小于index为j的元素，则返回true，否则返回false
@@ -616,40 +614,40 @@ func (m *MapsSort) Less(i, j int) bool {
 	fmt.Println(m.Key)
 	switch m.MapList[i][m.Key].(type) {
 	case string:
-	   ivalue,err = strconv.ParseFloat(m.MapList[i][m.Key].(string),64)
-	   fmt.Println(ivalue)
-	   if err != nil {
-		//   logger.Error("map数组排序string转float失败：%v",err)
-		  return true
-	   }
-	// case int:
-	//    ivalue = float64(m.MapList[i][m.Key].(int))
-	// case float64:
-	//    ivalue = m.MapList[i][m.Key].(float64)
-	// case int64:
-	//    ivalue = float64(m.MapList[i][m.Key].(int64))
+		ivalue, err = strconv.ParseFloat(m.MapList[i][m.Key].(string), 64)
+		fmt.Println(ivalue)
+		if err != nil {
+			//   logger.Error("map数组排序string转float失败：%v",err)
+			return true
+		}
+		// case int:
+		//    ivalue = float64(m.MapList[i][m.Key].(int))
+		// case float64:
+		//    ivalue = m.MapList[i][m.Key].(float64)
+		// case int64:
+		//    ivalue = float64(m.MapList[i][m.Key].(int64))
 	}
 	switch m.MapList[j][m.Key].(type) {
 	case string:
-	   jvalue,err = strconv.ParseFloat(m.MapList[j][m.Key].(string),64)
-	   fmt.Println(jvalue)
-	   if err != nil {
-		//   logger.Error("map数组排序string转float失败：%v",err)
-		  return true
-	   }
-	// case int:
-	//    jvalue = float64(m.MapList[j][m.Key].(int))
-	// case float64:
-	//    jvalue = m.MapList[j][m.Key].(float64)
-	// case int64:
-	//    jvalue = float64(m.MapList[j][m.Key].(int64))
+		jvalue, err = strconv.ParseFloat(m.MapList[j][m.Key].(string), 64)
+		fmt.Println(jvalue)
+		if err != nil {
+			//   logger.Error("map数组排序string转float失败：%v",err)
+			return true
+		}
+		// case int:
+		//    jvalue = float64(m.MapList[j][m.Key].(int))
+		// case float64:
+		//    jvalue = m.MapList[j][m.Key].(float64)
+		// case int64:
+		//    jvalue = float64(m.MapList[j][m.Key].(int64))
 	}
 	return ivalue > jvalue
- }
+}
 
 //Swap 交换索引为 i 和 j 的元素
 func (m *MapsSort) Swap(i, j int) {
-	m.MapList[i],m.MapList[j] = m.MapList[j],m.MapList[i]
+	m.MapList[i], m.MapList[j] = m.MapList[j], m.MapList[i]
 }
 
 func MapSort(ms []map[string]interface{}, key string) []map[string]interface{} {
