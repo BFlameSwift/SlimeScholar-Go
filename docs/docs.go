@@ -710,6 +710,75 @@ var doc = `{
                 }
             }
         },
+        "/scholar/transfer": {
+            "post": {
+                "description": "学者添加或删除Paper,401 通常表示参数错误，Objw为被转让的人，当为添加或删除时，为零",
+                "tags": [
+                    "学者门户"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "obj_user_id",
+                        "name": "obj_user_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "paper_id",
+                        "name": "paper_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0添加1删除2转让",
+                        "name": "kind",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"用户验证邮箱成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"用户已验证邮箱\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "402": {
+                        "description": "{\"success\": false, \"message\": \"用户输入验证码错误}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户不存在}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "600": {
+                        "description": "{\"success\": false, \"message\": \"用户待修改，传入false 更新验证码，否则为验证正确}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/social/collect/paper": {
             "post": {
                 "security": [

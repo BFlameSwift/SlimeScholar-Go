@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
@@ -50,7 +49,7 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = submit.AuthorID
-		paper_result = service.QueryByField("paper_author", "rel.aid.keyword", submit.AuthorID, 1, 10)
+		paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user))
 
 	} else {
@@ -60,13 +59,13 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = author_id
-		paper_result = service.QueryByField("paper_author", "rel.aid.keyword", author_id, 1, 10)
+		paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		people_msg = "不是服务器es暂未存储"
 	}
 
 	paper_ids := make([]string, 0, 10000)
-	authors_map := make(map[string]interface{})
+	//authors_map := make(map[string]interface{})
 	for _, hit := range paper_result.Hits.Hits {
 		hit_map := make(map[string]interface{})
 		err := json.Unmarshal([]byte(hit.Source), &hit_map)
@@ -74,13 +73,16 @@ func GetScholar(c *gin.Context) {
 			panic(err)
 		}
 		paper_ids = append(paper_ids, hit_map["paper_id"].(string))
-		authors_map[hit_map["paper_id"].(string)] = service.ParseRelPaperAuthor(hit_map)
+		//authors_map[hit_map["paper_id"].(string)] = service.ParseRelPaperAuthor(hit_map)
 	}
 	paper_id_map := service.IdsGetItems(paper_ids, "paper")
 	paper_list := make([]interface{}, 0, 1000)
 	for _, id := range paper_ids {
 		if paper_id_map[id] != nil {
-			paper_id_map[id].(map[string]interface{})["authors"] = authors_map[id].(map[string]interface{})["rel"]
+			authors_map := make(map[string]interface{})
+			authors_map["rel"] = paper_id_map[id].(map[string]interface{})["authors"]
+			paper_id_map[id].(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(authors_map)["rel"]
+			//paper_id_map[id].(map[string]interface{})["authors"] = authors_map[id].(map[string]interface{})["rel"]
 			paper_list = append(paper_list, paper_id_map[id])
 		}
 	}
@@ -89,17 +91,18 @@ func GetScholar(c *gin.Context) {
 }
 
 // Index doc
-// @description 学者添加或删除Paper,401 通常表示参数错误
+// @description 学者添加或删除Paper,401 通常表示参数错误，Objw为被转让的人，当为添加或删除时，为零
 // @Tags 学者门户
 // @Param user_id formData string true "user_id"
+// @Param obj_user_id formData string false "obj_user_id"
 // @Param paper_id formData string true "paper_id"
-// @Param is_add formData bool true "is_add表示是否是添加paper"
+// @Param kind formData int true "0添加1删除2转让"
 // @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "用户已验证邮箱"}"
 // @Failure 402 {string} string "{"success": false, "message": "用户输入验证码错误}"
 // @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
-// @Router /user/confirm [POST]
+// @Router /scholar/transfer [POST]
 func ScholarManagePaper(c *gin.Context) {
 
 	user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
@@ -108,12 +111,15 @@ func ScholarManagePaper(c *gin.Context) {
 		return
 	}
 	paper_id := c.Request.FormValue("paper_id")
-	is_add, err := strconv.ParseBool(c.Request.FormValue("is_add"))
+	kind, err := strconv.Atoi(c.Request.FormValue("kind"))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "isadd不为bool", "status": 401})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "kind 不是int", "status": 401})
 		return
 	}
-
+	obj_user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
+	if err != nil {
+		obj_user_id = 0
+	}
 	user, notFound := service.QueryAUserByID(user_id)
 	if notFound {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在", "status": 404})
@@ -121,10 +127,12 @@ func ScholarManagePaper(c *gin.Context) {
 	} else if user.UserType != 1 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不是入驻学者", "status": 402})
 		return
-	} else if _, notFound := service.QueryASubmitExist(user_id); notFound {
+	} else if _, notFound = service.QueryASubmitExist(user_id); notFound {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户提交表不存在", "status": 403})
 		return
 	}
-	fmt.Println(paper_id, is_add)
-
+	//fmt.Println(paper_id, is_add)
+	service.TransferPaper(user, user.AuthorID, paper_id, kind, obj_user_id)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "创建成功", "status": 200})
+	return
 }

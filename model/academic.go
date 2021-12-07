@@ -37,9 +37,11 @@ type Conference struct {
 }
 
 type Transfer struct {
-	TransferID string `gorm:"type:varchar(30);primary_key;" json:"transfer_id"`
+	TransferID uint64 `gorm:"primary_key; not null;" json:"transfer_id"`
 	PaperId    string `gorm:"type:varchar(32);" json:"paper_id"`
 	AuthorId   string `gorm:"type:varchar(32);not null;" json:"author_id"`
 	UserID     uint64 `gorm:"not null;" json:"user_id"`
-	IsAdd      bool   `gorm:"type:bool" json:"is_add"`
+	ObjUserID  uint64 `gorm:";" json:"obj_user_id"`
+	Kind       int    `gorm:"type:int" json:"kind"`
+	Status     bool   `gorm:"type:bool;default:false;" json:"status"`
 }

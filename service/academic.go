@@ -1,7 +1,10 @@
 package service
 
 import (
+	"errors"
+	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -34,5 +37,24 @@ func BrowerPaper(paper map[string]interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+func FindExistingTransfer(author_id string, paper_id string, user_id uint64, kind int) (transfer *model.Transfer, notFound bool) {
+	err := global.DB.Where("author_id = ? AND paper_id = ? AND user_id = ? AND kind = ?", author_id, paper_id, user_id, kind).First(&transfer).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return transfer, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return transfer, false
+	}
+}
 
+func TransferPaper(user model.User, author_id string, paper_id string, kind int, obj_user_id uint64) {
+	trans, notFound := FindExistingTransfer(author_id, paper_id, user.UserID, kind)
+	if notFound {
+		transfer := model.Transfer{UserID: user.UserID, AuthorId: author_id, PaperId: paper_id, Kind: kind, Status: false, ObjUserID: obj_user_id}
+		if err := global.DB.Create(&transfer).Error; err != nil {
+			panic(err)
+		}
+	}
 }

@@ -22,6 +22,7 @@ func InitRouter(Router *gin.RouterGroup) {
 	SchoalrRouter := Router.Group("/scholar")
 	{
 		SchoalrRouter.POST("/info", v1.GetScholar)
+		SchoalrRouter.POST("/transfer", v1.ScholarManagePaper)
 	}
 	UserRouter := Router.Group("/user")
 	{
