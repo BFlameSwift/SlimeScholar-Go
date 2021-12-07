@@ -224,16 +224,18 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	for i, paper_map_item := range paper_sequences {
-		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	}
+	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	//for i, paper_map_item := range paper_sequences {
+	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	//}
 	aggregation := make(map[string]interface{})
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
 	fmt.Println(aggregation["doctype"])
 	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
 	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
+	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
 	// 暂时有问题，一数据弄好一起改
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
@@ -242,7 +244,7 @@ func TitleQueryPaper(c *gin.Context) {
 }
 
 // TitleSelectPaper doc
-// @description es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误
+// @description es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份
 // @Tags elasticsearch
 // @Param title formData string true "title"
 // @Param page formData int true "page"
@@ -250,7 +252,10 @@ func TitleQueryPaper(c *gin.Context) {
 // @Param min_year formData int true "min_year"
 // @Param max_year formData int true "max_year"
 // @Param doctypes formData string true "doctypes"
-// @Param journals formData string true "doctypes"
+// @Param conferences formData string true "conferences"
+// @Param journals formData string true "journals"\
+// @Param sort_type formData int true "sort_type"
+// @Param sort_ascending formData bool true "sort_ascending"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "page 不是整数"}"
 // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
@@ -284,6 +289,21 @@ func TitleSelectPaper(c *gin.Context) {
 	journals_json := c.Request.FormValue("journals")
 	doctypes := make([]string, 0, 100)
 	journals := make([]string, 0, 100)
+	var searchResult *elastic.SearchResult
+	var sort_ascending bool
+
+	sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
+	sort_ascending_str := c.Request.FormValue("sort_ascending")
+	if sort_ascending_str == "true" {
+		sort_ascending = true
+	} else if sort_ascending_str == "false" {
+		sort_ascending = false
+	} else {
+		sort_ascending = true
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "sort_ascending 不是truefalse", "status": 401})
+		return
+	}
+
 	err = json.Unmarshal([]byte(doctypes_json), &doctypes)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "doctypes格式错误", "status": 401})
@@ -297,9 +317,16 @@ func TitleSelectPaper(c *gin.Context) {
 	fmt.Println(doctypes, journals)
 	boolQuery := service.SelectTypeQuery(doctypes, journals, min_year, max_year)
 	boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
-
-	searchResult, err := service.Client.Search("paper").Query(boolQuery).Size(size).
-		From((page - 1) * size).Do(context.Background())
+	if sort_type == 1 {
+		searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(size).
+			From((page - 1) * size).Do(context.Background())
+	} else if sort_type == 2 {
+		searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(size).Sort("citation_count", sort_ascending).
+			From((page - 1) * size).Do(context.Background())
+	} else if sort_type == 3 {
+		searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(size).Sort("date", sort_ascending).
+			From((page - 1) * size).Do(context.Background())
+	}
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -324,10 +351,10 @@ func TitleSelectPaper(c *gin.Context) {
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	for i, paper_map_item := range paper_sequences {
-		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	}
+	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
+	//for i, paper_map_item := range paper_sequences {
+	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
+	//}
 
 	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 	// 暂时有问题，一数据弄好一起改

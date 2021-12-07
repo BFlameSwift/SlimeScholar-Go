@@ -287,14 +287,16 @@ func QueryByField(index string, field string, content string, page int, size int
 func PaperQueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	//TODO 领域
+	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
+	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
 	boolQuery := elastic.NewBoolQuery()
 	boolQuery.Must(elastic.NewMatchQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
@@ -306,7 +308,7 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 
 func MatchPhraseQuery(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	query := elastic.NewMatchPhraseQuery(field, content)
-	searchResult, err := Client.Search().Index("paper").Query(query).From(0).Size(10).Do(context.Background())
+	searchResult, err := Client.Search().Index("paper").Query(query).From((page - 1) * size).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -417,7 +419,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	bucket_len := len(agg.Buckets)
 	result_ids := make([]string, 0, 10000)
 	result_map := make(map[string]interface{})
-	if index == "journal" || index == "conference" || index == "field" {
+	if index == "journal" || index == "conference" || index == "fields" {
 		for _, bucket := range agg.Buckets {
 			if bucket.Key.(string) == "" {
 				continue
@@ -426,7 +428,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		}
 		result_map = IdsGetItems(result_ids, index)
 	}
-	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "field") {
+	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "fields") {
 		return make([]interface{}, 0, 0)
 	}
 	for _, bucket := range agg.Buckets {
@@ -435,7 +437,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		if bucket.Key.(string) == "" && bucket_len != 1 {
 			continue
 		}
-		if index == "journal" || index == "conference" || index == "field" {
+		if index == "journal" || index == "conference" || index == "fields" {
 			m = result_map[bucket.Key.(string)].(map[string]interface{})
 			m["count"] = bucket.DocCount
 			m["id"] = bucket.Key

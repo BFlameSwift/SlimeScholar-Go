@@ -324,7 +324,7 @@ paths:
   /es/select/paper/title:
     post:
       description: es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401
-        参数格式错误
+        参数格式错误, 排序方式1为默认，2为引用率，3为年份
       parameters:
       - description: title
         in: formData
@@ -356,11 +356,26 @@ paths:
         name: doctypes
         required: true
         type: string
-      - description: doctypes
+      - description: conferences
+        in: formData
+        name: conferences
+        required: true
+        type: string
+      - description: journals
         in: formData
         name: journals
         required: true
         type: string
+      - description: sort_type
+        in: formData
+        name: sort_type
+        required: true
+        type: integer
+      - description: sort_ascending
+        in: formData
+        name: sort_ascending
+        required: true
+        type: boolean
       responses:
         "200":
           description: '{"success": true, "message": "获取成功"}'
@@ -685,7 +700,7 @@ paths:
           description: '{"success": true, "message": "查找成功"}'
           schema:
             type: string
-        "400":
+        "403":
           description: '{"success": false, "message": "回复不存在"}'
           schema:
             type: string

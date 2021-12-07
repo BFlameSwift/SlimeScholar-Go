@@ -508,7 +508,7 @@ var doc = `{
         },
         "/es/select/paper/title": {
             "post": {
-                "description": "es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \\n 错误码：401 参数格式错误",
+                "description": "es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \\n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份",
                 "tags": [
                     "elasticsearch"
                 ],
@@ -557,8 +557,29 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "doctypes",
+                        "description": "conferences",
+                        "name": "conferences",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "journals",
                         "name": "journals",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort_type",
+                        "name": "sort_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "sort_ascending",
+                        "name": "sort_ascending",
                         "in": "formData",
                         "required": true
                     }
@@ -1066,7 +1087,7 @@ var doc = `{
                             "type": "string"
                         }
                     },
-                    "400": {
+                    "403": {
                         "description": "{\"success\": false, \"message\": \"回复不存在\"}",
                         "schema": {
                             "type": "string"
