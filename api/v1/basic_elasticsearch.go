@@ -367,22 +367,22 @@ func TitleSelectPaper(c *gin.Context) {
 }
 
 // NameQueryAuthor doc
-// @description es 根据姓名查询作者：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配
+// @description es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
 // @Tags elasticsearch
 // @Param name formData string true "name"
-// @Param isPrecise formData int flase "isPrecise"
+// @Param is_precise formData bool flase "is_precise"
 // @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/author/name [POST]
 func NameQueryAuthor(c *gin.Context) {
 	name := c.Request.FormValue("name")
-	isPrecise, err := strconv.Atoi(c.Request.FormValue("isPrecise"))
+	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
 	}
 	boolQuery := elastic.NewBoolQuery()
-	if isPrecise == 1 {
+	if is_precise == true {
 		query := elastic.NewMatchPhraseQuery("name.keyword", name)
 		boolQuery.Must(query)
 	} else {
@@ -603,17 +603,17 @@ func AdvancedSearch(c *gin.Context) {
 }
 
 // AuthorNameQueryPaper doc
-// @description es 根据作者姓名查询文献：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配
+// @description es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
 // @Tags elasticsearch
 // @Param author_name formData string true "author_name"
-// @Param isPrecise formData bool true "isPrecise"
+// @Param is_precise formData bool true "is_precise"
 // @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/paper/author_name [POST]
 func AuthorNameQueryPaper(c *gin.Context) {
 	author_name := c.Request.FormValue("author_name")
-	is_precise, err := strconv.ParseBool(c.Request.FormValue("isPrecise"))
+	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
 	}
@@ -624,6 +624,55 @@ func AuthorNameQueryPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search author_name", author_name, "hits :", searchResult.TotalHits())
+
+	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
+	for _, paper := range searchResult.Hits.Hits {
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		paper_map = service.ComplePaper(paper_map)
+
+		paper_sequences = append(paper_sequences, paper_map)
+	}
+
+	aggregation := make(map[string]interface{})
+	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
+	fmt.Println(aggregation["doctype"])
+	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
+	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
+	// 暂时有问题，一数据弄好一起改
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences, "aggregation": aggregation})
+	return
+}
+
+// AffiliationNameQueryPaper doc
+// @description es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
+// @Tags elasticsearch
+// @Param affiliation_name formData string true "affiliation_name"
+// @Param is_precise formData bool true "is_precise"
+// @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/affiliation_name [POST]
+func AffiliationNameQueryPaper(c *gin.Context) {
+	affiliation_name := c.Request.FormValue("affiliation_name")
+	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
+	if err != nil {
+		panic(err)
+	}
+	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, 1, 10, is_precise)
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this affiliation_name query %s not existed", affiliation_name)
+		return
+	}
+	fmt.Println("search author_name", affiliation_name, "hits :", searchResult.TotalHits())
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)

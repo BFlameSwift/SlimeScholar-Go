@@ -286,7 +286,7 @@ var doc = `{
         },
         "/es/query/author/name": {
             "post": {
-                "description": "es 根据姓名查询作者：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配",
+                "description": "es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",
                 "tags": [
                     "elasticsearch"
                 ],
@@ -299,9 +299,9 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "isPrecise",
-                        "name": "isPrecise",
+                        "type": "boolean",
+                        "description": "is_precise",
+                        "name": "is_precise",
                         "in": "formData"
                     }
                 ],
@@ -419,9 +419,53 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/affiliation_name": {
+            "post": {
+                "description": "es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "affiliation_name",
+                        "name": "affiliation_name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "is_precise",
+                        "name": "is_precise",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取作者成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"作者不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/paper/author_name": {
             "post": {
-                "description": "es 根据作者姓名查询文献：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配",
+                "description": "es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",
                 "tags": [
                     "elasticsearch"
                 ],
@@ -435,8 +479,8 @@ var doc = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "isPrecise",
-                        "name": "isPrecise",
+                        "description": "is_precise",
+                        "name": "is_precise",
                         "in": "formData",
                         "required": true
                     }

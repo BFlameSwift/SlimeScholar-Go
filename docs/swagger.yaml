@@ -175,17 +175,17 @@ paths:
       - elasticsearch
   /es/query/author/name:
     post:
-      description: es 根据姓名查询作者：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配
+      description: es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
       parameters:
       - description: name
         in: formData
         name: name
         required: true
         type: string
-      - description: isPrecise
+      - description: is_precise
         in: formData
-        name: isPrecise
-        type: integer
+        name: is_precise
+        type: boolean
       responses:
         "200":
           description: '{"success": true, "message": "获取作者成功"}'
@@ -264,18 +264,47 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/query/paper/affiliation_name:
+    post:
+      description: es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
+      parameters:
+      - description: affiliation_name
+        in: formData
+        name: affiliation_name
+        required: true
+        type: string
+      - description: is_precise
+        in: formData
+        name: is_precise
+        required: true
+        type: boolean
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取作者成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "作者不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/query/paper/author_name:
     post:
-      description: es 根据作者姓名查询文献：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配
+      description: es 根据作者姓名查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
       parameters:
       - description: author_name
         in: formData
         name: author_name
         required: true
         type: string
-      - description: isPrecise
+      - description: is_precise
         in: formData
-        name: isPrecise
+        name: is_precise
         required: true
         type: boolean
       responses:
