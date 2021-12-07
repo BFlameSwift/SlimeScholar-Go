@@ -1547,6 +1547,31 @@
                 }
             }
         },
+        "/submit/get/papers": {
+            "post": {
+                "description": "根据作者姓名返回姓名相近的作者并返回文献组",
+                "tags": [
+                    "管理员"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "author_name",
+                        "name": "author_name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"创建成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/submit/list": {
             "post": {
                 "description": "列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的",

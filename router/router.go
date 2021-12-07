@@ -18,6 +18,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		SubmitRouter.POST("/create", v1.CreateSubmit)
 		SubmitRouter.POST("/check", v1.CheckSubmit)
 		SubmitRouter.POST("/list", v1.ListAllSubmit)
+		SubmitRouter.POST("/get/papers", v1.PaperGetAuthors)
 	}
 	SchoalrRouter := Router.Group("/scholar")
 	{

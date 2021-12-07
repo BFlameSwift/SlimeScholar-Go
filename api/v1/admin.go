@@ -8,6 +8,8 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
+	"github.com/olivere/elastic/v7"
+	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -162,5 +164,38 @@ func ListAllSubmit(c *gin.Context) {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "submits": submits_arr, "submit_count": len(submits)})
+	return
+}
+
+// Index doc
+// @description 根据作者姓名返回姓名相近的作者并返回文献组
+// @Tags 管理员
+// @Param author_name formData string true "author_name"
+// @Success 200 {string} string "{"success": true, "message": "创建成功"}"
+// @Router /submit/get/papers [POST]
+func PaperGetAuthors(c *gin.Context) {
+	author_name := c.Request.FormValue("author_name")
+	searchResult, err := service.Client.Search().Index("author").Query(elastic.NewMatchQuery("name", author_name)).Size(10).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	author_maps := make([]map[string]interface{}, 0, 10)
+	hit_count := 10
+	if int(searchResult.TotalHits()) < hit_count {
+		hit_count = int(searchResult.TotalHits())
+	}
+	for _, hit := range searchResult.Hits.Hits {
+		author_map := make(map[string]interface{})
+		err = json.Unmarshal(hit.Source, &author_map)
+		if err != nil {
+			panic(err)
+		}
+		author_map["papers"] = service.GetAuthorAllPaper(author_map["author_id"].(string))
+		if author_map["papers"] == nil {
+			author_map["papers"] = make([]string, 0)
+		}
+		author_maps = append(author_maps, author_map)
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "authors": author_maps, "author_count": hit_count})
 	return
 }
