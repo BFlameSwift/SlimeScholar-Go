@@ -52,6 +52,7 @@ func InitMySQL() {
 		&model.BrowsingHistory{},
 		&model.Tag{},
 		&model.TagPaper{},
+		&model.Transfer{},
 
 		// 生成新的数据库表
 		&model.PaperReference{},

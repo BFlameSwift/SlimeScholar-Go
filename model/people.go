@@ -14,6 +14,7 @@ type User struct {
 	UserType      uint64    `gorm:"default:0" json:"user_type"` // 0: 普通用户，1: 认证机构用户,2 管理员
 	Affiliation   string    `gorm:"size:64;" json:"affiliation"`
 	AuthorName    string    `gorm:"size:64;" json:"author_name"`
+	AuthorID      string    `gorm:"type:varchar(32);" json:"author_id"` // 被申请的作者ID
 	HomePage      string    `gorm:"size:64;" json:"home_page"`
 	Email         string    `gorm:"size:32;" json:"email"`
 	WorkEmail     string    `gorm:"size:32;" json:"work_email"`

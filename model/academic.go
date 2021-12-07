@@ -3,12 +3,12 @@ package model
 // 由于相关数据量过大，数据可能会放在elasti search上，此处暂时保存一下
 
 type Paper struct {
-	PaperId       string `gorm:"type:varchar(32); primary_key;" json: "paper_id"`
-	Rank          int    `gorm:"type:integer; " json: "rank"`
+	PaperId       string `gorm:"type:varchar(32); primary_key;" json:"paper_id"`
+	Rank          int    `gorm:"type:integer;" json:"rank"`
 	Doi           string `gorm:"type:varchar(64)" json:"doi"`
-	DocType       string `gorm:"type: varchar(32)" json:"doc_type`
-	title         string `gorm:"type: varchar(32)" json:"title"`
-	BookTitle     string `gorm:"type: varchar(32)" json: "book_title"`
+	DocType       string `gorm:"type: varchar(32)" json:"doc_type"`
+	Title         string `gorm:"type: varchar(32)" json:"title"`
+	BookTitle     string `gorm:"type: varchar(32)" json:"book_title"`
 	Year          int    `gorm:"type: integer; " json:"year"`
 	Date          string `gorm:"type: varchar(16)" json:"date"`
 	JournalId     string `gorm:"type: varchar(32)" json:"journal_id"`
@@ -34,4 +34,12 @@ type Conference struct {
 	OfficalPage    string `gorm:"type:varchar(64)" json:"offical_page"`
 	PaperCount     int    `gorm:"type:int" json:"paper_count"`
 	CitationCount  int    `gorm:"type:int" json:"citation_count"`
+}
+
+type Transfer struct {
+	TransferID string `gorm:"type:varchar(30);primary_key;" json:"transfer_id"`
+	PaperId    string `gorm:"type:varchar(32);" json:"paper_id"`
+	AuthorId   string `gorm:"type:varchar(32);not null;" json:"author_id"`
+	UserID     uint64 `gorm:"not null;" json:"user_id"`
+	IsAdd      bool   `gorm:"type:bool" json:"is_add"`
 }

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 )
 
-// Confirm doc
+// Index doc
 // @description 获取学者信息
 // @Tags 学者门户
 // @Param user_id formData int false "user_id"
@@ -83,7 +84,47 @@ func GetScholar(c *gin.Context) {
 			paper_list = append(paper_list, paper_id_map[id])
 		}
 	}
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": paper_list, "author_id": ret_author_id, "people": people_msg})
 	return
+}
+
+// Index doc
+// @description 学者添加或删除Paper,401 通常表示参数错误
+// @Tags 学者门户
+// @Param user_id formData string true "user_id"
+// @Param paper_id formData string true "paper_id"
+// @Param is_add formData bool true "is_add表示是否是添加paper"
+// @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "用户已验证邮箱"}"
+// @Failure 402 {string} string "{"success": false, "message": "用户输入验证码错误}"
+// @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
+// @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
+// @Router /user/confirm [POST]
+func ScholarManagePaper(c *gin.Context) {
+
+	user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "user_id不为int", "status": 401})
+		return
+	}
+	paper_id := c.Request.FormValue("paper_id")
+	is_add, err := strconv.ParseBool(c.Request.FormValue("is_add"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "isadd不为bool", "status": 401})
+		return
+	}
+
+	user, notFound := service.QueryAUserByID(user_id)
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在", "status": 404})
+		return
+	} else if user.UserType != 1 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不是入驻学者", "status": 402})
+		return
+	} else if _, notFound := service.QueryASubmitExist(user_id); notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户提交表不存在", "status": 403})
+		return
+	}
+	fmt.Println(paper_id, is_add)
+
 }

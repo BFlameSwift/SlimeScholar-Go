@@ -261,6 +261,7 @@ func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 	user.Fields = submit.Fields
 	user.HomePage = submit.HomePage
 	user.PaperCount += submit.PaperCount
+	user.AuthorID = submit.AuthorID
 	err := global.DB.Save(&user).Error
 	if err != nil {
 		panic(err)
