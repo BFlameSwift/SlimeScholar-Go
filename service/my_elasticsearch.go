@@ -382,6 +382,41 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	ret_map["rel"] = inter
 	return ret_map
 }
+func InterfaceListToStringList(list []interface{}) []string {
+	ret_list := make([]string, 0, 1000)
+	for _, id := range list {
+		ret_list = append(ret_list, id.(string))
+	}
+	return ret_list
+}
+
+func ParseFields(ids []string, index string) []interface{} {
+	the_map := IdsGetItems(ids, index)
+	ret_list := make([]interface{}, 0, 1000)
+	for _, id := range ids {
+		ret_list = append(ret_list, the_map[id])
+	}
+	return ret_list
+}
+func ComplePaper(paper map[string]interface{}) (paper_map map[string]interface{}) {
+	// 补全paper中的作者与领域信息，主要是paper作者可能为空字段
+
+	paper_map = paper
+	if paper_map["fields"] != nil {
+		paper_map["fields"] = ParseFields(InterfaceListToStringList(paper_map["fields"].([]interface{})), "fields")
+	} else {
+		paper_map["fields"] = make([]string, 0)
+	}
+
+	if paper_map["authors"] != nil {
+		authors_map := make(map[string]interface{})
+		authors_map["rel"] = paper_map["authors"]
+		paper_map["authors"] = ParseRelPaperAuthor(authors_map)
+	} else {
+		paper_map["authors"] = make([]interface{}, 0, 0)
+	}
+	return paper_map
+}
 func PaperGetAuthors(paper_id string) map[string]interface{} {
 	var map_param map[string]string = make(map[string]string)
 	map_param["index"], map_param["id"] = "paper", paper_id
@@ -449,7 +484,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	return my_list
 }
 
-func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_year int) *elastic.BoolQuery {
+func SelectTypeQuery(doctypes []string, journals []string, conferences []string, publishers []string, min_year int, max_year int) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 
 	//fmt.Println(len(doctypes))
@@ -467,6 +502,20 @@ func SelectTypeQuery(doctypes []string, journals []string, min_year int, max_yea
 			journal_query.Should(elastic.NewTermQuery("journal_id", journal))
 		}
 		boolQuery.Must(journal_query)
+	}
+	if len(conferences) > 0 {
+		conference_query := elastic.NewBoolQuery()
+		for _, conference := range journals {
+			conference_query.Should(elastic.NewTermQuery("conference_id", conference))
+		}
+		boolQuery.Must(conference_query)
+	}
+	if len(publishers) > 0 {
+		publisher_query := elastic.NewBoolQuery()
+		for _, publisher := range journals {
+			publisher_query.Should(elastic.NewTermQuery("publihsher", publisher))
+		}
+		boolQuery.Must(publisher_query)
 	}
 	if min_year > 10 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))

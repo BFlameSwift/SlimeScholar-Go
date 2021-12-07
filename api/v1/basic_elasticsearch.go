@@ -213,13 +213,7 @@ func TitleQueryPaper(c *gin.Context) {
 		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		if paper_map["authors"] != nil {
-			authors_map := make(map[string]interface{})
-			authors_map["rel"] = paper_map["authors"]
-			paper_map["authors"] = service.ParseRelPaperAuthor(authors_map)
-		} else {
-			paper_map["authors"] = make([]interface{}, 0, 0)
-		}
+		paper_map = service.ComplePaper(paper_map)
 
 		paper_sequences = append(paper_sequences, paper_map)
 	}
@@ -253,7 +247,8 @@ func TitleQueryPaper(c *gin.Context) {
 // @Param max_year formData int true "max_year"
 // @Param doctypes formData string true "doctypes"
 // @Param conferences formData string true "conferences"
-// @Param journals formData string true "journals"\
+// @Param journals formData string true "journals"
+// @Param publishers formData string true "publishers"
 // @Param sort_type formData int true "sort_type"
 // @Param sort_ascending formData bool true "sort_ascending"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
@@ -287,8 +282,10 @@ func TitleSelectPaper(c *gin.Context) {
 
 	doctypes_json := c.Request.FormValue("doctypes")
 	journals_json := c.Request.FormValue("journals")
-	doctypes := make([]string, 0, 100)
-	journals := make([]string, 0, 100)
+	conference_json := c.Request.FormValue("conferences")
+	publisher_json := c.Request.FormValue("publishers")
+	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
+
 	var searchResult *elastic.SearchResult
 	var sort_ascending bool
 
@@ -314,8 +311,18 @@ func TitleSelectPaper(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "journals格式错误", "status": 401})
 		return
 	}
+	err = json.Unmarshal([]byte(conference_json), &conferences)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "conferneces格式错误", "status": 401})
+		return
+	}
+	err = json.Unmarshal([]byte(publisher_json), &publishers)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "publisher格式错误", "status": 401})
+		return
+	}
 	fmt.Println(doctypes, journals)
-	boolQuery := service.SelectTypeQuery(doctypes, journals, min_year, max_year)
+	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, min_year, max_year)
 	boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	if sort_type == 1 {
 		searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(size).
@@ -334,20 +341,15 @@ func TitleSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
-
+	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
 	for _, paper := range searchResult.Hits.Hits {
 		body_byte, _ := json.Marshal(paper.Source)
 		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
-		if paper_map["authors"] != nil {
-			authors_map := make(map[string]interface{})
-			authors_map["rel"] = paper_map["authors"]
-			paper_map["authors"] = service.ParseRelPaperAuthor(authors_map)
-		} else {
-			paper_map["authors"] = make([]interface{}, 0, 0)
-		}
+		paper_map = service.ComplePaper(paper_map)
+
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
