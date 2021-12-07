@@ -1,10 +1,8 @@
 package v1
 
 import (
-	"encoding/json"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
-	"github.com/olivere/elastic/v7"
 	"net/http"
 	"strconv"
 )
@@ -26,7 +24,7 @@ func GetScholar(c *gin.Context) {
 	var ret_author_id string
 	var people_msg interface{}
 	is_user := false
-	var paper_result *elastic.SearchResult
+	//var paper_result *elastic.SearchResult
 	if user_id_str != "" {
 		is_user = true
 		user_id, err := strconv.ParseUint(user_id_str, 10, 64)
@@ -49,7 +47,7 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = submit.AuthorID
-		paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
+		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user))
 
 	} else {
@@ -59,34 +57,13 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = author_id
-		paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
+		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		people_msg = "不是服务器es暂未存储"
 	}
+	//service.GetAuthorAllPaper(ret_author_id)
 
-	paper_ids := make([]string, 0, 10000)
-	//authors_map := make(map[string]interface{})
-	for _, hit := range paper_result.Hits.Hits {
-		hit_map := make(map[string]interface{})
-		err := json.Unmarshal([]byte(hit.Source), &hit_map)
-		if err != nil {
-			panic(err)
-		}
-		paper_ids = append(paper_ids, hit_map["paper_id"].(string))
-		//authors_map[hit_map["paper_id"].(string)] = service.ParseRelPaperAuthor(hit_map)
-	}
-	paper_id_map := service.IdsGetItems(paper_ids, "paper")
-	paper_list := make([]interface{}, 0, 1000)
-	for _, id := range paper_ids {
-		if paper_id_map[id] != nil {
-			authors_map := make(map[string]interface{})
-			authors_map["rel"] = paper_id_map[id].(map[string]interface{})["authors"]
-			paper_id_map[id].(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(authors_map)["rel"]
-			//paper_id_map[id].(map[string]interface{})["authors"] = authors_map[id].(map[string]interface{})["rel"]
-			paper_list = append(paper_list, paper_id_map[id])
-		}
-	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": paper_list, "author_id": ret_author_id, "people": people_msg})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": service.GetAuthorAllPaper(ret_author_id), "author_id": ret_author_id, "people": people_msg})
 	return
 }
 

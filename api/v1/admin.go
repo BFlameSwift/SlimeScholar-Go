@@ -65,7 +65,7 @@ func CreateSubmit(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请提交成功", "status": 200})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请提交成功", "status": 200, "papers": service.GetAuthorAllPaper(author_id)})
 	return
 }
 

@@ -43,5 +43,5 @@ type Transfer struct {
 	UserID     uint64 `gorm:"not null;" json:"user_id"`
 	ObjUserID  uint64 `gorm:";" json:"obj_user_id"`
 	Kind       int    `gorm:"type:int" json:"kind"`
-	Status     bool   `gorm:"type:bool;default:false;" json:"status"`
+	Status     int    `gorm:"type:int;default:0" json:"status"`
 }
