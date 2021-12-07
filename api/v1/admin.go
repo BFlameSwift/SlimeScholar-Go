@@ -171,31 +171,46 @@ func ListAllSubmit(c *gin.Context) {
 // @description 根据作者姓名返回姓名相近的作者并返回文献组
 // @Tags 管理员
 // @Param author_name formData string true "author_name"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/get/papers [POST]
 func PaperGetAuthors(c *gin.Context) {
 	author_name := c.Request.FormValue("author_name")
-	searchResult, err := service.Client.Search().Index("author").Query(elastic.NewMatchQuery("name", author_name)).Size(10).Do(context.Background())
+	page, err := strconv.Atoi(c.Request.FormValue("page"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
+		return
+	}
+	size, err := strconv.Atoi(c.Request.FormValue("size"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
+		return
+	}
+	searchResult, err := service.Client.Search().Index("author").Query(elastic.NewMatchQuery("name", author_name)).From((page - 1) * size).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
 	author_maps := make([]map[string]interface{}, 0, 10)
-	hit_count := 10
-	if int(searchResult.TotalHits()) < hit_count {
-		hit_count = int(searchResult.TotalHits())
-	}
 	for _, hit := range searchResult.Hits.Hits {
 		author_map := make(map[string]interface{})
 		err = json.Unmarshal(hit.Source, &author_map)
 		if err != nil {
 			panic(err)
 		}
-		author_map["papers"] = service.GetAuthorAllPaper(author_map["author_id"].(string))
-		if author_map["papers"] == nil {
+		papers := service.GetAuthorAllPaper(author_map["author_id"].(string))
+		if papers == nil {
 			author_map["papers"] = make([]string, 0)
+		} else {
+			author_map["papers"] = papers
 		}
+
 		author_maps = append(author_maps, author_map)
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "authors": author_maps, "author_count": hit_count})
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "未找到该作者", "status": 404})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "authors": author_maps, "author_count": searchResult.TotalHits()})
 	return
 }

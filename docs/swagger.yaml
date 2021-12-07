@@ -1019,6 +1019,16 @@ paths:
         name: author_name
         required: true
         type: string
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
       responses:
         "200":
           description: '{"success": true, "message": "创建成功"}'
