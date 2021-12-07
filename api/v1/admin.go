@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// Index doc
+// CreateSubmit doc
 // @description 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领
 // @Tags 管理员
 // @Param author_name formData string true "作者姓名"
@@ -71,7 +71,7 @@ func CreateSubmit(c *gin.Context) {
 	return
 }
 
-// Index doc
+// CheckSubmit doc
 // @description 用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在
 // @Tags 管理员
 // @Param submit_id formData string true "提交id"
@@ -130,7 +130,7 @@ func CheckSubmit(c *gin.Context) {
 	return
 }
 
-// Index doc
+// ListAllSubmit doc
 // @description 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的
 // @Tags 管理员
 // @Param type formData int true "提交id"
@@ -167,7 +167,7 @@ func ListAllSubmit(c *gin.Context) {
 	return
 }
 
-// Index doc
+// PaperGetAuthors doc
 // @description 根据作者姓名返回姓名相近的作者并返回文献组
 // @Tags 管理员
 // @Param author_name formData string true "author_name"

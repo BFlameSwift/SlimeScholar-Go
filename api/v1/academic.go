@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-// Index doc
+// GetScholar doc
 // @description 获取学者信息
 // @Tags 学者门户
 // @Param user_id formData int false "user_id"
@@ -74,7 +74,7 @@ func GetScholar(c *gin.Context) {
 	return
 }
 
-// Index doc
+// ScholarManagePaper doc
 // @description 学者添加或删除Paper,401 通常表示参数错误，Objw为被转让的人，当为添加或删除时，为零
 // @Tags 学者门户
 // @Param user_id formData string true "user_id"

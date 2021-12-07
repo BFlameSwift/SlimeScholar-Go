@@ -284,16 +284,19 @@ func QueryByField(index string, field string, content string, page int, size int
 
 	return searchResult
 }
-func PaperQueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
+func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool) *elastic.SearchResult {
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
-	//TODO 领域
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
 	boolQuery := elastic.NewBoolQuery()
-	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	if is_precise == false {
+		boolQuery.Must(elastic.NewMatchQuery(field, content))
+	} else {
+		boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
+	}
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).

@@ -419,6 +419,50 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/author_name": {
+            "post": {
+                "description": "es 根据作者姓名查询文献：精确查询,isPrecise=0 为模糊匹配，为1为精准匹配",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "author_name",
+                        "name": "author_name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "isPrecise",
+                        "name": "isPrecise",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取作者成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"作者不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/paper/doi": {
             "post": {
                 "description": "es doi查询论文 精确搜索，结果要么有要么没有",
