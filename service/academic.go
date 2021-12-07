@@ -125,3 +125,28 @@ func GetAuthorAllPaper(author_id string) (paper_list []interface{}) {
 
 	return PaperMapToPaperList(paper_map)
 }
+
+// 判断作者是否已经入驻
+func JudgeAuthorIsSettled(author_id string) (bool, uint64) {
+	submit, notFound := QueryASubmitByAuthor(author_id)
+	return !notFound, submit.UserID
+}
+
+// 未入驻作者在展示个人中心之前的格式转化
+func GetAuthorMsg(author_id string) (author_map map[string]interface{}) {
+	author_json := GetsByIndexIdWithout("author", author_id)
+	if author_json == nil {
+		return nil
+	}
+	err := json.Unmarshal(author_json.Source, &author_map)
+	if err != nil {
+		panic(err)
+	}
+	if author_map["affiliation_id"].(string) != "" {
+		author_map["affiliation"] = GetsByIndexIdWithout("affiliation", author_map["affiliation_id"].(string))
+	} else {
+		author_map["affiliation"] = ""
+	}
+
+	return author_map
+}

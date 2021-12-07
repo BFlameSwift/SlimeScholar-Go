@@ -22,7 +22,7 @@ func GetScholar(c *gin.Context) {
 	// TODO 根据实际的paper维护被引用数目等
 	user_id_str := c.Request.FormValue("user_id")
 	var ret_author_id string
-	var people_msg interface{}
+	var people_msg map[string]interface{}
 	is_user := false
 	//var paper_result *elastic.SearchResult
 	if user_id_str != "" {
@@ -52,6 +52,8 @@ func GetScholar(c *gin.Context) {
 
 	} else {
 		author_id := c.Request.FormValue("author_id")
+		var the_user_id uint64
+		is_user, the_user_id = service.JudgeAuthorIsSettled(author_id)
 		if author_id == "" {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "错误，authorid 与userid都不存在", "status": 401})
 			return
@@ -59,7 +61,12 @@ func GetScholar(c *gin.Context) {
 		ret_author_id = author_id
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
-		people_msg = "不是服务器es暂未存储"
+		if is_user {
+			people_msg = service.UserScholarInfo(service.StructToMap(the_user_id))
+		} else {
+			people_msg = service.GetAuthorMsg(author_id)
+		}
+
 	}
 	//service.GetAuthorAllPaper(ret_author_id)
 
