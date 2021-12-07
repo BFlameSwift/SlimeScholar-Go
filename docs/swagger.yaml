@@ -366,6 +366,11 @@ paths:
         name: journals
         required: true
         type: string
+      - description: publishers
+        in: formData
+        name: publishers
+        required: true
+        type: string
       - description: sort_type
         in: formData
         name: sort_type

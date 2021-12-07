@@ -411,7 +411,7 @@ func ComplePaper(paper map[string]interface{}) (paper_map map[string]interface{}
 	if paper_map["authors"] != nil {
 		authors_map := make(map[string]interface{})
 		authors_map["rel"] = paper_map["authors"]
-		paper_map["authors"] = ParseRelPaperAuthor(authors_map)
+		paper_map["authors"] = (ParseRelPaperAuthor(authors_map))["rel"]
 	} else {
 		paper_map["authors"] = make([]interface{}, 0, 0)
 	}
@@ -505,15 +505,15 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 	}
 	if len(conferences) > 0 {
 		conference_query := elastic.NewBoolQuery()
-		for _, conference := range journals {
+		for _, conference := range conferences {
 			conference_query.Should(elastic.NewTermQuery("conference_id", conference))
 		}
 		boolQuery.Must(conference_query)
 	}
 	if len(publishers) > 0 {
 		publisher_query := elastic.NewBoolQuery()
-		for _, publisher := range journals {
-			publisher_query.Should(elastic.NewTermQuery("publihsher", publisher))
+		for _, publisher := range publishers {
+			publisher_query.Should(elastic.NewMatchPhraseQuery("publisher", publisher))
 		}
 		boolQuery.Must(publisher_query)
 	}

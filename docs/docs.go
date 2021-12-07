@@ -570,6 +570,13 @@ var doc = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "publishers",
+                        "name": "publishers",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "sort_type",
                         "name": "sort_type",

@@ -321,7 +321,7 @@ func TitleSelectPaper(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "publisher格式错误", "status": 401})
 		return
 	}
-	fmt.Println(doctypes, journals)
+	fmt.Println(doctypes, journals, conferences, publishers)
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, min_year, max_year)
 	boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	if sort_type == 1 {
