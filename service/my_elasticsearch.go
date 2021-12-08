@@ -532,7 +532,7 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 	if len(must) > 0 {
 		query := elastic.NewBoolQuery()
 		for _, item := range must {
-			item_list := strings.Split(item, " ")
+			item_list := strings.Split(strings.TrimSpace(item), " ")
 			for _, str := range item_list {
 				query.Must(elastic.NewMatchQuery(field, str))
 			}
@@ -541,8 +541,8 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 	}
 	if len(should) > 0 {
 		query := elastic.NewBoolQuery()
-		for _, item := range must {
-			item_list := strings.Split(item, " ")
+		for _, item := range should {
+			item_list := strings.Split(strings.TrimSpace(item), " ")
 			for _, str := range item_list {
 				query.Should(elastic.NewMatchQuery(field, str))
 			}
@@ -551,8 +551,8 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 	}
 	if len(not) > 0 {
 		query := elastic.NewBoolQuery()
-		for _, item := range must {
-			item_list := strings.Split(item, " ")
+		for _, item := range not {
+			item_list := strings.Split(strings.TrimSpace(item), " ")
 			for _, str := range item_list {
 				query.Should(elastic.NewMatchQuery(field, str))
 			}
