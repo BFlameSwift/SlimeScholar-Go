@@ -223,6 +223,7 @@ func TitleQueryPaper(c *gin.Context) {
 	//for i, paper_map_item := range paper_sequences {
 	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	//}
+	//其他的aggregation都集成起来了，每一个都来十行代码挺臭的
 	aggregation := make(map[string]interface{})
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
@@ -231,7 +232,6 @@ func TitleQueryPaper(c *gin.Context) {
 	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
-	// 暂时有问题，一数据弄好一起改
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": aggregation})
@@ -456,7 +456,7 @@ func DoiQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper.Source)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences})
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -498,19 +498,17 @@ func DoiQueryPaper(c *gin.Context) {
 // @Tags elasticsearch
 // @Param musts formData string true "musts"
 // @Param nots formData string true "nots"
-// @Param atleast_words formData string true "atleast_words"
+// @Param ors formData string true "ors 至少是其中之一"
 // @Param min_year formData int true "min_year"
 // @Param max_year formData int true "max_year"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
-// @Param doctypes formData string true "doctypes"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "参数错误"}"
 // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/paper/advanced [POST]
 func AdvancedSearch(c *gin.Context) {
-	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	//title := c.Request.FormValue("title")
 
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
@@ -534,37 +532,25 @@ func AdvancedSearch(c *gin.Context) {
 		return
 	}
 
-	doctypes_json := c.Request.FormValue("doctypes")
-	doctypes := make([]string, 0, 100)
-	err = json.Unmarshal([]byte(doctypes_json), &doctypes)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "doctypes格式错误", "status": 401})
-		return
-	}
-	musts_json := c.Request.FormValue("musts")
-	musts := make([]string, 0, 100)
+	musts_json, shoulds_json, nots_json := c.Request.FormValue("musts"), c.Request.FormValue("ors"), c.Request.FormValue("nots")
+	musts, nots, shoulds := make(map[string]([]string)), make(map[string]([]string)), make(map[string]([]string))
 	err = json.Unmarshal([]byte(musts_json), &musts)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "musts格式错误", "status": 401})
 		return
 	}
-
-	atleast_words_json := c.Request.FormValue("atleast_words")
-	atleast_words := make([]string, 0, 100)
-	err = json.Unmarshal([]byte(atleast_words_json), &atleast_words)
+	err = json.Unmarshal([]byte(shoulds_json), &shoulds)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "atleast_words 格式错误", "status": 401})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "shoulds 格式错误", "status": 401})
 		return
 	}
-	nots_json := c.Request.FormValue("nots")
-	nots := make([]string, 0, 100)
 	err = json.Unmarshal([]byte(nots_json), &nots)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "nots格式错误", "status": 401})
 		return
 	}
 
-	boolQuery := service.AdvancedSearch(doctypes, min_year, max_year, musts, atleast_words, nots)
+	boolQuery := service.AdvancedSearch(min_year, max_year, musts, shoulds, nots)
 	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 
 	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).
@@ -591,11 +577,8 @@ func AdvancedSearch(c *gin.Context) {
 		paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
 	}
 
-	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	// 暂时有问题，一数据弄好一起改
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences})
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -634,17 +617,8 @@ func AuthorNameQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	aggregation := make(map[string]interface{})
-	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
-	fmt.Println(aggregation["doctype"])
-	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
-	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
-	// 暂时有问题，一数据弄好一起改
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences, "aggregation": aggregation})
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -683,17 +657,8 @@ func AffiliationNameQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	aggregation := make(map[string]interface{})
-	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
-	fmt.Println(aggregation["doctype"])
-	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
-	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
-	// 暂时有问题，一数据弄好一起改
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences, "aggregation": aggregation})
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -732,16 +697,7 @@ func PublisherQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	aggregation := make(map[string]interface{})
-	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
-	fmt.Println(aggregation["doctype"])
-	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
-	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
-	// 暂时有问题，一数据弄好一起改
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paper_sequences, "aggregation": aggregation})
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }

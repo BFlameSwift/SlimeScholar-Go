@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
-	"strings"
-
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
+	"sort"
 
 	"log"
 	"os"
@@ -529,48 +527,41 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 
 	return boolQuery
 }
+func SimplifyAdvanceSearch(must []string, should []string, not []string, field string, boolQuery *elastic.BoolQuery) *elastic.BoolQuery {
+	if len(must) > 0 {
+		query := elastic.NewBoolQuery()
+		for _, item := range must {
+			query.Must(elastic.NewMatchQuery(field, item))
+		}
+		boolQuery.Must(query)
+	}
+	if len(should) > 0 {
+		query := elastic.NewBoolQuery()
+		for _, item := range should {
+			query.Should(elastic.NewMatchQuery(field, item))
+		}
+		boolQuery.Must(query)
+	}
+	if len(not) > 0 {
+		query := elastic.NewBoolQuery()
+		for _, item := range not {
+			query.Should(elastic.NewMatchQuery(field, item))
+		}
+		boolQuery.MustNot(query)
+	}
+	return boolQuery
+}
 
-func AdvancedSearch(doctypes []string, min_year int, max_year int, musts []string, shoulds []string, nots []string) *elastic.BoolQuery {
+func AdvancedSearch(min_year int, max_year int, musts map[string]([]string), shoulds map[string][]string, nots map[string][]string) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 	// 很臭。。有办法但是懒得弄了。。should must的逻辑麻烦
 	//fmt.Println(len(doctypes))
-	if len(doctypes) > 0 {
-		doctype_query := elastic.NewBoolQuery()
-		for _, doctype := range doctypes {
-			doctype_query.Should(elastic.NewMatchQuery("doctype", doctype))
-		}
-		boolQuery.Must(doctype_query)
-	}
-	if len(musts) > 0 {
-		musts_query := elastic.NewBoolQuery()
-		for _, must := range musts {
-			must_list := strings.Split(must, " ")
-			for _, must_word := range must_list {
-				musts_query.Must(elastic.NewMatchQuery("paper_title", must_word))
-			}
-		}
-		boolQuery.Must(musts_query)
-	}
-	if len(shoulds) > 0 {
-		shoulds_query := elastic.NewBoolQuery()
-		for _, should := range shoulds {
-			should_words := strings.Split(should, " ")
-			for _, should_word := range should_words {
-				shoulds_query.Should(elastic.NewMatchQuery("paper_title", should_word))
-			}
-		}
-		boolQuery.Must(shoulds_query)
-	}
-	if len(nots) > 0 {
-		nots_query := elastic.NewBoolQuery()
-		for _, not := range nots {
-			not_list := strings.Split(not, " ")
-			for _, not_word := range not_list {
-				nots_query.Should(elastic.NewMatchQuery("paper_title", not_word))
-			}
-		}
-		boolQuery.MustNot(nots_query)
-	}
+	boolQuery = SimplifyAdvanceSearch(musts["title"], shoulds["title"], nots["title"], "title", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["author"], shoulds["author"], nots["author"], "authors.aname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["field"], shoulds["field"], nots["field"], "field", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["doi"], shoulds["doi"], nots["doi"], "doi.keyword", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["author_affiliation"], shoulds["author_affiliation"], nots["author_affiliation"], "authors.afname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["source"], shoulds["source"], nots["source"], "publisher", boolQuery)
 
 	if min_year > 10 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
@@ -580,6 +571,17 @@ func AdvancedSearch(doctypes []string, min_year int, max_year int, musts []strin
 	} // 尽量减少筛选优化速度
 
 	return boolQuery
+}
+func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{} {
+	aggregation := make(map[string]interface{})
+
+	aggregation["doctype"] = Paper_Aggregattion(searchResult, "doctype")
+	fmt.Println(aggregation["doctype"])
+	aggregation["journal"] = Paper_Aggregattion(searchResult, "journal")
+	aggregation["conference"] = Paper_Aggregattion(searchResult, "conference")
+	aggregation["fields"] = Paper_Aggregattion(searchResult, "fields")
+	aggregation["publisher"] = Paper_Aggregattion(searchResult, "publisher")
+	return aggregation
 }
 
 // func main() {
