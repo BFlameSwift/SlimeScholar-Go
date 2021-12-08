@@ -350,8 +350,8 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "atleast_words",
-                        "name": "atleast_words",
+                        "description": "ors 至少是其中之一",
+                        "name": "ors",
                         "in": "formData",
                         "required": true
                     },
@@ -380,13 +380,6 @@ var doc = `{
                         "type": "integer",
                         "description": "size",
                         "name": "size",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "doctypes",
-                        "name": "doctypes",
                         "in": "formData",
                         "required": true
                     }
