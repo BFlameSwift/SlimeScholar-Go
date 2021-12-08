@@ -546,8 +546,15 @@ func AdvancedSearch(c *gin.Context) {
 
 	boolQuery := service.AdvancedSearch(min_year, max_year, musts, shoulds, nots)
 	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
+	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
+	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
+	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
+	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
+	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
-	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Aggregation("conference", conference_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Size(size).
 		From((page - 1) * size).Do(context.Background())
 
 	if searchResult.TotalHits() == 0 {
@@ -563,6 +570,8 @@ func AdvancedSearch(c *gin.Context) {
 		body_byte, _ := json.Marshal(paper.Source)
 		var paper_map = make(map[string]interface{})
 		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_map = service.ComplePaper(paper_map)
+
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}

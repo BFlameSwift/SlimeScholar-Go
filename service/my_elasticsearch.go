@@ -547,7 +547,7 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 				query.Should(elastic.NewMatchQuery(field, str))
 			}
 		}
-		boolQuery.Must(query)
+		boolQuery.Should(query)
 	}
 	if len(not) > 0 {
 		query := elastic.NewBoolQuery()
