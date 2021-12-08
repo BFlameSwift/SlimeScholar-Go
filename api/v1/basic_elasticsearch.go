@@ -64,6 +64,11 @@ func GetPaper(c *gin.Context) {
 	}
 
 	paper["citation_msg"] = make([]string, 0)
+	if paper["fields"] != nil {
+		paper["fields"] = service.ParseFields(service.InterfaceListToStringList(paper["fields"].([]interface{})), "fields")
+	} else {
+		paper["fields"] = make([]string, 0)
+	}
 	//paper["fields"] = make([]string, 0)
 	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})
