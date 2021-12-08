@@ -25,18 +25,10 @@ func CreateATagPaper(tagPaper *model.TagPaper) (err error) {
 }
 
 //查询用户所有标签
-func QueryTagList(userID uint64) (tags []model.Tag, not bool) {
+func QueryTagList(userID uint64) (tags []model.Tag) {
 	tags = make([]model.Tag, 0)
-	db := global.DB
-	db = db.Where("user_id=?", userID)
-	err := db.Find(&tags).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return tags, true
-	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(err)
-	} else {
-		return tags, false
-	}
+	global.DB.Where("user_id=?", userID).Find(&tags)
+	return tags
 }
 
 //查询用户某一个标签
@@ -58,6 +50,13 @@ func QueryATag(userID uint64, tagName string) (tag model.Tag, notFound bool) {
 func QueryTagPaper(tagID uint64) (papers []model.TagPaper) {
 	papers = make([]model.TagPaper, 0)
 	global.DB.Where("tag_id=?", tagID).Order("create_time desc").Find(&papers)
+	return papers
+}
+
+//查询用户所有收藏文章
+func QueryAllPaper() (papers []model.TagPaper) {
+	papers = make([]model.TagPaper, 0)
+	global.DB.Order("create_time desc").Find(&papers)
 	return papers
 }
 

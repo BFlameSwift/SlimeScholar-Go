@@ -600,9 +600,9 @@ paths:
         name: user_id
         required: true
         type: string
-      - description: id
+      - description: 文献id
         in: formData
-        name: id
+        name: paper_id
         required: true
         type: string
       - description: 标签名称
@@ -616,6 +616,10 @@ paths:
             type: string
         "400":
           description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "403":
+          description: '{"success": false, "message": "文献已收藏"}'
           schema:
             type: string
         "404":
@@ -761,9 +765,9 @@ paths:
         name: user_id
         required: true
         type: string
-      - description: id
+      - description: 文献id
         in: formData
-        name: id
+        name: paper_id
         required: true
         type: string
       - description: 标签名称
@@ -778,6 +782,40 @@ paths:
             type: string
         "400":
           description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
+  /social/get/all/collect:
+    post:
+      description: 获取用户收藏的所有文献
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "查看文献成功", "data": "文章列表"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "402":
+          description: '{"success": false, "message": "用户无收藏文章"}'
           schema:
             type: string
         "404":

@@ -43,7 +43,7 @@ type Tag struct {
 	TagID      uint64    `gorm:"primary_key;" json:"tag_id"`
 	TagName    string    `gorm:"type:varchar(32);" json:"tag_name"`
 	UserID     uint64    `gorm:" not null;" json:"user_id"`
-	Username   string    `gorm:"type:varchar(32); unique" json:"username"`
+	Username   string    `gorm:"type:varchar(32);" json:"username"`
 	CreateTime time.Time `gorm:"type:datetime" json:"create_time"`
 }
 
@@ -52,12 +52,8 @@ type TagPaper struct {
 	ID          uint64    `gorm:"primary_key;" json:"id"`
 	TagID       uint64    `json:"tag_id"`
 	TagName     string    `gorm:"type:varchar(32);" json:"tag_name"`
-	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
-	PaperTitle  string    `gorm:"type:varchar(256);" json:"paper_title"`
-	
-	Abstract    string    `gorm:"type:varchar(1000);" json:"paperAbstrac"`
-	JournalName string    `gorm:"type:varchar(256);" json:"journal_name"`
 	CreateTime  time.Time `gorm:"type:datetime" json:"create_time"`
+	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
 }
 
 // 浏览记录
