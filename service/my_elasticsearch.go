@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
-	"sort"
-	"strings"
-
 	"log"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -528,6 +527,7 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 
 	return boolQuery
 }
+
 func SimplifyAdvanceSearch(must []string, should []string, not []string, field string, boolQuery *elastic.BoolQuery) *elastic.BoolQuery {
 	if len(must) > 0 {
 		query := elastic.NewBoolQuery()
@@ -562,17 +562,36 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 	return boolQuery
 }
 
+func LogicSearch(musts map[string]([]string), shoulds map[string][]string, nots map[string][]string, boolQuery *elastic.BoolQuery) *elastic.BoolQuery {
+	var nilStringArray = make([]string, 0)
+	boolQuery = SimplifyAdvanceSearch(musts["title"], nilStringArray, nilStringArray, "paper_title", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["author"], nilStringArray, nilStringArray, "authors.aname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["field"], nilStringArray, nilStringArray, "field", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["doi"], nilStringArray, nilStringArray, "doi.keyword", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["author_affiliation"], nilStringArray, nilStringArray, "authors.afname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(musts["source"], nilStringArray, nilStringArray, "publisher", boolQuery)
+
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["title"], nilStringArray, "paper_title", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author"], nilStringArray, "authors.aname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["field"], nilStringArray, "field", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["doi"], nilStringArray, "doi.keyword", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author_affiliation"], nilStringArray, "authors.afname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["source"], nilStringArray, "publisher", boolQuery)
+
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["title"], "paper_title", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author"], "authors.aname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["field"], "field", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["doi"], "doi.keyword", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author_affiliation"], "authors.afname", boolQuery)
+	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["source"], "publisher", boolQuery)
+	return boolQuery
+}
+
 func AdvancedSearch(min_year int, max_year int, musts map[string]([]string), shoulds map[string][]string, nots map[string][]string) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 	// 很臭。。有办法但是懒得弄了。。should must的逻辑麻烦
 	//fmt.Println(len(doctypes))
-	boolQuery = SimplifyAdvanceSearch(musts["title"], shoulds["title"], nots["title"], "title", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["author"], shoulds["author"], nots["author"], "authors.aname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["field"], shoulds["field"], nots["field"], "field", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["doi"], shoulds["doi"], nots["doi"], "doi.keyword", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["author_affiliation"], shoulds["author_affiliation"], nots["author_affiliation"], "authors.afname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["source"], shoulds["source"], nots["source"], "publisher", boolQuery)
-
+	boolQuery = LogicSearch(musts, shoulds, nots, boolQuery)
 	if min_year > 10 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
 	}
