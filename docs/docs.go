@@ -544,6 +544,50 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/publisher": {
+            "post": {
+                "description": "es 根据出版商查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "publisher",
+                        "name": "publisher",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "is_precise",
+                        "name": "is_precise",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取作者成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"作者不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/paper/title": {
             "post": {
                 "description": "es 根据title查询论文",

@@ -163,7 +163,7 @@ func proc_file(file_path string, index string) {
 		}
 		json_str := line
 
-		var m map[string]interface{} = make(map[string]interface{})
+		m := make(map[string]interface{})
 		err = json.Unmarshal([]byte(json_str), &m)
 		if err != nil {
 			panic(err)

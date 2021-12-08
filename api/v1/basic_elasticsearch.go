@@ -28,7 +28,8 @@ func GetPaper(c *gin.Context) {
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
-		fmt.Println("this id %s not existed", this_id)
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Printf("this id %s not existed", this_id)
 		return
 	}
 	ret, _ := service.Gets(map_param)
@@ -280,12 +281,8 @@ func TitleSelectPaper(c *gin.Context) {
 		return
 	}
 
-	doctypes_json := c.Request.FormValue("doctypes")
-	journals_json := c.Request.FormValue("journals")
-	conference_json := c.Request.FormValue("conferences")
-	publisher_json := c.Request.FormValue("publishers")
+	doctypes_json, journals_json, conference_json, publisher_json := c.Request.FormValue("doctypes"), c.Request.FormValue("journals"), c.Request.FormValue("conferences"), c.Request.FormValue("publishers")
 	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
-
 	var searchResult *elastic.SearchResult
 	var sort_ascending bool
 
@@ -673,6 +670,55 @@ func AffiliationNameQueryPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search author_name", affiliation_name, "hits :", searchResult.TotalHits())
+
+	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
+	for _, paper := range searchResult.Hits.Hits {
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		paper_map = service.ComplePaper(paper_map)
+
+		paper_sequences = append(paper_sequences, paper_map)
+	}
+
+	aggregation := make(map[string]interface{})
+	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
+	fmt.Println(aggregation["doctype"])
+	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
+	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
+	// 暂时有问题，一数据弄好一起改
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences, "aggregation": aggregation})
+	return
+}
+
+// PublisherQueryPaper doc
+// @description es 根据出版商查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
+// @Tags elasticsearch
+// @Param publisher formData string true "publisher"
+// @Param is_precise formData bool true "is_precise"
+// @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/publisher [POST]
+func PublisherQueryPaper(c *gin.Context) {
+	publisher := c.Request.FormValue("publisher")
+	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
+	if err != nil {
+		panic(err)
+	}
+	searchResult := service.PaperQueryByField("paper", "publisher", publisher, 1, 10, is_precise)
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this affiliation_name query %s not existed", publisher)
+		return
+	}
+	fmt.Println("search publisher", publisher, "hits :", searchResult.TotalHits())
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
