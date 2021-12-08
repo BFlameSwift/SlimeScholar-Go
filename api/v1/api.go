@@ -49,7 +49,7 @@ func DocumentCount(c *gin.Context) {
 		panic(err)
 	}
 	affiliation_map := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/fields/_count")), &affiliation_map); err != nil {
+	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/affiliation/_count")), &affiliation_map); err != nil {
 		panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200,

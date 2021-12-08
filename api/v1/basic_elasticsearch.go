@@ -438,7 +438,8 @@ func NameQueryAuthor(c *gin.Context) {
 func DoiQueryPaper(c *gin.Context) {
 	doi := c.Request.FormValue("doi")
 
-	searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
+	//searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
+	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this abstract query %s not existed", doi)
@@ -446,8 +447,15 @@ func DoiQueryPaper(c *gin.Context) {
 	}
 	fmt.Println("search doi", doi, "hits :", searchResult.TotalHits())
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
 	for _, paper := range searchResult.Hits.Hits {
-		paper_sequences = append(paper_sequences, paper.Source)
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		paper_map = service.ComplePaper(paper_map)
+
+		paper_sequences = append(paper_sequences, paper_map)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
