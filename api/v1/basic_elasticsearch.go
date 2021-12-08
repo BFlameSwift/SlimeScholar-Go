@@ -219,11 +219,7 @@ func TitleQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
-	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	//for i, paper_map_item := range paper_sequences {
-	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	//}
-	//其他的aggregation都集成起来了，每一个都来十行代码挺臭的
+	//其他的aggregation都集成起来了，毕竟每一个都查询都十行代码挺臭的
 	aggregation := make(map[string]interface{})
 
 	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
@@ -350,13 +346,6 @@ func TitleSelectPaper(c *gin.Context) {
 		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
 		paper_sequences = append(paper_sequences, paper_map)
 	}
-	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
-	//for i, paper_map_item := range paper_sequences {
-	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
-	//}
-
-	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	// 暂时有问题，一数据弄好一起改
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences})

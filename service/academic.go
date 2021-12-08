@@ -53,7 +53,7 @@ func FindExistingTransfer(author_id string, paper_id string, user_id uint64, kin
 func TransferPaper(user model.User, author_id string, paper_id string, kind int, obj_user_id uint64) {
 	_, notFound := FindExistingTransfer(author_id, paper_id, user.UserID, kind)
 	if notFound {
-		transfer := model.Transfer{UserID: user.UserID, AuthorId: author_id, PaperId: paper_id, Kind: kind, Status: 0, ObjUserID: obj_user_id}
+		transfer := model.Transfer{UserID: user.UserID, AuthorId: author_id, PaperId: paper_id, Kind: kind, Status: 1, ObjUserID: obj_user_id}
 		if err := global.DB.Create(&transfer).Error; err != nil {
 			panic(err)
 		}
