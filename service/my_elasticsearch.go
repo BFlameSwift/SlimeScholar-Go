@@ -571,6 +571,9 @@ func LogicSearch(musts map[string]([]string), shoulds map[string][]string, nots 
 	boolQuery = SimplifyAdvanceSearch(musts["author_affiliation"], nilStringArray, nilStringArray, "authors.afname", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(musts["source"], nilStringArray, nilStringArray, "publisher", boolQuery)
 
+	mustQuery := boolQuery
+	boolQuery = boolQuery.Must(mustQuery)
+
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["title"], nilStringArray, "paper_title", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author"], nilStringArray, "authors.aname", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["field"], nilStringArray, "field", boolQuery)
@@ -578,12 +581,18 @@ func LogicSearch(musts map[string]([]string), shoulds map[string][]string, nots 
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author_affiliation"], nilStringArray, "authors.afname", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["source"], nilStringArray, "publisher", boolQuery)
 
+	orQuery := boolQuery
+	boolQuery = boolQuery.Should(orQuery)
+
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["title"], "paper_title", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author"], "authors.aname", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["field"], "field", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["doi"], "doi.keyword", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author_affiliation"], "authors.afname", boolQuery)
 	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["source"], "publisher", boolQuery)
+
+	notQuery := boolQuery
+	boolQuery = boolQuery.MustNot(notQuery)
 	return boolQuery
 }
 
