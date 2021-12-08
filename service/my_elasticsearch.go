@@ -8,6 +8,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
 	"sort"
+	"strings"
 
 	"log"
 	"os"
@@ -531,21 +532,30 @@ func SimplifyAdvanceSearch(must []string, should []string, not []string, field s
 	if len(must) > 0 {
 		query := elastic.NewBoolQuery()
 		for _, item := range must {
-			query.Must(elastic.NewMatchQuery(field, item))
+			item_list := strings.Split(item, " ")
+			for _, str := range item_list {
+				query.Must(elastic.NewMatchQuery(field, str))
+			}
 		}
 		boolQuery.Must(query)
 	}
 	if len(should) > 0 {
 		query := elastic.NewBoolQuery()
-		for _, item := range should {
-			query.Should(elastic.NewMatchQuery(field, item))
+		for _, item := range must {
+			item_list := strings.Split(item, " ")
+			for _, str := range item_list {
+				query.Should(elastic.NewMatchQuery(field, str))
+			}
 		}
 		boolQuery.Must(query)
 	}
 	if len(not) > 0 {
 		query := elastic.NewBoolQuery()
-		for _, item := range not {
-			query.Should(elastic.NewMatchQuery(field, item))
+		for _, item := range must {
+			item_list := strings.Split(item, " ")
+			for _, str := range item_list {
+				query.Should(elastic.NewMatchQuery(field, str))
+			}
 		}
 		boolQuery.MustNot(query)
 	}
