@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
 	// "container/list"
 	"fmt"
 
@@ -48,26 +49,31 @@ func GetUserTag(c *gin.Context) {
 	})
 }
 
-// GetTagPaper doc
-// @description 查看用户标签的文章列表
+// GetCollectPaper doc
+// @description 查看用户文章列表
 // @Tags 社交
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
-// @Param tag_name formData string true "标签名称"
+// @Param tag_name formData string false "标签名称"
 // @Success 200 {string} string "{"success": true, "message": "查看文献成功", "data": "标签下的文章列表"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 402 {string} string "{"success": false, "message": "标签下没有文章"}"
-// @Router /social/get/tag/paper [POST]
-func GetTagPaper(c *gin.Context) {
+// @Router /social/get/collect/paper [POST]
+func GetCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	VerifyLogin(userID, authorization, c)
 	tagName := c.Request.FormValue("tag_name")
-	tag, _ := service.QueryATag(userID, tagName)
+	papers := make([]model.TagPaper, 0)
+	if tagName == "" {
+		papers = service.QueryAllPaper()
+	} else {
+		tag, _ := service.QueryATag(userID, tagName)
+		papers = service.QueryTagPaper(tag.TagID)
+	}
 
-	papers := service.QueryTagPaper(tag.TagID)
 	fmt.Println(papers)
 	if papers == nil || len(papers) == 0 {
 		c.JSON(http.StatusOK, gin.H{
@@ -85,68 +91,22 @@ func GetTagPaper(c *gin.Context) {
 	var data map[string]interface{}
 	data = service.IdsGetItems(paper_ids, "paper")
 
-	k := 0
-	for _, tmp := range data {
-		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
-		k++
-	}
+	var paper_detail []map[string]interface{}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"status":  200,
-		"message": "查看文献成功",
-		"data":    data,
-	})
-
-}
-
-// GetAllCollect doc
-// @description 获取用户收藏的所有文献
-// @Tags 社交
-// @Security Authorization
-// @Param Authorization header string false "Authorization"
-// @Param user_id formData string true "用户ID"
-// @Success 200 {string} string "{"success": true, "message": "查看文献成功", "data": "文章列表"}"
-// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
-// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
-// @Failure 402 {string} string "{"success": false, "message": "用户无收藏文章"}"
-// @Router /social/get/all/collect [POST]
-func GetAllCollect(c *gin.Context) {
-	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
-	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
-
-	papers := service.QueryAllPaper()
-	fmt.Println(papers)
-	if papers == nil || len(papers) == 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"status":  402,
-			"message": "用户无收藏文章",
-		})
-		return
-	}
-
-	var paper_ids []string
-	for _, paper := range papers {
-		paper_ids = append(paper_ids, paper.PaperID)
-	}
-	var data map[string]interface{}
-	data = service.IdsGetItems(paper_ids, "paper")
 	k := 0
 	for _, tmp := range data {
 		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
 		tmp = service.ComplePaper(tmp.(map[string]interface{}))
 		k++
+		paper_detail = append(paper_detail, tmp.(map[string]interface{}))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查看文献成功",
-		"data":    data,
+		"data":    paper_detail,
 	})
-
 }
 
 // CreateATag doc
@@ -244,19 +204,19 @@ func CollectAPaper(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "收藏成功"})
 }
 
-// DeleteATagPaper doc
-// @description 删除某标签下的文章
+// DeleteCollectPaper doc
+// @description 删除收藏的文章
 // @Tags 社交
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
 // @Param user_id formData string true "用户ID"
 // @Param paper_id formData string true "文献id"
-// @Param tag_name formData string true "标签名称"
+// @Param tag_name formData string false "标签名称"
 // @Success 200 {string} string "{"success": true, "message": "删除成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
-// @Router /social/delete/tag/paper [POST]
-func DeleteATagPaper(c *gin.Context) {
+// @Router /social/delete/collect/paper [POST]
+func DeleteCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	VerifyLogin(userID, authorization, c)
@@ -264,9 +224,19 @@ func DeleteATagPaper(c *gin.Context) {
 	id := c.Request.FormValue("paper_id")
 	tagName := c.Request.FormValue("tag_name")
 
-	tag, _ := service.QueryATag(userID, tagName)
-	tagPaper, _ := service.QueryATagPaper(tag.TagID, id)
-	service.DeleteATagPaper(tagPaper.ID)
+	if tagName != "" {
+		tag, _ := service.QueryATag(userID, tagName)
+		tagPaper, _ := service.QueryATagPaper(tag.TagID, id)
+		service.DeleteATagPaper(tagPaper.ID)
+	} else {
+		tags := service.QueryTagList(userID)
+		for _, tag := range tags {
+			paper, notfound := service.QueryATagPaper(tag.TagID, id)
+			if !notfound {
+				service.DeleteATagPaper(paper.ID)
+			}
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "删除成功"})
 }
 
