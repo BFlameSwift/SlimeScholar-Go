@@ -143,10 +143,38 @@ func GetAuthorMsg(author_id string) (author_map map[string]interface{}) {
 		panic(err)
 	}
 	if author_map["affiliation_id"].(string) != "" {
-		author_map["affiliation"] = GetsByIndexIdWithout("affiliation", author_map["affiliation_id"].(string))
+		affiliation_byte := GetsByIndexIdWithout("affiliation", author_map["affiliation_id"].(string)).Source
+		affiliation_map := make(map[string]interface{})
+		err = json.Unmarshal([]byte(affiliation_byte), &affiliation_map)
+		author_map["affiliation"] = affiliation_map["name"]
+		author_map["affiliation_entry"] = affiliation_map
+
 	} else {
 		author_map["affiliation"] = ""
 	}
-
+	author_map["author_name"] = author_map["name"]
+	delete(author_map, "name")
 	return author_map
+}
+
+func ProcAuthorMsg(people map[string]interface{}, papers []interface{}) map[string]interface{} {
+	fields_map := make(map[string]int)
+	for _, paper := range papers {
+		if paper.(map[string]interface{})["fields"] != nil {
+			for _, field := range paper.(map[string]interface{})["fields"].([]interface{}) {
+				if _, ok := fields_map[field.(string)]; ok {
+					fields_map[field.(string)]++
+				} else {
+					fields_map[field.(string)] = 1
+				}
+			}
+		}
+	}
+	fields_items := IdsGetItems(GetTopNKey(fields_map, 5), "fields")
+	fields := make([]string, 0)
+	for id := range fields_items {
+		fields = append(fields, fields_items[id].(map[string]interface{})["name"].(string))
+	}
+	people["fields"] = fields
+	return people
 }

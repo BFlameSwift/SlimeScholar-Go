@@ -270,7 +270,11 @@ func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 
 func UserScholarInfo(m map[string]interface{}) (ret_map map[string]interface{}) {
 	ret_map = m
-	ret_map["fields"] = strings.Split(ret_map["fields"].(string), ",")
+	if ret_map["fields"] == nil {
+		ret_map["fields"] = make([]string, 0)
+	} else {
+		ret_map["fields"] = strings.Split(ret_map["fields"].(string), ",")
+	}
 
 	return ret_map
 }

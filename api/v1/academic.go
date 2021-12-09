@@ -23,6 +23,7 @@ func GetScholar(c *gin.Context) {
 	user_id_str := c.Request.FormValue("user_id")
 	var ret_author_id string
 	var people_msg map[string]interface{}
+	var papers []interface{}
 	is_user := false
 	//var paper_result *elastic.SearchResult
 	if user_id_str != "" {
@@ -47,6 +48,7 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = submit.AuthorID
+		papers = service.GetAuthorAllPaper(ret_author_id)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user))
 
@@ -59,18 +61,21 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = author_id
+		papers = service.GetAuthorAllPaper(ret_author_id)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		if is_user {
-			people_msg = service.UserScholarInfo(service.StructToMap(the_user_id))
+			user, _ := service.QueryAUserByID(the_user_id)
+			people_msg = service.UserScholarInfo(service.StructToMap(user))
 		} else {
 			people_msg = service.GetAuthorMsg(author_id)
+			people_msg = service.ProcAuthorMsg(people_msg, papers)
 		}
 
 	}
 	//service.GetAuthorAllPaper(ret_author_id)
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": service.GetAuthorAllPaper(ret_author_id), "author_id": ret_author_id, "people": people_msg})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": papers, "author_id": ret_author_id, "people": people_msg})
 	return
 }
 
