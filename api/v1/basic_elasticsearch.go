@@ -24,7 +24,7 @@ import (
 func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
-	var err error
+
 	map_param["index"], map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
@@ -33,62 +33,8 @@ func GetPaper(c *gin.Context) {
 		fmt.Printf("this id %s not existed", this_id)
 		return
 	}
-	ret, _ := service.Gets(map_param)
-	body_byte, _ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte, &paper)
-	// 查找信息
-	paper["journal"] = make(map[string]interface{})
-	if paper["journal_id"].(string) != "" {
-		paper["journal"] = service.GetsByIndexIdWithout("journal", paper["journal_id"].(string)).Source
-	}
-	paper["conference"] = make(map[string]interface{})
-	if paper["conference_id"].(string) != "" {
-		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
-	}
-	//paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
-	//paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
-	if paper["abstract"], err = service.GetsByIndexId("abstract", this_id); err != nil {
-		paper["abstract"] = "null"
-	}
+	paper := service.GetFullPaper(this_id)
 
-	paper["doi_url"] = ""
-	if paper["doi"].(string) != "" {
-		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
-	} // 原文链接 100%
-	reference_result, err := service.GetsByIndexId("reference", this_id)
-	if err != nil {
-		paper["reference_msg"] = make([]string, 0)
-	} else {
-		reference_ids_interfaces := service.PaperRelMakeMap(string(reference_result.Source))
-		reference_ids := make([]string, 0, 1000)
-		for _, str := range reference_ids_interfaces {
-			reference_ids = append(reference_ids, str.(string))
-		}
-		paper["reference_msg"] = (service.GetMapAllContent(service.IdsGetItems(reference_ids, "paper")))
-	}
-
-	paper["citation_msg"] = make([]string, 0)
-
-	paper = service.ComplePaper(paper)
-	//paper["fields"] = make([]string, 0)
-	//service.BrowerPaper(paper)
-	// id_inter_list := paper["outCitations"].([]interface{})
-	// var id_list []string = make([]string, 0, 3000)
-	// for _, id := range id_inter_list {
-	// 	id_list = append(id_list, id.(string))
-	// }
-	// fmt.Println(id_list)
-	// reference_map := service.IdsGetPapers(id_list, "paper")
-	// reference_list := make([]interface{}, 0, 3000)
-	// TOOD 最大饮用量可能不一样
-	// for _, id := range id_list {
-	// 	var item interface{} = reference_map[id]
-	// 	//fmt.Println(item)
-	// 	reference_list = append(reference_list, service.SimplifyPaper(item.(map[string]interface{})))
-	// }
-	// paper["reference_msg"] = reference_list
-	//fmt.Println(paper)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": paper})
 	return
 }
@@ -391,33 +337,6 @@ func NameQueryAuthor(c *gin.Context) {
 		"details": paper_sequences})
 	return
 }
-
-// // AbstractQueryPaper doc
-// // @description es 根据abstract查询论文
-// // @Tags elasticsearch
-// // @Param paperAbstract formData string true "paperAbstract"
-// // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-// // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
-// // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-// // @Router /es/query/paper/abstract [POST]
-// func AbstractQueryPaper(c *gin.Context) {
-// 	abstract := c.Request.FormValue("paperAbstract")
-// 	searchResult := service.QueryByField("paper", "paperAbstract", abstract, 1, 10)
-
-// 	if searchResult.TotalHits() == 0 {
-// 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
-// 		fmt.Printf("this abstract query %s not existed", abstract)
-// 		return
-// 	}
-// 	fmt.Println("search abstract", abstract, "hits :", searchResult.TotalHits())
-// 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
-// 	for _, paper := range searchResult.Hits.Hits {
-// 		paper_sequences = append(paper_sequences, paper.Source)
-// 	}
-// 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-// 		"details": paper_sequences})
-// 	return
-// }
 
 // DoiQueryPaper doc
 // @description es doi查询论文 精确搜索，结果要么有要么没有

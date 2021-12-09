@@ -699,6 +699,42 @@ func GetPapers(paperIds []string) []interface{} {
 	return papers
 }
 
+// 获取基本的paper信息
+func GetSimplePaper(paper_id string) map[string]interface{} {
+	return (GetPapers(append(make([]string, 0), paper_id))[0]).(map[string]interface{})
+}
+
+// 获取基本的paper信息
+func GetFullPaper(paper_id string) map[string]interface{} {
+	paper := GetSimplePaper(paper_id)
+	paper["doi_url"] = ""
+	if paper["doi"].(string) != "" {
+		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
+	} // 原文链接 100%
+	reference_result, err := GetsByIndexId("reference", paper_id)
+	if err != nil {
+		paper["reference_msg"] = make([]string, 0)
+	} else {
+		reference_ids_interfaces := PaperRelMakeMap(string(reference_result.Source))
+		reference_ids := make([]string, 0, 1000)
+		for _, str := range reference_ids_interfaces {
+			reference_ids = append(reference_ids, str.(string))
+		}
+		paper["reference_msg"] = (GetMapAllContent(IdsGetItems(reference_ids, "paper")))
+	}
+
+	paper["citation_msg"] = make([]string, 0)
+	paper["journal"] = make(map[string]interface{})
+	if paper["journal_id"].(string) != "" {
+		paper["journal"] = GetsByIndexIdWithout("journal", paper["journal_id"].(string)).Source
+	}
+	paper["conference"] = make(map[string]interface{})
+	if paper["conference_id"].(string) != "" {
+		paper["conference"] = GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
+	}
+	return paper
+}
+
 // func main() {
 // 	Init()
 // 	fmt.Println("123")
