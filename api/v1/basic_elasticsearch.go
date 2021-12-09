@@ -733,3 +733,38 @@ func FieldQueryPaper(c *gin.Context) {
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
+
+// AbstractQueryPaper doc
+// @description es 根据摘要查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
+// @Tags elasticsearch
+// @Param abstract formData string true "abstract"
+// @Param is_precise formData bool true "is_precise"
+// @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/abstract [POST]
+func AbstractQueryPaper(c *gin.Context) {
+	abstract := c.Request.FormValue("abstract")
+	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
+	if err != nil {
+		panic(err)
+	}
+	searchResult := service.PaperQueryByField("abstract", "abstract", abstract, 1, 10, is_precise)
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this affiliation_name query %s not existed", abstract)
+		return
+	}
+	fmt.Println("search abstract", abstract, "hits :", searchResult.TotalHits())
+
+	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
+	}
+	paper_sequences = service.GetPapers(paper_ids)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
+	return
+}
