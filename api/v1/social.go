@@ -275,6 +275,34 @@ func DeleteATagPaper(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "删除成功"})
 }
 
+// DeleteCollectPaper doc
+// @description 取消文章收藏
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param paper_id formData string true "文献id"
+// @Success 200 {string} string "{"success": true, "message": "删除成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/delete/collect/paper [POST]
+func DeleteCollectPaper(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	VerifyLogin(userID, authorization, c)
+
+	id := c.Request.FormValue("paper_id")
+
+	tags := service.QueryTagList(userID)
+	for _,tag := range tags{
+		paper,notfound := service.QueryATagPaper(tag.TagID,id)
+		if !notfound{
+			service.DeleteATagPaper(paper.ID)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "删除成功"})
+}
+
 // CreateAComment doc
 // @description 创建评论
 // @Tags 社交
