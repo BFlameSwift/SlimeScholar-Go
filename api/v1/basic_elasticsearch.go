@@ -216,15 +216,10 @@ func TitleQueryPaper(c *gin.Context) {
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 
 	//其他的aggregation都集成起来了，毕竟每一个都查询都十行代码挺臭的
 	aggregation := make(map[string]interface{})
@@ -344,15 +339,10 @@ func TitleSelectPaper(c *gin.Context) {
 	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences})
@@ -450,15 +440,10 @@ func DoiQueryPaper(c *gin.Context) {
 	fmt.Println("search doi", doi, "hits :", searchResult.TotalHits())
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
@@ -576,15 +561,10 @@ func AdvancedSearch(c *gin.Context) {
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 	//paper_author_map := service.IdsGetItems(paper_ids, "paper_author")
 	//for i, paper_map_item := range paper_sequences {
 	//	paper_map_item.(map[string]interface{})["authors"] = service.ParseRelPaperAuthor(paper_author_map[paper_ids[i]].(map[string]interface{}))["rel"]
@@ -620,15 +600,10 @@ func AuthorNameQueryPaper(c *gin.Context) {
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
@@ -660,15 +635,10 @@ func AffiliationNameQueryPaper(c *gin.Context) {
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
@@ -700,15 +670,10 @@ func PublisherQueryPaper(c *gin.Context) {
 
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
@@ -760,15 +725,10 @@ func FieldQueryPaper(c *gin.Context) {
 	fmt.Println(searchResult.TotalHits())
 	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
 	paper_ids := make([]string, 0, 1000)
-	for _, paper := range searchResult.Hits.Hits {
-		body_byte, _ := json.Marshal(paper.Source)
-		var paper_map = make(map[string]interface{})
-		_ = json.Unmarshal(body_byte, &paper_map)
-		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
-		paper_map = service.ComplePaper(paper_map)
-
-		paper_sequences = append(paper_sequences, paper_map)
+	for _, hit := range searchResult.Hits.Hits {
+		paper_ids = append(paper_ids, hit.Id)
 	}
+	paper_sequences = service.GetPapers(paper_ids)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return

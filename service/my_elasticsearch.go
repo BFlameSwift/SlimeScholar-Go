@@ -315,10 +315,37 @@ func MatchPhraseQuery(index string, field string, content string, page int, size
 	}
 	return searchResult
 }
+func IdsGetList(id_list []string, index string) (retList []interface{}) {
+	mul_item := Client.MultiGet()
+	fmt.Println("mget : ", index)
+	//fmt.Println("len!!!!",len(id_list))
+	for _, id := range id_list {
+		if len(id) == 0 {
+			break
+		}
+		//res,err := Client.Get().Index(index).Id(id).Do(context.Background())
+		q := elastic.NewMultiGetItem().Index(index).Id(id)
+		mul_item.Add(q)
+	}
+	response, err := mul_item.Do(context.Background())
+	if err != nil {
+		fmt.Println(id_list)
+		fmt.Println(index)
+		return make([]interface{}, 0)
+		//panic(err)
+	}
+	for _, hit := range response.Docs {
+		var m map[string]interface{} = make(map[string]interface{})
+		_ = json.Unmarshal([]byte(hit.Source), &m)
+		retList = append(retList, m)
+	}
+	return retList
+}
 
 // 通过[]string id—list 来获取结果，其中未命中的结果返回为nil 表示此id文件中不存在
 func IdsGetItems(id_list []string, index string) map[string]interface{} {
 	mul_item := Client.MultiGet()
+	fmt.Println("mget : ", index)
 	//fmt.Println("len!!!!",len(id_list))
 	for _, id := range id_list {
 		if len(id) == 0 {
@@ -336,14 +363,12 @@ func IdsGetItems(id_list []string, index string) map[string]interface{} {
 		return make(map[string]interface{})
 		//panic(err)
 	}
-	//如果有字段未命中怎么办，可能出现:返回空
-	// TODO 调用接口
+
 	var result_map map[string]interface{} = make(map[string]interface{})
 	for _, id := range id_list {
-		result_map[id] = "null"
+		result_map[id] = ""
 	}
 	for i, hit := range response.Docs {
-		//fmt.Println(hit.Source)
 		var m map[string]interface{} = make(map[string]interface{})
 		_ = json.Unmarshal([]byte(hit.Source), &m)
 		result_map[id_list[i]] = m
@@ -378,7 +403,9 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 		if inter[i].(map[string]interface{})["order"] == inter[j].(map[string]interface{})["order"] {
 			return inter[i].(map[string]interface{})["author_id"].(string) < inter[j].(map[string]interface{})["author_id"].(string)
 		}
-		return inter[i].(map[string]interface{})["order"].(string) < inter[j].(map[string]interface{})["order"].(string)
+		aid1, _ := strconv.Atoi(inter[i].(map[string]interface{})["order"].(string))
+		aid2, _ := strconv.Atoi(inter[j].(map[string]interface{})["order"].(string))
+		return aid1 < aid2
 	})
 	ret_map["rel"] = inter
 	return ret_map
@@ -620,6 +647,56 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 	aggregation["fields"] = Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = Paper_Aggregattion(searchResult, "publisher")
 	return aggregation
+}
+
+// 根据paperids 获取一组完整的paperlist。 加速版，减少多次获取。简化代码
+// 从现在开始修正码风！！！go的变量命名用驼峰
+// 其中，abstract，field，都不一定有，所以要尽可能保证安全性
+func GetPapers(paperIds []string) []interface{} {
+	papers := IdsGetList(paperIds, "paper")
+	needFieldList := make([]string, 0)
+	abstractMap := IdsGetItems(paperIds, "abstract")
+	for i, paper := range papers {
+		paper := paper.(map[string]interface{}) // 省点事
+		if paper["fields"] != nil {
+			for _, field := range paper["fields"].([]interface{}) {
+				needFieldList = append(needFieldList, field.(string))
+				// 可能会冗余几个，但是也不太碍事
+			}
+		}
+		// 格式化authors
+		if paper["authors"] != nil {
+			authors_map := make(map[string]interface{})
+			authors_map["rel"] = paper["authors"]
+			paper["authors"] = (ParseRelPaperAuthor(authors_map))["rel"]
+		} else {
+			paper["authors"] = make([]interface{}, 0)
+		}
+		abstract := abstractMap[paperIds[i]].(map[string]interface{})["abstract"]
+		if abstract != nil {
+			paper["abstract"] = abstract
+		} else {
+			paper["abstract"] = ""
+		}
+
+		papers[i] = paper
+	}
+	fieldsItems := IdsGetItems(needFieldList, "fields")
+	thisFieldList := make([]interface{}, 0)
+
+	for i, paper := range papers {
+		paper := paper.(map[string]interface{}) // 省点事
+		if paper["fields"] != nil {
+			for _, field := range paper["fields"].([]interface{}) {
+				thisFieldList = append(thisFieldList, fieldsItems[field.(string)])
+			}
+		}
+		paper["fields"] = thisFieldList
+		// 格式化paper的fields
+		thisFieldList = make([]interface{}, 0)
+		papers[i] = paper
+	}
+	return papers
 }
 
 // func main() {
