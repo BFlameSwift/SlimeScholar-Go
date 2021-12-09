@@ -67,7 +67,13 @@ func GetCollectPaper(c *gin.Context) {
 	tagName := c.Request.FormValue("tag_name")
 	papers := make([]model.TagPaper,0)
 	if tagName == ""{
-		papers = service.QueryAllPaper()
+		tags := service.QueryTagList(userID)
+		for _,tag := range tags{
+			tag_papers := service.QueryTagPaper(tag.TagID)
+			for _,tmp := range tag_papers{
+				papers = append(papers,tmp)
+			}
+		}
 	}else{
 		tag, _ := service.QueryATag(userID, tagName)
 		papers = service.QueryTagPaper(tag.TagID)
@@ -106,6 +112,87 @@ func GetCollectPaper(c *gin.Context) {
 		"data":    paper_detail,
 	})
 }
+
+// GetCollectPaperByYear doc
+// @description 根据年份筛选收藏列表
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param tag_name formData string false "标签名称"
+// @Param min_year formData string true "年份下限"
+// @Param max_year formData string true "年份上限"
+// @Success 200 {string} string "{"success": true, "message": "查看文献成功", "data": "标签下的文章列表"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Failure 402 {string} string "{"success": false, "message": "没有收藏文章"}"
+// @Router /social/get/collect/year/paper [POST]
+func GetCollectPaperByYear(c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	VerifyLogin(userID, authorization, c)
+
+	minYear,_ := strconv.ParseUint(c.Request.FormValue("min_year"), 0, 64)
+	maxYear,_ := strconv.ParseUint(c.Request.FormValue("max_year"), 0, 64)
+	tagName := c.Request.FormValue("tag_name")
+
+	papers := make([]model.TagPaper,0)
+	if tagName == ""{
+		tags := service.QueryTagList(userID)
+		for _,tag := range tags{
+			tag_papers := service.QueryTagPaper(tag.TagID)
+			for _,tmp := range tag_papers{
+				papers = append(papers,tmp)
+			}
+		}
+	}else{
+		tag, _ := service.QueryATag(userID, tagName)
+		papers = service.QueryTagPaper(tag.TagID)
+	}
+	
+	if papers == nil || len(papers) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"status":  402,
+			"message": "没有收藏文章",
+		})
+		return
+	}
+
+	var paper_ids []string
+	for _,paper := range papers{
+		paper_ids = append(paper_ids,paper.PaperID)
+	}
+	var data map[string]interface{}
+	data = service.IdsGetItems(paper_ids,"paper")
+
+	var paper_detail []map[string]interface{}
+
+	k := 0
+	for _,tmp := range data{
+		year,_ := strconv.ParseUint(tmp.(map[string]interface{})["year"].(string), 0, 64)
+		if(year >= minYear && year <= maxYear){
+			tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
+			paper_detail = append(paper_detail,tmp.(map[string]interface{}))
+		}
+		k++
+	}
+	if len(paper_detail) == 0{
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"status":  402,
+			"message": "没有收藏文章",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"status":  200,
+		"message": "查看文献成功",
+		"data":    paper_detail,
+	})
+}
+
 
 // CreateATag doc
 // @description 新建标签
@@ -196,6 +283,7 @@ func CollectAPaper(c *gin.Context) {
 	_,notFoundPaper := service.QueryATagPaper(tag.TagID, id)
 	if !notFoundPaper {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "文献已收藏"})
+		return
 	}
 	tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
 	service.CreateATagPaper(&tagPaper)
