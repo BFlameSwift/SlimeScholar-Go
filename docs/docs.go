@@ -1107,7 +1107,7 @@ var doc = `{
                         "Authorization": []
                     }
                 ],
-                "description": "取消文章收藏",
+                "description": "删除收藏的文章",
                 "tags": [
                     "社交"
                 ],
@@ -1131,6 +1131,12 @@ var doc = `{
                         "name": "paper_id",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "标签名称",
+                        "name": "tag_name",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1216,14 +1222,14 @@ var doc = `{
                 }
             }
         },
-        "/social/delete/tag/paper": {
+        "/social/get/collect/paper": {
             "post": {
                 "security": [
                     {
                         "Authorization": []
                     }
                 ],
-                "description": "删除某标签下的文章",
+                "description": "查看用户文章列表",
                 "tags": [
                     "社交"
                 ],
@@ -1238,13 +1244,6 @@ var doc = `{
                         "type": "string",
                         "description": "用户ID",
                         "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "文献id",
-                        "name": "paper_id",
                         "in": "formData",
                         "required": true
                     },
@@ -1252,61 +1251,12 @@ var doc = `{
                         "type": "string",
                         "description": "标签名称",
                         "name": "tag_name",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"success\": true, \"message\": \"删除成功\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "{\"success\": false, \"message\": \"用户未登录\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/social/get/all/collect": {
-            "post": {
-                "security": [
-                    {
-                        "Authorization": []
-                    }
-                ],
-                "description": "获取用户收藏的所有文献",
-                "tags": [
-                    "社交"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Authorization",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户ID",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"查看文献成功\", \"data\": \"文章列表\"}",
+                        "description": "{\"success\": true, \"message\": \"查看文献成功\", \"data\": \"标签下的文章列表\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1318,7 +1268,7 @@ var doc = `{
                         }
                     },
                     "402": {
-                        "description": "{\"success\": false, \"message\": \"用户无收藏文章\"}",
+                        "description": "{\"success\": false, \"message\": \"标签下没有文章\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1405,67 +1355,6 @@ var doc = `{
                     },
                     "403": {
                         "description": "{\"success\": false, \"message\": \"回复不存在\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/social/get/tag/paper": {
-            "post": {
-                "security": [
-                    {
-                        "Authorization": []
-                    }
-                ],
-                "description": "查看用户标签的文章列表",
-                "tags": [
-                    "社交"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Authorization",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
-                        "type": "string",
-                        "description": "用户ID",
-                        "name": "user_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "标签名称",
-                        "name": "tag_name",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"查看文献成功\", \"data\": \"标签下的文章列表\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "{\"success\": false, \"message\": \"用户未登录\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "402": {
-                        "description": "{\"success\": false, \"message\": \"标签下没有文章\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "{\"success\": false, \"message\": \"用户ID不存在\"}",
                         "schema": {
                             "type": "string"
                         }
