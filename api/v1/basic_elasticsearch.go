@@ -24,6 +24,7 @@ import (
 func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
+	var err error
 	map_param["index"], map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
@@ -46,7 +47,11 @@ func GetPaper(c *gin.Context) {
 		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
 	//paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
-	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
+	//paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
+	if paper["abstract"], err = service.GetsByIndexId("abstract", this_id); err != nil {
+		paper["abstract"] = "null"
+	}
+
 	paper["doi_url"] = ""
 	if paper["doi"].(string) != "" {
 		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
@@ -64,11 +69,8 @@ func GetPaper(c *gin.Context) {
 	}
 
 	paper["citation_msg"] = make([]string, 0)
-	if paper["fields"] != nil {
-		paper["fields"] = service.ParseFields(service.InterfaceListToStringList(paper["fields"].([]interface{})), "fields")
-	} else {
-		paper["fields"] = make([]string, 0)
-	}
+
+	paper = service.ComplePaper(paper)
 	//paper["fields"] = make([]string, 0)
 	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})

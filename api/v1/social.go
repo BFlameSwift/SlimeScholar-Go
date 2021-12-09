@@ -79,14 +79,14 @@ func GetTagPaper(c *gin.Context) {
 	}
 
 	var paper_ids []string
-	for _,paper := range papers{
-		paper_ids = append(paper_ids,paper.PaperID)
+	for _, paper := range papers {
+		paper_ids = append(paper_ids, paper.PaperID)
 	}
 	var data map[string]interface{}
-	data = service.IdsGetItems(paper_ids,"paper")
+	data = service.IdsGetItems(paper_ids, "paper")
 
 	k := 0
-	for _,tmp := range data{
+	for _, tmp := range data {
 		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
 		k++
 	}
@@ -118,7 +118,7 @@ func GetAllCollect(c *gin.Context) {
 
 	papers := service.QueryAllPaper()
 	fmt.Println(papers)
-	if papers == nil || len(papers) == 0{
+	if papers == nil || len(papers) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  402,
@@ -128,14 +128,15 @@ func GetAllCollect(c *gin.Context) {
 	}
 
 	var paper_ids []string
-	for _,paper := range papers{
-		paper_ids = append(paper_ids,paper.PaperID)
+	for _, paper := range papers {
+		paper_ids = append(paper_ids, paper.PaperID)
 	}
 	var data map[string]interface{}
-	data = service.IdsGetItems(paper_ids,"paper")
+	data = service.IdsGetItems(paper_ids, "paper")
 	k := 0
-	for _,tmp := range data{
+	for _, tmp := range data {
 		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
+		tmp = service.ComplePaper(tmp.(map[string]interface{}))
 		k++
 	}
 
@@ -163,7 +164,7 @@ func GetAllCollect(c *gin.Context) {
 func CreateATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID, authorization, c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID, tagName)
@@ -222,7 +223,7 @@ func DeleteATag(c *gin.Context) {
 func CollectAPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user,_ := VerifyLogin(userID, authorization, c)
+	user, _ := VerifyLogin(userID, authorization, c)
 
 	id := c.Request.FormValue("paper_id")
 	tagName := c.Request.FormValue("tag_name")
@@ -234,7 +235,7 @@ func CollectAPaper(c *gin.Context) {
 		tag = model.Tag{TagName: tagName, UserID: userID, CreateTime: time.Now(), Username: user.Username}
 		service.CreateATag(&tag)
 	}
-	_,notFoundPaper := service.QueryATagPaper(tag.TagID, id)
+	_, notFoundPaper := service.QueryATagPaper(tag.TagID, id)
 	if !notFoundPaper {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "文献已收藏"})
 	}
