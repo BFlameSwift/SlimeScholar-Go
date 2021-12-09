@@ -85,17 +85,20 @@ func GetTagPaper(c *gin.Context) {
 	var data map[string]interface{}
 	data = service.IdsGetItems(paper_ids,"paper")
 
+	var paper_detail []map[string]interface{}
+
 	k := 0
 	for _,tmp := range data{
 		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
 		k++
+		paper_detail = append(paper_detail,tmp.(map[string]interface{}))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查看文献成功",
-		"data":    data,
+		"data":    paper_detail,
 	})
 
 }
@@ -133,17 +136,20 @@ func GetAllCollect(c *gin.Context) {
 	}
 	var data map[string]interface{}
 	data = service.IdsGetItems(paper_ids,"paper")
+	var paper_detail []map[string]interface{}
+
 	k := 0
 	for _,tmp := range data{
 		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
 		k++
+		paper_detail = append(paper_detail,tmp.(map[string]interface{}))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"status":  200,
 		"message": "查看文献成功",
-		"data":    data,
+		"data":    paper_detail,
 	})
 
 }
