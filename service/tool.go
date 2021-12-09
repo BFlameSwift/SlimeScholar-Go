@@ -56,3 +56,11 @@ func GetTopNKey(m map[string]int, n int) (ret []string) {
 	}
 	return ret
 }
+
+func GetAllSortedKey(m map[string]int) (ret []string) {
+	pl := RankByWordCount(m)
+	for i := 0; i < len(pl); i++ {
+		ret = append(ret, pl[i].Key)
+	}
+	return ret
+}

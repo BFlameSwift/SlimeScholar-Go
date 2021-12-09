@@ -799,6 +799,13 @@ var doc = `{
                         "description": "author_id",
                         "name": "author_id",
                         "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort_type",
+                        "name": "sort_type",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2080,5 +2087,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }

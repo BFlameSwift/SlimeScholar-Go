@@ -6,6 +6,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gorm.io/gorm"
+	"sort"
 	"time"
 )
 
@@ -176,5 +177,35 @@ func ProcAuthorMsg(people map[string]interface{}, papers []interface{}) map[stri
 		fields = append(fields, fields_items[id].(map[string]interface{})["name"].(string))
 	}
 	people["fields"] = fields
+	people["fields_graph"] = getFieldsMap(fields_map)
 	return people
+}
+func getFieldsMap(m map[string]int) (ret []interface{}) {
+	keys := GetAllSortedKey(m)
+	fields_items := IdsGetItems(keys, "fields")
+
+	for _, id := range keys {
+		item := fields_items[id].(map[string]interface{})
+		item["count"] = m[id]
+		ret = append(ret, item)
+	}
+	return ret
+}
+
+func SortPapers(papers []interface{}, sort_type int) []interface{} {
+	inter := papers
+	sort.Slice(inter, func(i, j int) bool {
+		if sort_type == 1 {
+			return inter[i].(map[string]interface{})["year"].(string) < inter[j].(map[string]interface{})["year"].(string)
+		} else if sort_type == 2 {
+			return inter[i].(map[string]interface{})["year"].(string) >= inter[j].(map[string]interface{})["year"].(string)
+		} else if sort_type == 3 {
+			return inter[i].(map[string]interface{})["citation_count"].(float64) < inter[j].(map[string]interface{})["citation_count"].(float64)
+		} else if sort_type == 4 {
+			return inter[i].(map[string]interface{})["citation_count"].(float64) >= inter[j].(map[string]interface{})["citation_count"].(float64)
+		} else {
+			return true
+		}
+	})
+	return inter
 }

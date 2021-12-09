@@ -518,6 +518,11 @@ paths:
         in: formData
         name: author_id
         type: integer
+      - description: sort_type
+        in: formData
+        name: sort_type
+        required: true
+        type: integer
       responses:
         "200":
           description: '{"success": true, "message": "用户验证邮箱成功"}'

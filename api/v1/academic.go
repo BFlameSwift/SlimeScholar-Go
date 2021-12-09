@@ -12,6 +12,7 @@ import (
 // @Tags 学者门户
 // @Param user_id formData int false "user_id"
 // @Param author_id formData int false "author_id"
+// @Param sort_type formData int true "sort_type"
 // @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "userid 不是整数"}"
 // @Failure 402 {string} string "{"success": false, "message": "用户不是学者}"
@@ -25,6 +26,11 @@ func GetScholar(c *gin.Context) {
 	var people_msg map[string]interface{}
 	var papers []interface{}
 	is_user := false
+	sort_type, err := strconv.Atoi(c.Request.FormValue("sort_type"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "sort_type不为整数", "status": 401})
+		return
+	}
 	//var paper_result *elastic.SearchResult
 	if user_id_str != "" {
 		is_user = true
@@ -48,7 +54,7 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = submit.AuthorID
-		papers = service.GetAuthorAllPaper(ret_author_id)
+		papers = service.SortPapers(service.GetAuthorAllPaper(ret_author_id), sort_type)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user))
 
@@ -61,7 +67,7 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = author_id
-		papers = service.GetAuthorAllPaper(ret_author_id)
+		papers = service.SortPapers(service.GetAuthorAllPaper(ret_author_id), sort_type)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		if is_user {
