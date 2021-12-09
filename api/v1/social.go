@@ -175,6 +175,7 @@ func GetCollectPaperByYear(c *gin.Context){
 		year,_ := strconv.ParseUint(tmp.(map[string]interface{})["year"].(string), 0, 64)
 		if(year >= minYear && year <= maxYear){
 			tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
+			tmp = service.ComplePaper(tmp.(map[string]interface{}))
 			paper_detail = append(paper_detail,tmp.(map[string]interface{}))
 		}
 		k++
