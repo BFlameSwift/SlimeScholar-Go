@@ -799,13 +799,6 @@ var doc = `{
                         "description": "author_id",
                         "name": "author_id",
                         "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "sort_type",
-                        "name": "sort_type",
-                        "in": "formData",
-                        "required": true
                     }
                 ],
                 "responses": {
