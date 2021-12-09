@@ -24,6 +24,7 @@ import (
 func GetPaper(c *gin.Context) {
 	this_id := c.Request.FormValue("id")
 	var map_param map[string]string = make(map[string]string)
+	var err error
 	map_param["index"], map_param["id"] = "paper", this_id
 	_, error_get := service.Gets(map_param)
 	if error_get != nil {
@@ -46,7 +47,11 @@ func GetPaper(c *gin.Context) {
 		paper["conference"] = service.GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
 	//paper["authors"] = service.ParseRelPaperAuthor(service.PaperGetAuthors(this_id))["rel"]
-	paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
+	//paper["abstract"] = service.SemanticScholarApiSingle(this_id, "abstract")
+	if paper["abstract"], err = service.GetsByIndexId("abstract", this_id); err != nil {
+		paper["abstract"] = "null"
+	}
+
 	paper["doi_url"] = ""
 	if paper["doi"].(string) != "" {
 		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
@@ -64,11 +69,8 @@ func GetPaper(c *gin.Context) {
 	}
 
 	paper["citation_msg"] = make([]string, 0)
-	if paper["fields"] != nil {
-		paper["fields"] = service.ParseFields(service.InterfaceListToStringList(paper["fields"].([]interface{})), "fields")
-	} else {
-		paper["fields"] = make([]string, 0)
-	}
+
+	paper = service.ComplePaper(paper)
 	//paper["fields"] = make([]string, 0)
 	//service.BrowerPaper(paper)
 	// id_inter_list := paper["outCitations"].([]interface{})
@@ -708,6 +710,65 @@ func PublisherQueryPaper(c *gin.Context) {
 		paper_sequences = append(paper_sequences, paper_map)
 	}
 
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
+	return
+}
+
+// FieldQueryPaper doc
+// @description es doi查询论文 精确搜索，结果要么有要么没有
+// @Tags elasticsearch
+// @Param field formData string true "field"
+// @Param page formData int true "page"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/query/paper/field [POST]
+func FieldQueryPaper(c *gin.Context) {
+	field := c.Request.FormValue("field")
+	page, err := strconv.Atoi(c.Request.FormValue("page"))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
+		return
+	}
+
+	searchResult := service.PaperQueryByField("fields", "name", field, 1, 5, true)
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		fmt.Printf("this field query %s not existed", field)
+		return
+	}
+	fmt.Println("search field", field, "hits :", searchResult.TotalHits())
+
+	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
+	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
+	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
+	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
+	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+
+	boolQuery := elastic.NewBoolQuery()
+	for _, hits := range searchResult.Hits.Hits {
+		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits.Id))
+	}
+	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
+	searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(10).Aggregation("conference", conference_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		From((page - 1) * 10).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(searchResult.TotalHits())
+	var paper_sequences []interface{} = make([]interface{}, 0, 1000)
+	paper_ids := make([]string, 0, 1000)
+	for _, paper := range searchResult.Hits.Hits {
+		body_byte, _ := json.Marshal(paper.Source)
+		var paper_map = make(map[string]interface{})
+		_ = json.Unmarshal(body_byte, &paper_map)
+		paper_ids = append(paper_ids, paper_map["paper_id"].(string))
+		paper_map = service.ComplePaper(paper_map)
+
+		paper_sequences = append(paper_sequences, paper_map)
+	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paper_sequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
