@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"time"
+	"strings"
 
 	// "container/list"
 	"fmt"
@@ -275,21 +276,37 @@ func CollectAPaper(c *gin.Context) {
 
 	id := c.Request.FormValue("paper_id")
 	tagName := c.Request.FormValue("tag_name")
-	if tagName == "" {
+	if tagName == "" || len(tagName) == 0 {
 		tagName = "默认"
 	}
-	tag, notFound := service.QueryATag(userID, tagName)
-	if notFound {
-		tag = model.Tag{TagName: tagName, UserID: userID, CreateTime: time.Now(), Username: user.Username}
-		service.CreateATag(&tag)
+
+	tags := strings.Split(tagName , `-<^_^>-`)
+	fmt.Println(tags)
+	tmp := len(tags)
+	fmt.Println(tmp)
+	for _,tags_name := range tags{
+		if tags_name != "" && len(tags_name) != 0{
+			tag, notFound := service.QueryATag(userID, tags_name)
+			if notFound {
+				tag = model.Tag{TagName: tags_name, UserID: userID, CreateTime: time.Now(), Username: user.Username}
+				service.CreateATag(&tag)
+			}
+			_, notFoundPaper := service.QueryATagPaper(tag.TagID, id)
+			if notFoundPaper {
+				tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
+				service.CreateATagPaper(&tagPaper)
+			}else{
+				tmp--
+			}
+		}else{
+			tmp--
+		}
 	}
-	_, notFoundPaper := service.QueryATagPaper(tag.TagID, id)
-	if !notFoundPaper {
+	fmt.Println(tmp)
+	if(tmp == 0){
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "文献已收藏"})
 		return
 	}
-	tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
-	service.CreateATagPaper(&tagPaper)
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "收藏成功"})
 }
 
