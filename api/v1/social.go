@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"time"
+	"strings"
 
 	// "container/list"
 	"fmt"
@@ -30,7 +31,10 @@ import (
 func GetUserTag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
+	_,err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	tags := service.QueryTagList(userID)
 	if tags == nil {
@@ -64,7 +68,11 @@ func GetUserTag(c *gin.Context) {
 func GetCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
+	_,err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
+
 	tagName := c.Request.FormValue("tag_name")
 	papers := make([]model.TagPaper,0)
 	if tagName == ""{
@@ -132,7 +140,10 @@ func GetCollectPaper(c *gin.Context) {
 func GetCollectPaperByYear(c *gin.Context){
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
+	_,err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	minYear,_ := strconv.ParseUint(c.Request.FormValue("min_year"), 0, 64)
 	maxYear,_ := strconv.ParseUint(c.Request.FormValue("max_year"), 0, 64)
@@ -212,7 +223,10 @@ func GetCollectPaperByYear(c *gin.Context){
 func CreateATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID, tagName)
@@ -244,7 +258,10 @@ func CreateATag(c *gin.Context) {
 func DeleteATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
+	_,err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	tagName := c.Request.FormValue("tag_name")
 	tag, notFoundTag := service.QueryATag(userID, tagName)
@@ -271,25 +288,44 @@ func DeleteATag(c *gin.Context) {
 func CollectAPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	id := c.Request.FormValue("paper_id")
 	tagName := c.Request.FormValue("tag_name")
-	if tagName == "" {
+	if tagName == "" || len(tagName) == 0 {
 		tagName = "默认"
 	}
-	tag, notFound := service.QueryATag(userID, tagName)
-	if notFound {
-		tag = model.Tag{TagName: tagName, UserID: userID, CreateTime: time.Now(), Username: user.Username}
-		service.CreateATag(&tag)
+
+	tags := strings.Split(tagName , `-<^_^>-`)
+	fmt.Println(tags)
+	tmp := len(tags)
+	fmt.Println(tmp)
+	for _,tags_name := range tags{
+		if tags_name != "" && len(tags_name) != 0{
+			tag, notFound := service.QueryATag(userID, tags_name)
+			if notFound {
+				tag = model.Tag{TagName: tags_name, UserID: userID, CreateTime: time.Now(), Username: user.Username}
+				service.CreateATag(&tag)
+			}
+			_, notFoundPaper := service.QueryATagPaper(tag.TagID, id)
+			if notFoundPaper {
+				tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
+				service.CreateATagPaper(&tagPaper)
+			}else{
+				tmp--
+			}
+		}else{
+			tmp--
+		}
 	}
-	_, notFoundPaper := service.QueryATagPaper(tag.TagID, id)
-	if !notFoundPaper {
+	fmt.Println(tmp)
+	if(tmp == 0){
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "文献已收藏"})
 		return
 	}
-	tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
-	service.CreateATagPaper(&tagPaper)
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "收藏成功"})
 }
 
@@ -308,7 +344,10 @@ func CollectAPaper(c *gin.Context) {
 func DeleteCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	VerifyLogin(userID, authorization, c)
+	_,err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	id := c.Request.FormValue("paper_id")
 	tagName := c.Request.FormValue("tag_name")
@@ -345,7 +384,10 @@ func DeleteCollectPaper(c *gin.Context) {
 func CreateAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	id := c.Request.FormValue("paper_id")
 	var map_param map[string]string = make(map[string]string)
@@ -418,7 +460,10 @@ func CreateAComment(c *gin.Context) {
 func LikeComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment, notFound := service.QueryAComment(commentID)
@@ -447,7 +492,10 @@ func LikeComment(c *gin.Context) {
 func CancelLike(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	commentID, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment, _ := service.QueryAComment(commentID)
@@ -479,7 +527,10 @@ func CancelLike(c *gin.Context) {
 func ReplyAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	user, _ := VerifyLogin(userID, authorization, c)
+	user, err := VerifyLogin(userID, authorization, c)
+	if err{
+		return
+	}
 
 	comment_id, _ := strconv.ParseUint(c.Request.FormValue("comment_id"), 0, 64)
 	comment, _ := service.QueryAComment(comment_id)
@@ -545,7 +596,7 @@ func ReplyAComment(c *gin.Context) {
 // @Tags 社交
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
-// @Param user_id formData string true "用户ID"
+// @Param user_id formData string false "用户ID"
 // @Param paper_id formData string true "文献id"
 // @Success 200 {string} string "{"success": true, "message": "查找成功"}"
 // @Failure 403 {string} string "{"success": false, "message": "评论不存在"}"
@@ -553,9 +604,15 @@ func ReplyAComment(c *gin.Context) {
 func GetPaperComment(c *gin.Context) {
 
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	err := false
 	if userID != 0 {
 		authorization := c.Request.Header.Get("Authorization")
-		VerifyLogin(userID, authorization, c)
+		user, notFoundUserByID := service.QueryAUserByID(userID)
+		verify_answer, _ := service.VerifyAuthorization(authorization, userID, user.Username, user.Password)
+
+		if authorization == "" || !verify_answer || notFoundUserByID {
+			err = true
+		}
 	}
 
 	paperID := c.Request.FormValue("paper_id")
@@ -578,7 +635,7 @@ func GetPaperComment(c *gin.Context) {
 		com["like"] = comment.Like
 		com["is_animating"] = false
 		com["is_like"] = false
-		if service.UserLike(userID, comment.CommentID) {
+		if !err && service.UserLike(userID, comment.CommentID) {
 			com["is_like"] = true
 		}
 		com["user_id"] = comment.UserID
@@ -691,66 +748,4 @@ func VerifyLogin(userID uint64, authorization string, c *gin.Context) (user mode
 		return user, true
 	}
 	return user, false
-}
-
-type MapsSort struct {
-	Key     string
-	MapList []map[string]interface{}
-}
-
-// Len 为集合内元素的总数
-func (m *MapsSort) Len() int {
-	return len(m.MapList)
-}
-
-//如果index为i的元素小于index为j的元素，则返回true，否则返回false
-func (m *MapsSort) Less(i, j int) bool {
-	var ivalue float64
-	var jvalue float64
-	var err error
-	fmt.Println(m.Key)
-	switch m.MapList[i][m.Key].(type) {
-	case string:
-		ivalue, err = strconv.ParseFloat(m.MapList[i][m.Key].(string), 64)
-		fmt.Println(ivalue)
-		if err != nil {
-			//   logger.Error("map数组排序string转float失败：%v",err)
-			return true
-		}
-		// case int:
-		//    ivalue = float64(m.MapList[i][m.Key].(int))
-		// case float64:
-		//    ivalue = m.MapList[i][m.Key].(float64)
-		// case int64:
-		//    ivalue = float64(m.MapList[i][m.Key].(int64))
-	}
-	switch m.MapList[j][m.Key].(type) {
-	case string:
-		jvalue, err = strconv.ParseFloat(m.MapList[j][m.Key].(string), 64)
-		fmt.Println(jvalue)
-		if err != nil {
-			//   logger.Error("map数组排序string转float失败：%v",err)
-			return true
-		}
-		// case int:
-		//    jvalue = float64(m.MapList[j][m.Key].(int))
-		// case float64:
-		//    jvalue = m.MapList[j][m.Key].(float64)
-		// case int64:
-		//    jvalue = float64(m.MapList[j][m.Key].(int64))
-	}
-	return ivalue > jvalue
-}
-
-//Swap 交换索引为 i 和 j 的元素
-func (m *MapsSort) Swap(i, j int) {
-	m.MapList[i], m.MapList[j] = m.MapList[j], m.MapList[i]
-}
-
-func MapSort(ms []map[string]interface{}, key string) []map[string]interface{} {
-	mapsSort := MapsSort{}
-	mapsSort.Key = key
-	mapsSort.MapList = ms
-	sort.Sort(&mapsSort)
-	return mapsSort.MapList
 }
