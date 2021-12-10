@@ -804,6 +804,22 @@ func CheckSelectPaperParams(c *gin.Context, page_str string, size_str string, mi
 	return nil
 }
 
+func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool, page int, size int) *elastic.SearchResult {
+	var searchResult *elastic.SearchResult
+
+	if sort_type == 1 {
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).
+			From((page - 1) * size).Do(context.Background())
+	} else if sort_type == 2 {
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("citation_count", sort_ascending).
+			From((page - 1) * size).Do(context.Background())
+	} else if sort_type == 3 {
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("date", sort_ascending).
+			From((page - 1) * size).Do(context.Background())
+	}
+	return searchResult
+}
+
 // func main() {
 // 	Init()
 // 	fmt.Println("123")
