@@ -403,9 +403,11 @@ func AdvancedSearch(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "条件表达式格式错误", "status": 401})
 		return
 	}
+	fmt.Println(conditions)
+	fmt.Println(minDate, maxDate)
 
 	boolQuery := service.AdvancedCondition(conditions)
-	boolQuery.Filter(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
+	// boolQuery.Must(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
 	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
@@ -510,7 +512,8 @@ func AdvancedSelectPaper(c *gin.Context) {
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, 0, 2050)
 	boolQuery.Must(service.AdvancedCondition(conditions))
-	boolQuery.Filter(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
+	fmt.Println(minDate, maxDate)
+	// boolQuery.Filter(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
 
 	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
