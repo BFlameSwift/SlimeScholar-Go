@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"sort"
 	"strconv"
+	"time"
 )
 
 func GetMapAllKey(m map[string]interface{}) []string {
@@ -77,4 +78,16 @@ func GetAllSortedKey(m map[string]int) (ret []string) {
 func PureAtoi(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
+}
+
+const (
+	YearMonthDay     = "2006-01-02"
+	HourMinuteSecond = "15:04:05"
+	DefaultLayout    = YearMonthDay + " " + HourMinuteSecond
+)
+
+// 默认格式日期字符串转time
+func TimeStrToTimeDefault(str string) time.Time {
+	parseTime, _ := time.ParseInLocation(DefaultLayout, str, time.Local)
+	return parseTime
 }

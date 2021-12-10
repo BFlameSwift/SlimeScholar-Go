@@ -387,15 +387,15 @@ var doc = `{
                     },
                     {
                         "type": "integer",
-                        "description": "min_year",
-                        "name": "min_year",
+                        "description": "min_date",
+                        "name": "min_date",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "max_year",
-                        "name": "max_year",
+                        "description": "max_date",
+                        "name": "max_date",
                         "in": "formData",
                         "required": true
                     },
@@ -673,6 +673,119 @@ var doc = `{
                         "type": "integer",
                         "description": "title",
                         "name": "page",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"page 不是整数\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"论文不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/es/select/paper/advanced": {
+            "post": {
+                "description": "es 高级检索筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \\n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，",
+                        "name": "conditions",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "min_date",
+                        "name": "min_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "max_date",
+                        "name": "max_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "doctypes",
+                        "name": "doctypes",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "conferences",
+                        "name": "conferences",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "journals",
+                        "name": "journals",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "publishers",
+                        "name": "publishers",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort_type",
+                        "name": "sort_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "sort_ascending",
+                        "name": "sort_ascending",
                         "in": "formData",
                         "required": true
                     }

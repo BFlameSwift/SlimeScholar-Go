@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/olivere/elastic/v7"
-	"strconv"
-
 	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
 	"io"
 	"os"
+	"strconv"
 )
 
 const AUTHOR_DIR = "H:\\Scholar"
@@ -511,8 +510,7 @@ func print1() {
 }
 
 func main() {
-
-	loadabstract()
+	fmt.Println(service.TimeStrToTimeDefault("2006-10-01 00:00:00"))
 	//	service.Init()
 	//	load_fields()
 	//	//load_paper()

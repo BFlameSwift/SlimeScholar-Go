@@ -239,14 +239,14 @@ paths:
         name: conditions
         required: true
         type: string
-      - description: min_year
+      - description: min_date
         in: formData
-        name: min_year
+        name: min_date
         required: true
         type: integer
-      - description: max_year
+      - description: max_date
         in: formData
-        name: max_year
+        name: max_date
         required: true
         type: integer
       - description: page
@@ -432,6 +432,85 @@ paths:
         name: page
         required: true
         type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "page 不是整数"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "论文不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/select/paper/advanced:
+    post:
+      description: es 高级检索筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误,
+        排序方式1为默认，2为引用率，3为年份
+      parameters:
+      - description: conditions 为条件，表示字典的列表：type 123表示运算符must or，not，
+        in: formData
+        name: conditions
+        required: true
+        type: string
+      - description: min_date
+        in: formData
+        name: min_date
+        required: true
+        type: integer
+      - description: max_date
+        in: formData
+        name: max_date
+        required: true
+        type: integer
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      - description: conferences
+        in: formData
+        name: conferences
+        required: true
+        type: string
+      - description: journals
+        in: formData
+        name: journals
+        required: true
+        type: string
+      - description: publishers
+        in: formData
+        name: publishers
+        required: true
+        type: string
+      - description: sort_type
+        in: formData
+        name: sort_type
+        required: true
+        type: integer
+      - description: sort_ascending
+        in: formData
+        name: sort_ascending
+        required: true
+        type: boolean
       responses:
         "200":
           description: '{"success": true, "message": "获取成功"}'
