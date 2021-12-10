@@ -820,6 +820,47 @@ func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool
 	return searchResult
 }
 
+func parseCondition(condition map[string]interface{}) elastic.Query {
+	theMap := condition
+	delete(theMap, "type")
+	key := GetMapAllKey(theMap)[0]
+	switch key {
+	case "source":
+		return elastic.NewTermQuery("publisher", condition[key])
+	case "title":
+		return elastic.NewMatchPhraseQuery("paper_title", condition[key])
+	case "author":
+		return elastic.NewMatchPhraseQuery("authors.aname", condition[key])
+	case "doi":
+		return elastic.NewTermQuery("doi.keyword", condition[key])
+	case "author_affiliation":
+		return elastic.NewMatchPhraseQuery("authors.afname", condition[key])
+
+	}
+	return nil
+}
+
+func AdvancedCondition(conditions []interface{}) *elastic.BoolQuery {
+	boolQuery := elastic.NewBoolQuery()
+	var condition int
+	orQuery := elastic.NewBoolQuery().Must(parseCondition(conditions[0].(map[string]interface{})))
+	for i := 1; i < len(conditions); i++ {
+		condition = int((conditions[i]).(map[string]interface{})["type"].(float64))
+
+		if condition == 3 {
+			boolQuery.MustNot(parseCondition(conditions[i].(map[string]interface{})))
+		} else if condition == 2 {
+			boolQuery.Should(orQuery)
+			orQuery = elastic.NewBoolQuery()
+			orQuery.Must(parseCondition(conditions[i].(map[string]interface{})))
+		} else if condition == 1 {
+			orQuery.Must(parseCondition(conditions[i].(map[string]interface{})))
+		}
+	}
+	boolQuery.Should(orQuery)
+	return boolQuery
+}
+
 // func main() {
 // 	Init()
 // 	fmt.Println("123")

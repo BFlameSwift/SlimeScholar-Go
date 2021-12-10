@@ -380,22 +380,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "musts",
-                        "name": "musts",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "nots",
-                        "name": "nots",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "ors 至少是其中之一",
-                        "name": "ors",
+                        "description": "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，",
+                        "name": "conditions",
                         "in": "formData",
                         "required": true
                     },
