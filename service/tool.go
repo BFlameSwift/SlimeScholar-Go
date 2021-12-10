@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"sort"
+	"strconv"
 )
 
 func GetMapAllKey(m map[string]interface{}) []string {
@@ -71,4 +72,9 @@ func GetAllSortedKey(m map[string]int) (ret []string) {
 		ret = append(ret, pl[i].Key)
 	}
 	return ret
+}
+
+func PureAtoi(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
 }

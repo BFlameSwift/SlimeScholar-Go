@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 
 	// "container/list"
 	"fmt"
@@ -31,8 +31,8 @@ import (
 func GetUserTag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID, authorization, c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
@@ -68,22 +68,22 @@ func GetUserTag(c *gin.Context) {
 func GetCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID, authorization, c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
 	tagName := c.Request.FormValue("tag_name")
-	papers := make([]model.TagPaper,0)
-	if tagName == ""{
+	papers := make([]model.TagPaper, 0)
+	if tagName == "" {
 		tags := service.QueryTagList(userID)
-		for _,tag := range tags{
+		for _, tag := range tags {
 			tag_papers := service.QueryTagPaper(tag.TagID)
-			for _,tmp := range tag_papers{
-				papers = append(papers,tmp)
+			for _, tmp := range tag_papers {
+				papers = append(papers, tmp)
 			}
 		}
-	}else{
+	} else {
 		tag, _ := service.QueryATag(userID, tagName)
 		papers = service.QueryTagPaper(tag.TagID)
 	}
@@ -102,18 +102,7 @@ func GetCollectPaper(c *gin.Context) {
 	for _, paper := range papers {
 		paper_ids = append(paper_ids, paper.PaperID)
 	}
-	var data map[string]interface{}
-	data = service.IdsGetItems(paper_ids, "paper")
-
-	var paper_detail []map[string]interface{}
-
-	k := 0
-	for _, tmp := range data {
-		tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
-		tmp = service.ComplePaper(tmp.(map[string]interface{}))
-		k++
-		paper_detail = append(paper_detail, tmp.(map[string]interface{}))
-	}
+	paper_detail := service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -137,32 +126,32 @@ func GetCollectPaper(c *gin.Context) {
 // @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
 // @Failure 402 {string} string "{"success": false, "message": "没有收藏文章"}"
 // @Router /social/get/collect/year/paper [POST]
-func GetCollectPaperByYear(c *gin.Context){
+func GetCollectPaperByYear(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID, authorization, c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
-	minYear,_ := strconv.ParseUint(c.Request.FormValue("min_year"), 0, 64)
-	maxYear,_ := strconv.ParseUint(c.Request.FormValue("max_year"), 0, 64)
+	minYear, _ := strconv.ParseUint(c.Request.FormValue("min_year"), 0, 64)
+	maxYear, _ := strconv.ParseUint(c.Request.FormValue("max_year"), 0, 64)
 	tagName := c.Request.FormValue("tag_name")
 
-	papers := make([]model.TagPaper,0)
-	if tagName == ""{
+	papers := make([]model.TagPaper, 0)
+	if tagName == "" {
 		tags := service.QueryTagList(userID)
-		for _,tag := range tags{
+		for _, tag := range tags {
 			tag_papers := service.QueryTagPaper(tag.TagID)
-			for _,tmp := range tag_papers{
-				papers = append(papers,tmp)
+			for _, tmp := range tag_papers {
+				papers = append(papers, tmp)
 			}
 		}
-	}else{
+	} else {
 		tag, _ := service.QueryATag(userID, tagName)
 		papers = service.QueryTagPaper(tag.TagID)
 	}
-	
+
 	if papers == nil || len(papers) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -173,25 +162,25 @@ func GetCollectPaperByYear(c *gin.Context){
 	}
 
 	var paper_ids []string
-	for _,paper := range papers{
-		paper_ids = append(paper_ids,paper.PaperID)
+	for _, paper := range papers {
+		paper_ids = append(paper_ids, paper.PaperID)
 	}
 	var data map[string]interface{}
-	data = service.IdsGetItems(paper_ids,"paper")
+	data = service.IdsGetItems(paper_ids, "paper")
 
 	var paper_detail []map[string]interface{}
 
 	k := 0
-	for _,tmp := range data{
-		year,_ := strconv.ParseUint(tmp.(map[string]interface{})["year"].(string), 0, 64)
-		if(year >= minYear && year <= maxYear){
+	for _, tmp := range data {
+		year, _ := strconv.ParseUint(tmp.(map[string]interface{})["year"].(string), 0, 64)
+		if year >= minYear && year <= maxYear {
 			tmp.(map[string]interface{})["create_time"] = papers[k].CreateTime
 			tmp = service.ComplePaper(tmp.(map[string]interface{}))
-			paper_detail = append(paper_detail,tmp.(map[string]interface{}))
+			paper_detail = append(paper_detail, tmp.(map[string]interface{}))
 		}
 		k++
 	}
-	if len(paper_detail) == 0{
+	if len(paper_detail) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"status":  402,
@@ -206,7 +195,6 @@ func GetCollectPaperByYear(c *gin.Context){
 		"data":    paper_detail,
 	})
 }
-
 
 // CreateATag doc
 // @description 新建标签
@@ -224,7 +212,7 @@ func CreateATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 
@@ -258,8 +246,8 @@ func CreateATag(c *gin.Context) {
 func DeleteATag(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID, authorization, c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
@@ -289,7 +277,7 @@ func CollectAPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 
@@ -299,12 +287,12 @@ func CollectAPaper(c *gin.Context) {
 		tagName = "默认"
 	}
 
-	tags := strings.Split(tagName , `-<^_^>-`)
+	tags := strings.Split(tagName, `-<^_^>-`)
 	fmt.Println(tags)
 	tmp := len(tags)
 	fmt.Println(tmp)
-	for _,tags_name := range tags{
-		if tags_name != "" && len(tags_name) != 0{
+	for _, tags_name := range tags {
+		if tags_name != "" && len(tags_name) != 0 {
 			tag, notFound := service.QueryATag(userID, tags_name)
 			if notFound {
 				tag = model.Tag{TagName: tags_name, UserID: userID, CreateTime: time.Now(), Username: user.Username}
@@ -314,15 +302,15 @@ func CollectAPaper(c *gin.Context) {
 			if notFoundPaper {
 				tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
 				service.CreateATagPaper(&tagPaper)
-			}else{
+			} else {
 				tmp--
 			}
-		}else{
+		} else {
 			tmp--
 		}
 	}
 	fmt.Println(tmp)
-	if(tmp == 0){
+	if tmp == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "文献已收藏"})
 		return
 	}
@@ -344,8 +332,8 @@ func CollectAPaper(c *gin.Context) {
 func DeleteCollectPaper(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
-	_,err := VerifyLogin(userID, authorization, c)
-	if err{
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
 		return
 	}
 
@@ -385,7 +373,7 @@ func CreateAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 
@@ -461,7 +449,7 @@ func LikeComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 
@@ -493,7 +481,7 @@ func CancelLike(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 
@@ -528,7 +516,7 @@ func ReplyAComment(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
-	if err{
+	if err {
 		return
 	}
 

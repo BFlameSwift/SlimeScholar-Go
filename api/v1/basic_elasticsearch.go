@@ -203,68 +203,36 @@ func TitleQueryPaper(c *gin.Context) {
 // @Router /es/select/paper/title [POST]
 func TitleSelectPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
-	title := c.Request.FormValue("title")
-
-	page, err := strconv.Atoi(c.Request.FormValue("page"))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
-		return
-	}
-	size, err := strconv.Atoi(c.Request.FormValue("size"))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
-		return
-	}
-	min_year, err := strconv.Atoi(c.Request.FormValue("min_year"))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
-		return
-	}
-	max_year, err := strconv.Atoi(c.Request.FormValue("max_year"))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
-		return
-	}
-
-	doctypesJson, journalsJson, conferenceJson, publisherJson := c.Request.FormValue("doctypes"), c.Request.FormValue("journals"), c.Request.FormValue("conferences"), c.Request.FormValue("publishers")
-	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
 	var searchResult *elastic.SearchResult
 	var sort_ascending bool
-
-	sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
+	title := c.Request.FormValue("title")
+	page_str := c.Request.FormValue("page")
+	size_str := c.Request.FormValue("size")
+	min_year := c.Request.FormValue("min_year")
+	max_year := c.Request.FormValue("max_year")
+	doctypesJson, journalsJson, conferenceJson, publisherJson := c.Request.FormValue("doctypes"), c.Request.FormValue("journals"), c.Request.FormValue("conferences"), c.Request.FormValue("publishers")
+	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
+	sort_type_str := c.Request.FormValue("sort_type")
 	sort_ascending_str := c.Request.FormValue("sort_ascending")
+
+	err := service.CheckSelectPaperParams(c, page_str, size_str, min_year, max_year, doctypesJson, journalsJson, conferenceJson, publisherJson, sort_ascending_str)
+	if err != nil {
+		// 参数校验401错误
+		return
+	}
+
 	if sort_ascending_str == "true" {
 		sort_ascending = true
 	} else if sort_ascending_str == "false" {
 		sort_ascending = false
-	} else {
-		sort_ascending = true
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "sort_ascending 不是truefalse", "status": 401})
-		return
 	}
+	page, size, sort_type := service.PureAtoi(page_str), service.PureAtoi(size_str), service.PureAtoi(sort_type_str)
+	json.Unmarshal([]byte(doctypesJson), &doctypes)
+	json.Unmarshal([]byte(journalsJson), &journals)
+	json.Unmarshal([]byte(conferenceJson), &conferences)
+	json.Unmarshal([]byte(publisherJson), &publishers)
 
-	err = json.Unmarshal([]byte(doctypesJson), &doctypes)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "doctypes格式错误", "status": 401})
-		return
-	}
-	err = json.Unmarshal([]byte(journalsJson), &journals)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "journals格式错误", "status": 401})
-		return
-	}
-	err = json.Unmarshal([]byte(conferenceJson), &conferences)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "conferneces格式错误", "status": 401})
-		return
-	}
-	err = json.Unmarshal([]byte(publisherJson), &publishers)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "publisher格式错误", "status": 401})
-		return
-	}
-	fmt.Println(doctypes, journals, conferences, publishers)
-	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, min_year, max_year)
+	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
 	boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	if sort_type == 1 {
 		searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(size).

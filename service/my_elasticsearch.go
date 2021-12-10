@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
 	"log"
+	"net/http"
 	"os"
 	"sort"
 	"strconv"
@@ -742,6 +744,64 @@ func FullPaperSocial(paper map[string]interface{}) map[string]interface{} {
 	paper["collect_count"] = len(PaperGetCollectedUsers(paperId))
 
 	return paper
+}
+
+func CheckSelectPaperParams(c *gin.Context, page_str string, size_str string, minYear string, maxYear string, doctypesJson string, journalsJson string, conferenceJson string, publisherJson string, sort_ascending_str string) error {
+	_, err := strconv.Atoi(page_str)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
+		return err
+	}
+	_, err = strconv.Atoi(size_str)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
+		return err
+	}
+	_, err = strconv.Atoi(minYear)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
+		return err
+	}
+	_, err = strconv.Atoi(maxYear)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
+		return err
+	}
+
+	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
+
+	//sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
+
+	if sort_ascending_str == "true" {
+
+	} else if sort_ascending_str == "false" {
+
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "sort_ascending 不是truefalse", "status": 401})
+		return err
+	}
+	err = json.Unmarshal([]byte(doctypesJson), &doctypes)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "doctypes格式错误", "status": 401})
+		return err
+	}
+	err = json.Unmarshal([]byte(journalsJson), &journals)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "journals格式错误", "status": 401})
+		return err
+	}
+	err = json.Unmarshal([]byte(conferenceJson), &conferences)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "conferneces格式错误", "status": 401})
+		return err
+	}
+	err = json.Unmarshal([]byte(publisherJson), &publishers)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "publisher格式错误", "status": 401})
+		return err
+	}
+
+	return nil
 }
 
 // func main() {
