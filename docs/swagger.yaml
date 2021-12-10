@@ -243,12 +243,12 @@ paths:
         in: formData
         name: min_date
         required: true
-        type: integer
+        type: string
       - description: max_date
         in: formData
         name: max_date
         required: true
-        type: integer
+        type: string
       - description: page
         in: formData
         name: page
@@ -465,12 +465,12 @@ paths:
         in: formData
         name: min_date
         required: true
-        type: integer
+        type: string
       - description: max_date
         in: formData
         name: max_date
         required: true
-        type: integer
+        type: string
       - description: page
         in: formData
         name: page

@@ -360,8 +360,8 @@ func DoiQueryPaper(c *gin.Context) {
 // @description es 高级搜索
 // @Tags elasticsearch
 // @Param conditions formData string true "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，"
-// @Param min_date formData int true "min_date"
-// @Param max_date formData int true "max_date"
+// @Param min_date formData string true "min_date"
+// @Param max_date formData string true "max_date"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
@@ -449,8 +449,8 @@ func AdvancedSearch(c *gin.Context) {
 // @description es 高级检索筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份
 // @Tags elasticsearch
 // @Param conditions formData string true "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，"
-// @Param min_date formData int true "min_date"
-// @Param max_date formData int true "max_date"
+// @Param min_date formData string true "min_date"
+// @Param max_date formData string true "max_date"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
 // @Param doctypes formData string true "doctypes"

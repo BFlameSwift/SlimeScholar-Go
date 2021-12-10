@@ -386,14 +386,14 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "min_date",
                         "name": "min_date",
                         "in": "formData",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "max_date",
                         "name": "max_date",
                         "in": "formData",
@@ -720,14 +720,14 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "min_date",
                         "name": "min_date",
                         "in": "formData",
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "max_date",
                         "name": "max_date",
                         "in": "formData",
