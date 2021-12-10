@@ -62,7 +62,7 @@ func QueryAllPaper() (papers []model.TagPaper) {
 
 //精确查询标签文章
 func QueryATagPaper(tagID uint64, paperID string) (tagPaper model.TagPaper, not bool) {
-	err := global.DB.Where("tag_id = ? AND paper_id = ?", tagID,paperID).First(&tagPaper).Error
+	err := global.DB.Where("tag_id = ? AND paper_id = ?", tagID, paperID).First(&tagPaper).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return tagPaper, true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -96,9 +96,9 @@ func CreateAComment(comment *model.Comment) (notCreated bool) {
 	if err := global.DB.Create(&comment).Error; err != nil {
 		//更新回复数量
 		com := comment
-		for com.RelateID != 0{
-			relateCom,_ := QueryAComment(com.RelateID)
-			relateCom.ReplyCount++;
+		for com.RelateID != 0 {
+			relateCom, _ := QueryAComment(com.RelateID)
+			relateCom.ReplyCount++
 			global.DB.Save(relateCom)
 			com = relateCom
 		}
@@ -123,19 +123,19 @@ func QueryAComment(commentID uint64) (comment *model.Comment, notFound bool) {
 func UpdateCommentLike(comment *model.Comment, user model.User) (err error) {
 	comment.Like++
 	err = global.DB.Save(comment).Error
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	
-	like := model.Like{UserID:user.UserID, CommentID:comment.CommentID}
+
+	like := model.Like{UserID: user.UserID, CommentID: comment.CommentID}
 	err = global.DB.Create(&like).Error
 	return err
 }
 
 //查询用户是否点赞评论
-func UserLike(userID uint64, commentID uint64)(isLike bool){
+func UserLike(userID uint64, commentID uint64) (isLike bool) {
 	like := model.Like{}
-	err := global.DB.Where("user_id = ? AND comment_id = ?", userID,commentID).First(&like).Error
+	err := global.DB.Where("user_id = ? AND comment_id = ?", userID, commentID).First(&like).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return false
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -146,119 +146,64 @@ func UserLike(userID uint64, commentID uint64)(isLike bool){
 }
 
 //取消点赞
-func CancelLike(comment *model.Comment, user model.User)(notFound bool){
+func CancelLike(comment *model.Comment, user model.User) (notFound bool) {
 	like := model.Like{}
-	err := global.DB.Where("user_id = ? AND comment_id = ?", user.UserID,comment.CommentID).First(&like).Error
+	err := global.DB.Where("user_id = ? AND comment_id = ?", user.UserID, comment.CommentID).First(&like).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return true
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(err)
 	} else {
 		global.DB.Delete(&like)
-		comment.Like--;
+		comment.Like--
 		global.DB.Save(&comment)
 		return false
 	}
 }
 
 //根据文献id获取文献所有评论
-func QueryComsByPaperId(paperId string)(coms []model.Comment){
+func QueryComsByPaperId(paperId string) (coms []model.Comment) {
 	coms = make([]model.Comment, 0)
-	global.DB.Where(map[string]interface{}{"paper_id":paperId,"relate_id":0}).Order("comment_time desc").Find(&coms)
+	global.DB.Where(map[string]interface{}{"paper_id": paperId, "relate_id": 0}).Order("comment_time desc").Find(&coms)
 	return coms
 }
 
+// 根据文献Id获取文献的所有tag
+func QueryTagByPaperId(paperId string) (tags []model.TagPaper) {
+	global.DB.Where(map[string]interface{}{"paper_id": paperId}).Find(&tags)
+	return tags
+}
+
+func QueryTagByTagId(tagId uint64) (tag model.Tag, notFound bool) {
+	err := global.DB.Where("tag_id = ?", tagId).First(&tag).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return tag, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return tag, false
+	}
+}
+
 //查询回复对应的最初的评论
-func QueryABaseCom(comment *model.Comment)(base *model.Comment){
-	for comment.RelateID != 0{
+func QueryABaseCom(comment *model.Comment) (base *model.Comment) {
+	for comment.RelateID != 0 {
 		id := comment.RelateID
-		comment,_ = QueryAComment(id)
+		comment, _ = QueryAComment(id)
 	}
 	return comment
 }
 
 //查询某条评论的所有回复
-func QueryComReply(relateID uint64)(coms []model.Comment){
+func QueryComReply(relateID uint64) (coms []model.Comment) {
 	coms = make([]model.Comment, 0)
-	global.DB.Where("relate_id = ?",relateID).Order("comment_time").Find(&coms)
+	global.DB.Where("relate_id = ?", relateID).Order("comment_time").Find(&coms)
 	tmp := coms
-	for _, com := range tmp{
+	for _, com := range tmp {
 		comcom := QueryComReply(com.CommentID)
-		for _, tmptmp := range comcom{
-			coms = append(coms,tmptmp)
+		for _, tmptmp := range comcom {
+			coms = append(coms, tmptmp)
 		}
 	}
 	return coms
 }
-
-// func JsonToPaper(jsonStr string) model.Paper {
-// 	var item map[string]interface{} = make(map[string]interface{})
-// 	err := json.Unmarshal([]byte(jsonStr), &item)
-// 	ok := false
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	var paper model.Paper
-// 	paper.Id = item["id"].(string)
-// 	paper.Title = item["title"].(string)
-// 	paper.Abstract, ok = item["paperAbstract"].(string)
-// 	if !ok {
-// 		paper.Abstract = ""
-// 	}
-// 	paper.Url = item["s2Url"].(string)
-// 	paper.S2PdfUrl = item["s2PdfUrl"].(string)
-// 	year, ok := item["year"].(float64)
-// 	if !ok {
-// 		year = 0
-// 	}
-// 	paper.Year = int(year)
-// 	paper.JournalPages = item["journalPages"].(string)
-// 	paper.JournalName = item["journalName"].(string)
-// 	paper.JournalVolume = item["journalVolume"].(string)
-// 	paper.Doi = item["doi"].(string)
-// 	paper.DoiUrl = item["doiUrl"].(string)
-// 	pdf_urls := make([]string, len(item["pdfUrls"].([]interface{})))
-// 	for i, url := range item["pdfUrls"].([]interface{}) {
-// 		pdf_urls[i] = url.(string)
-// 	}
-// 	paper.PdfUrls = pdf_urls
-// 	in_citations := make([]string, len(item["inCitations"].([]interface{})))
-// 	for i, str := range item["inCitations"].([]interface{}) {
-// 		in_citations[i] = str.(string)
-// 	}
-// 	paper.InCitations = in_citations
-// 	out_citations := make([]string, len(item["outCitations"].([]interface{})))
-// 	for i, str := range item["outCitations"].([]interface{}) {
-// 		out_citations[i] = str.(string)
-// 	}
-// 	paper.OutCitations = out_citations
-// 	_, ok = item["FieldsOfStudy"].([]interface{})
-// 	if !ok {
-// 		item["FieldsOfStudy"] = make([]interface{}, 0)
-// 	}
-// 	fields := make([]string, len(item["FieldsOfStudy"].([]interface{})))
-// 	for i, str := range item["FieldsOfStudy"].([]interface{}) {
-// 		fields[i] = str.(string)
-// 	}
-// 	paper.FieldsOfStudy = fields
-// 	authors := make([]model.Author, len(item["authors"].([]interface{})))
-// 	_, ok = item["authors"].([]map[string]interface{})
-// 	if !ok {
-// 		item["authors"] = make([]map[string]interface{}, 0)
-// 	}
-// 	for i, item_author := range item["authors"].([]map[string]interface{}) {
-// 		author_new := model.Author{AuthorId: item_author["id"].(string), AuthorName: item_author["name"].(string)}
-// 		authors[i] = author_new
-// 	}
-// 	paper.Authors = authors
-
-// 	//author.position, ok = item["position"].(string)
-// 	//if !ok {
-// 	//	author.position = ""
-// 	//}
-
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return paper
-// }
