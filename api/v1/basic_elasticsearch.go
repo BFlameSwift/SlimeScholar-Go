@@ -495,7 +495,7 @@ func AdvancedSelectPaper(c *gin.Context) {
 	sort_type_str := c.Request.FormValue("sort_type")
 	sort_ascending_str := c.Request.FormValue("sort_ascending")
 
-	err := service.CheckSelectPaperParams(c, page_str, size_str, "1", "1", doctypesJson, journalsJson, conferenceJson, publisherJson, sort_ascending_str)
+	err = service.CheckSelectPaperParams(c, page_str, size_str, "1", "1", doctypesJson, journalsJson, conferenceJson, publisherJson, sort_ascending_str)
 	if err != nil {
 		// 参数校验401错误
 		return
