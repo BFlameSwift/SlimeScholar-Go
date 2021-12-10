@@ -564,44 +564,6 @@ paths:
             type: string
       tags:
       - template
-  /get/paper/social:
-    post:
-      description: 搜索时根据用户与paper_ids 来判断是否具有社交属性并补齐
-      parameters:
-      - description: user_id
-        in: formData
-        name: user_id
-        required: true
-        type: string
-      - description: paper_ids 文献id列表
-        in: formData
-        name: paper_ids
-        required: true
-        type: string
-      - description: 0添加1删除2转让
-        in: formData
-        name: kind
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: '{"success": true, "message": "用户验证邮箱成功"}'
-          schema:
-            type: string
-        "401":
-          description: '{"success": false, "message": "参数格式错误"}'
-          schema:
-            type: string
-        "404":
-          description: '{"success": false, "message": "用户不存在}'
-          schema:
-            type: string
-        "600":
-          description: '{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}'
-          schema:
-            type: string
-      tags:
-      - elasticsearch
   /scholar/info:
     post:
       description: 获取学者信息
@@ -997,6 +959,39 @@ paths:
             type: string
       security:
       - Authorization: []
+      tags:
+      - 社交
+  /social/get/paper:
+    post:
+      description: 搜索时根据用户与paper_ids 来判断是否具有社交属性并补齐
+      parameters:
+      - description: user_id
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: paper_ids 文献id列表
+        in: formData
+        name: paper_ids
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "用户验证邮箱成功"}'
+          schema:
+            type: string
+        "401":
+          description: '{"success": false, "message": "参数格式错误"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户不存在}'
+          schema:
+            type: string
+        "600":
+          description: '{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}'
+          schema:
+            type: string
       tags:
       - 社交
   /social/get/replies:

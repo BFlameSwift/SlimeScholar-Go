@@ -52,7 +52,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/query/paper/doi", v1.DoiQueryPaper)
 		EsRouter.POST("/query/paper/field", v1.FieldQueryPaper)
 		EsRouter.POST("/query/paper/abstract", v1.AbstractQueryPaper)
-		EsRouter.POST("/get/paper/social", v1.FullPapersSocial)
+
 		//EsRouter.POST("/query/paper/abstract", v1.AbstractQueryPaper)
 		//EsRouter.POST("/query/paper/main", v1.MainQueryPaper)
 	}
@@ -75,5 +75,6 @@ func InitRouter(Router *gin.RouterGroup) {
 		SocialRouter.POST("/reply/comment", v1.ReplyAComment)
 		SocialRouter.POST("/get/comments", v1.GetPaperComment)
 		SocialRouter.POST("/get/replies", v1.GetComReply)
+		SocialRouter.POST("/get/paper", v1.FullPapersSocial)
 	}
 }

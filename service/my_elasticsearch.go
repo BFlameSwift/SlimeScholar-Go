@@ -656,12 +656,24 @@ func GetPapers(paperIds []string) []interface{} {
 	papers := IdsGetList(paperIds, "paper")
 	needFieldList := make([]string, 0)
 	abstractMap := IdsGetItems(paperIds, "abstract")
-	for i, paper := range papers {
+	for _, paper := range papers {
 		paper := paper.(map[string]interface{}) // 省点事
 		if paper["fields"] != nil {
 			for _, field := range paper["fields"].([]interface{}) {
 				needFieldList = append(needFieldList, field.(string))
 				// 可能会冗余几个，但是也不太碍事
+			}
+		}
+
+	}
+	fieldsItems := IdsGetItems(needFieldList, "fields")
+	thisFieldList := make([]interface{}, 0)
+
+	for i, paper := range papers {
+		paper := paper.(map[string]interface{}) // 省点事
+		if paper["fields"] != nil {
+			for _, field := range paper["fields"].([]interface{}) {
+				thisFieldList = append(thisFieldList, fieldsItems[field.(string)])
 			}
 		}
 		// 格式化authors
@@ -678,19 +690,7 @@ func GetPapers(paperIds []string) []interface{} {
 		} else {
 			paper["abstract"] = ""
 		}
-
-		papers[i] = paper
-	}
-	fieldsItems := IdsGetItems(needFieldList, "fields")
-	thisFieldList := make([]interface{}, 0)
-
-	for i, paper := range papers {
-		paper := paper.(map[string]interface{}) // 省点事
-		if paper["fields"] != nil {
-			for _, field := range paper["fields"].([]interface{}) {
-				thisFieldList = append(thisFieldList, fieldsItems[field.(string)])
-			}
-		}
+		paper["is_collected"] = false
 		paper["fields"] = thisFieldList
 		// 格式化paper的fields
 		thisFieldList = make([]interface{}, 0)

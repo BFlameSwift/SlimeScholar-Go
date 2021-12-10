@@ -204,6 +204,7 @@ func TitleQueryPaper(c *gin.Context) {
 func TitleSelectPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
+
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
