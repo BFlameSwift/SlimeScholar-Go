@@ -529,16 +529,16 @@ func ReplyAComment(c *gin.Context) {
 		CommentTime: time.Now(), Content: content, RelateID: comment_id}
 	service.CreateAComment(&reply)
 
-	var map_param map[string]string = make(map[string]string)
-	map_param["index"], map_param["id"] = "paper", comment.PaperID
-	ret, _ := service.Gets(map_param)
-	body_byte, _ := json.Marshal(ret.Source)
-	var paper = make(map[string]interface{})
-	_ = json.Unmarshal(body_byte, &paper)
-	paper_url := "https://dx.doi.org/" + paper["doi"].(string)
+	// var map_param map[string]string = make(map[string]string)
+	// map_param["index"], map_param["id"] = "paper", comment.PaperID
+	// ret, _ := service.Gets(map_param)
+	// body_byte, _ := json.Marshal(ret.Source)
+	// var paper = make(map[string]interface{})
+	// _ = json.Unmarshal(body_byte, &paper)
+	// paper_url := "https://dx.doi.org/" + paper["doi"].(string)
 
 	be_reply_user, _ := service.QueryAUserByID(comment.UserID)
-	utils.SendReplyEmail(be_reply_user.Email, paper_url)
+	utils.SendReplyEmail(be_reply_user.Email, comment.PaperID)
 
 	bas_comment := service.QueryABaseCom(comment)
 	replies := service.QueryComReply(bas_comment.CommentID)

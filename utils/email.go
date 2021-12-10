@@ -59,14 +59,14 @@ func SendMail(mailTo []string, subject string, body string) error {
 
 }
 
-func SendReplyEmail(themail string , paper_url string) {
+func SendReplyEmail(themail string , paper_id string) {
 	subject := "您在Slime学术成果分享平台的评论收到了一条回复"
 	// 邮件正文
 	mailTo := []string{
 		themail,
 	}
 	//TODO:发送文献链接
-	body := "您评论的文章链接为" + paper_url
+	body := "您评论的文章链接为" + "https://slime.matrix53.top" + "/article?v=" + paper_id
 	err := SendMail(mailTo, subject, body)
 	if err != nil {
 		log.Println(err)
