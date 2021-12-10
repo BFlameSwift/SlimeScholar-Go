@@ -869,6 +869,63 @@ var doc = `{
                 }
             }
         },
+        "/get/paper/social": {
+            "post": {
+                "description": "搜索时根据用户与paper_ids 来判断是否具有社交属性并补齐",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user_id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "paper_ids 文献id列表",
+                        "name": "paper_ids",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0添加1删除2转让",
+                        "name": "kind",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"用户验证邮箱成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"参数格式错误\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户不存在}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "600": {
+                        "description": "{\"success\": false, \"message\": \"用户待修改，传入false 更新验证码，否则为验证正确}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/scholar/info": {
             "post": {
                 "description": "获取学者信息",
@@ -960,19 +1017,13 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"success\": true, \"message\": \"用户验证邮箱成功\"}",
+                        "description": "{\"success\": true, \"message\": \"转移成功\"}",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "401": {
-                        "description": "{\"success\": false, \"message\": \"用户已验证邮箱\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "402": {
-                        "description": "{\"success\": false, \"message\": \"用户输入验证码错误}",
+                        "description": "{\"success\": false, \"message\": \"参数错误\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -2241,5 +2292,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }

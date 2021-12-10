@@ -738,17 +738,8 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 // 补充Paper的社交属性
 func FullPaperSocial(paper map[string]interface{}) map[string]interface{} {
 	paperId := paper["paper_id"].(string)
-
-	tags := QueryTagByPaperId(paperId)
-	//collectCount := 0
-	tagUserMap := make(map[string]interface{})
-	for _, tag := range tags {
-		tag_user, notFound := QueryTagByTagId(tag.TagID)
-		if !notFound {
-			tagUserMap[tag_user.Username] = 1
-		}
-	}
-	paper["collect_count"] = len(GetMapAllContent(tagUserMap))
+	// 收集数目
+	paper["collect_count"] = len(PaperGetCollectedUsers(paperId))
 
 	return paper
 }

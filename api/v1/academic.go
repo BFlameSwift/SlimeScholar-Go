@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -86,9 +87,8 @@ func GetScholar(c *gin.Context) {
 // @Param obj_user_id formData string false "obj_user_id"
 // @Param paper_id formData string true "paper_id"
 // @Param kind formData int true "0添加1删除2转让"
-// @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
-// @Failure 401 {string} string "{"success": false, "message": "用户已验证邮箱"}"
-// @Failure 402 {string} string "{"success": false, "message": "用户输入验证码错误}"
+// @Success 200 {string} string "{"success": true, "message": "转移成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数错误"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
 // @Router /scholar/transfer [POST]
@@ -123,5 +123,40 @@ func ScholarManagePaper(c *gin.Context) {
 	//fmt.Println(paper_id, is_add)
 	service.TransferPaper(user, user.AuthorID, paper_id, kind, obj_user_id)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "创建成功", "status": 200})
+	return
+}
+
+// FullPapersSocial doc
+// @description 搜索时根据用户与paper_ids 来判断是否具有社交属性并补齐
+// @Tags elasticsearch
+// @Param user_id formData string true "user_id"
+// @Param paper_ids formData string true "paper_ids 文献id列表"
+// @Param kind formData int true "0添加1删除2转让"
+// @Success 200 {string} string "{"success": true, "message": "用户验证邮箱成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数格式错误"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
+// @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
+// @Router /get/paper/social [POST]
+func FullPapersSocial(c *gin.Context) {
+
+	user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "user_id不为int", "status": 401})
+		return
+	}
+	paperIdsStr := c.Request.FormValue("paper_ids")
+	paperIds := make([]string, 0)
+	err = json.Unmarshal([]byte(paperIdsStr), &paperIds)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "paper—ids 格式错误", "status": 401})
+		return
+	}
+	user, notFound := service.QueryAUserByID(user_id)
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在", "status": 404})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "papers_attribute": service.PapersGetIsCollectedByUser(paperIds, user)})
 	return
 }

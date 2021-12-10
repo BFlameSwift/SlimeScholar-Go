@@ -5,6 +5,14 @@ import (
 	"sort"
 )
 
+func GetMapAllKey(m map[string]interface{}) []string {
+	list := make([]string, 0, len(m))
+	for key := range m {
+		list = append(list, key)
+	}
+	return list
+}
+
 func GetMapAllContent(m map[string]interface{}) []interface{} {
 	list := make([]interface{}, 0, len(m))
 	for key := range m {

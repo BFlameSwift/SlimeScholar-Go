@@ -207,3 +207,35 @@ func QueryComReply(relateID uint64) (coms []model.Comment) {
 	}
 	return coms
 }
+
+// 根据Paperid找到认领该paper的username
+func PaperGetCollectedUsers(paperId string) []string {
+	tags := QueryTagByPaperId(paperId)
+
+	tagUserMap := make(map[string]interface{})
+	for _, tag := range tags {
+		tag_user, notFound := QueryTagByTagId(tag.TagID)
+		if !notFound {
+			tagUserMap[tag_user.Username] = 1
+		}
+	}
+	return GetMapAllKey(tagUserMap)
+}
+
+// 根据paperids列表找到与用户找到是否被用户所收藏
+func PapersGetIsCollectedByUser(paperIds []string, user model.User) (ret []interface{}) {
+	for _, paperId := range paperIds {
+		item := make(map[string]interface{})
+		item["paper_id"] = paperId
+		item["is_collected"] = false
+		for _, the_username := range PaperGetCollectedUsers(paperId) {
+			if the_username == user.Username {
+				item["is_collected"] = true
+				break
+			}
+		}
+		ret = append(ret, item)
+
+	}
+	return ret
+}
