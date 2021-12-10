@@ -359,9 +359,7 @@ func DoiQueryPaper(c *gin.Context) {
 // AdvancedSearch doc
 // @description es 高级搜索
 // @Tags elasticsearch
-// @Param musts formData string true "musts"
-// @Param nots formData string true "nots"
-// @Param ors formData string true "ors 至少是其中之一"
+// @Param conditions formData string true "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，"
 // @Param min_year formData int true "min_year"
 // @Param max_year formData int true "max_year"
 // @Param page formData int true "page"
@@ -384,36 +382,25 @@ func AdvancedSearch(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
 		return
 	}
-	min_year, err := strconv.Atoi(c.Request.FormValue("min_year"))
+	//min_year, err := strconv.Atoi(c.Request.FormValue("min_year"))
+	//if err != nil {
+	//	c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
+	//	return
+	//}
+	//max_year, err := strconv.Atoi(c.Request.FormValue("max_year"))
+	//if err != nil {
+	//	c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
+	//	return
+	//}
+	conditionsJson := c.Request.FormValue("conditions")
+	var conditions []interface{}
+	err = json.Unmarshal([]byte(conditionsJson), &conditions)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "min_year 不为整数", "status": 401})
-		return
-	}
-	max_year, err := strconv.Atoi(c.Request.FormValue("max_year"))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "max_year 不为整数", "status": 401})
-		return
-	}
-
-	mustsJson, shouldsJson, notsJson := c.Request.FormValue("musts"), c.Request.FormValue("ors"), c.Request.FormValue("nots")
-	musts, nots, shoulds := make(map[string]([]string)), make(map[string]([]string)), make(map[string]([]string))
-	err = json.Unmarshal([]byte(mustsJson), &musts)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "musts格式错误", "status": 401})
-		return
-	}
-	err = json.Unmarshal([]byte(shouldsJson), &shoulds)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "shoulds 格式错误", "status": 401})
-		return
-	}
-	err = json.Unmarshal([]byte(notsJson), &nots)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "nots格式错误", "status": 401})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "条件表达式格式错误", "status": 401})
 		return
 	}
 
-	boolQuery := service.AdvancedSearch(min_year, max_year, musts, shoulds, nots)
+	boolQuery := service.AdvancedCondition(conditions)
 	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")

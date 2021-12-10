@@ -234,19 +234,9 @@ paths:
     post:
       description: es 高级搜索
       parameters:
-      - description: musts
+      - description: conditions 为条件，表示字典的列表：type 123表示运算符must or，not，
         in: formData
-        name: musts
-        required: true
-        type: string
-      - description: nots
-        in: formData
-        name: nots
-        required: true
-        type: string
-      - description: ors 至少是其中之一
-        in: formData
-        name: ors
+        name: conditions
         required: true
         type: string
       - description: min_year
