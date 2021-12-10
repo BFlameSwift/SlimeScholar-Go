@@ -946,7 +946,6 @@ paths:
       - description: 用户ID
         in: formData
         name: user_id
-        required: true
         type: string
       - description: 文献id
         in: formData

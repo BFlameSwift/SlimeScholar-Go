@@ -1466,8 +1466,7 @@ var doc = `{
                         "type": "string",
                         "description": "用户ID",
                         "name": "user_id",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
@@ -2242,5 +2241,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }
