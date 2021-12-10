@@ -722,7 +722,7 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 		for _, str := range reference_ids_interfaces {
 			reference_ids = append(reference_ids, str.(string))
 		}
-		paper["reference_msg"] = (GetMapAllContent(IdsGetItems(reference_ids, "paper")))
+		paper["reference_msg"] = GetPapers(reference_ids)
 	}
 
 	paper["citation_msg"] = make([]string, 0)
