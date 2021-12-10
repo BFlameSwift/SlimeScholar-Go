@@ -826,7 +826,7 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 	key := GetMapAllKey(theMap)[0]
 	switch key {
 	case "source":
-		return elastic.NewTermQuery("publisher", condition[key])
+		return elastic.NewMatchQuery("publisher", condition[key])
 	case "title":
 		return elastic.NewMatchPhraseQuery("paper_title", condition[key])
 	case "author":

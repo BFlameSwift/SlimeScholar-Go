@@ -412,6 +412,10 @@ func AdvancedSearch(c *gin.Context) {
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
 		Size(size).
 		From((page - 1) * size).Do(context.Background())
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "条件表达式存在不支持的字段", "status": 401})
+		return
+	}
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
