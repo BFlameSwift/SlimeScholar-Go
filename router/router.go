@@ -44,6 +44,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/journal", v1.GetJournal)
 		EsRouter.POST("/query/paper/title", v1.TitleQueryPaper)
 		EsRouter.POST("/query/paper/advanced", v1.AdvancedSearch)
+		EsRouter.POST("/select/paper/advanced", v1.AdvancedSelectPaper)
 		EsRouter.POST("/select/paper/title", v1.TitleSelectPaper)
 		EsRouter.POST("/query/paper/author_name", v1.AuthorNameQueryPaper)
 		EsRouter.POST("/select/paper/author_name", v1.AuthorNameSelectPaper)
