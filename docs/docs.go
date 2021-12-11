@@ -2266,7 +2266,7 @@ var doc = `{
         },
         "/submit/check/more": {
             "post": {
-                "description": "通过或拒绝某一条申请。402-没有需要审批的申请",
+                "description": "通过或拒绝某一条申请。406-没有需要审批的申请",
                 "tags": [
                     "管理员"
                 ],

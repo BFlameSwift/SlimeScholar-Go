@@ -138,7 +138,7 @@ func CheckSubmit(c *gin.Context) {
 }
 
 // CheckSubmits doc
-// @description 通过或拒绝某一条申请。402-没有需要审批的申请
+// @description 通过或拒绝某一条申请。406-没有需要审批的申请
 // @Tags 管理员
 // @Param submit_ids formData string true "提交id"
 // @Param success formData string true "success"
@@ -190,7 +190,7 @@ func CheckSubmits(c *gin.Context) {
 
 	fmt.Println(len)
 	if len == 0 {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有需要审批的申请", "status": 402})
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有需要审批的申请", "status": 406})
 		return
 	}
 
