@@ -243,6 +243,12 @@ func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool
 		return submits, false
 	}
 }
+
+func QueryAllSubmit()(submits []model.SubmitScholar){
+	global.DB.Find(&submits)
+	return submits
+}
+
 func SelectASubmitValid(user_id uint64) (submit model.SubmitScholar, notFound bool) {
 	err := global.DB.Where("user_id = ? AND status = 1", user_id).First(&submit).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {

@@ -2221,7 +2221,7 @@ var doc = `{
         },
         "/submit/check": {
             "post": {
-                "description": "用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在",
+                "description": "通过或拒绝某一条申请，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在，406-已审核过该申请",
                 "tags": [
                     "管理员"
                 ],
@@ -2251,8 +2251,45 @@ var doc = `{
                         "type": "string",
                         "description": "content",
                         "name": "content",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"创建成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/submit/check/more": {
+            "post": {
+                "description": "通过或拒绝某一条申请。402-没有需要审批的申请",
+                "tags": [
+                    "管理员"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "提交id",
+                        "name": "submit_ids",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "success",
+                        "name": "success",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "content",
+                        "name": "content",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -2267,7 +2304,7 @@ var doc = `{
         },
         "/submit/create": {
             "post": {
-                "description": "用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领",
+                "description": "用户申请创建，402 用户id不是正整数，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领",
                 "tags": [
                     "管理员"
                 ],
@@ -2373,7 +2410,7 @@ var doc = `{
         },
         "/submit/list": {
             "post": {
-                "description": "列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的",
+                "description": "列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的；不输入type，则返回所有申请",
                 "tags": [
                     "管理员"
                 ],
@@ -2382,8 +2419,7 @@ var doc = `{
                         "type": "integer",
                         "description": "提交id",
                         "name": "type",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -2723,5 +2759,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }
