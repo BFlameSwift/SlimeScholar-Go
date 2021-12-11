@@ -484,7 +484,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	bucket_len := len(agg.Buckets)
 	result_ids := make([]string, 0, 10000)
 	result_map := make(map[string]interface{})
-	if index == "journal" || index == "conference" || index == "fields" {
+	if index == "journal" || index == "conference" || index == "fields" || index == "author" || index == "affiliation" {
 		for _, bucket := range agg.Buckets {
 			if bucket.Key.(string) == "" {
 				continue
@@ -493,7 +493,8 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		}
 		result_map = IdsGetItems(result_ids, index)
 	}
-	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "fields") {
+	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "fields") || index == "author" || index == "affiliation" {
+		fmt.Println("啥也没聚合到", len(result_ids))
 		return make([]interface{}, 0, 0)
 	}
 	for _, bucket := range agg.Buckets {
@@ -502,7 +503,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		if bucket.Key.(string) == "" && bucket_len != 1 {
 			continue
 		}
-		if index == "journal" || index == "conference" || index == "fields" {
+		if index == "journal" || index == "conference" || index == "fields" || index == "author" || index == "affiliation" {
 			m = result_map[bucket.Key.(string)].(map[string]interface{})
 			m["count"] = bucket.DocCount
 			m["id"] = bucket.Key
@@ -840,13 +841,13 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 	return nil
 }
 
+// 高级检索条件设置
 func AdvancedCondition(conditions []interface{}) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 	var condition int
 	orQuery := elastic.NewBoolQuery().Must(parseCondition(conditions[0].(map[string]interface{})))
 	for i := 1; i < len(conditions); i++ {
 		condition = int((conditions[i]).(map[string]interface{})["type"].(float64))
-
 		if condition == 3 {
 			boolQuery.MustNot(parseCondition(conditions[i].(map[string]interface{})))
 		} else if condition == 2 {
@@ -859,6 +860,32 @@ func AdvancedCondition(conditions []interface{}) *elastic.BoolQuery {
 	}
 	boolQuery.Should(orQuery)
 	return boolQuery
+}
+
+// 搜索作者返回结果
+func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index string, boolQuery *elastic.BoolQuery) (searchResult *elastic.SearchResult) {
+	//authorNameAgg := elastic.NewTermsAggregation().Field("name.keyword") // 设置统计字段
+	affiliationNameAgg := elastic.NewTermsAggregation().Field("affiliation_id.keyword")
+	if sort_type == 0 {
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page - 1) * size).Size(size).Do(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		return searchResult
+	} else if sort_type == 1 {
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("paper_count", sort_ascending).Do(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		return searchResult
+	} else if sort_type == 2 {
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("citation_count", sort_ascending).Do(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		return searchResult
+	}
+	return nil
 }
 
 // func main() {

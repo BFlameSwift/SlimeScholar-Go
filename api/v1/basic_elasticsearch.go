@@ -253,30 +253,45 @@ func TitleSelectPaper(c *gin.Context) {
 // NameQueryAuthor doc
 // @description es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
 // @Tags elasticsearch
-// @Param name formData string true "name"
-// @Param is_precise formData bool flase "is_precise"
+// @Param author_name formData string true "author_name"
+// @Param sort_type formData int true "排序方式，1,代表按照论文数量排序，2代表按照被引用书目排序,0 为默认"
+// @Param sort_ascending formData bool true "sort_ascending"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
+// @Param affiliation formData string true "列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表"
 // @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/author/name [POST]
 func NameQueryAuthor(c *gin.Context) {
-	name := c.Request.FormValue("name")
-	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
-	if err != nil {
-		panic(err)
+	name := c.Request.FormValue("author_name")
+	page, _ := strconv.Atoi(c.Request.FormValue("page"))
+	size, _ := strconv.Atoi(c.Request.FormValue("size"))
+	sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
+	sort_ascending, _ := strconv.ParseBool(c.Request.FormValue("sort_ascending"))
+	affiliation_name := c.Request.FormValue("affiliation")
+	affiliations := make([]string, 0)
+	err := json.Unmarshal([]byte(affiliation_name), &affiliations)
+	if err != nil || (sort_type != 0 && sort_type != 2 && sort_type != 1) {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "机构格式错误", "status": 401})
+		return
 	}
+
 	boolQuery := elastic.NewBoolQuery()
-	if is_precise == true {
-		query := elastic.NewMatchPhraseQuery("name.keyword", name)
-		boolQuery.Must(query)
-	} else {
-		query := elastic.NewMatchQuery("name", name)
-		boolQuery.Must(query)
+	query := elastic.NewMatchPhraseQuery("name", name)
+	boolQuery.Must(query)
+	orQuery := elastic.NewBoolQuery()
+	for _, affiliation := range affiliations {
+		fmt.Println(affiliation)
+		orQuery.Should(elastic.NewMatchQuery("affiliation_id.keyword", affiliation))
 	}
-	searchResult, err := service.Client.Search().Index("author").Query(boolQuery).From(0).Size(10).Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
+	boolQuery.Must(orQuery)
+
+	searchResult := service.AuthorQuery(page, size, sort_type, sort_ascending, "author", boolQuery)
+
+	aggregation := make(map[string]interface{})
+	aggregation["affiliation"] = service.Paper_Aggregattion(searchResult, "affiliation")
+
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this authors query %s not existed", name)
@@ -289,7 +304,7 @@ func NameQueryAuthor(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": aggregation})
 	return
 }
 

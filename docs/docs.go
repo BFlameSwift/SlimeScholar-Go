@@ -293,16 +293,45 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "name",
-                        "name": "name",
+                        "description": "author_name",
+                        "name": "author_name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "排序方式，1,代表按照论文数量排序，2代表按照被引用书目排序,0 为默认",
+                        "name": "sort_type",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "description": "is_precise",
-                        "name": "is_precise",
-                        "in": "formData"
+                        "description": "sort_ascending",
+                        "name": "sort_ascending",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表",
+                        "name": "affiliation",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
