@@ -138,7 +138,7 @@ func CheckSubmit(c *gin.Context) {
 }
 
 // CheckSubmits doc
-// @description 通过或拒绝某一条申请。406-没有需要审批的申请
+// @description 通过或拒绝多条申请。406-没有需要审批的申请
 // @Tags 管理员
 // @Param submit_ids formData string true "提交id"
 // @Param success formData string true "success"
