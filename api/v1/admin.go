@@ -17,7 +17,7 @@ import (
 )
 
 // CreateSubmit doc
-// @description 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领
+// @description 用户申请创建，402 用户id不是正整数，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领
 // @Tags 管理员
 // @Param author_name formData string true "作者姓名"
 // @Param affiliation_name formData string true "机构姓名"
@@ -72,12 +72,12 @@ func CreateSubmit(c *gin.Context) {
 }
 
 // CheckSubmit doc
-// @description 用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在
+// @description 通过或拒绝某一条申请，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在，406-已审核过该申请
 // @Tags 管理员
 // @Param submit_id formData string true "提交id"
 // @Param user_id formData string true "用户id"
 // @Param success formData string true "success"
-// @Param content formData string true "content"
+// @Param content formData string false "content"
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/check [POST]
 func CheckSubmit(c *gin.Context) {
@@ -107,11 +107,18 @@ func CheckSubmit(c *gin.Context) {
 	}
 	fmt.Println("check user submit", user.UserID)
 
+	if submit.Status != 0{
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "已审核过该申请", "status": 406})
+		return
+	}
+
 	if success == "false" {
 		submit.Status = 2
+		submit.Content = content
 		service.SendCheckAnswer(user.Email, false, content)
 	} else if success == "true" {
 		submit.Status = 1
+		submit.Content = content
 		service.MakeUserScholar(user, submit)
 		service.SendCheckAnswer(user.Email, true, content)
 		submit.AcceptTime = sql.NullTime{Time: time.Now(), Valid: true}
@@ -130,22 +137,92 @@ func CheckSubmit(c *gin.Context) {
 	return
 }
 
-// ListAllSubmit doc
-// @description 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的
+// CheckSubmits doc
+// @description 通过或拒绝多条申请。406-没有需要审批的申请
 // @Tags 管理员
-// @Param type formData int true "提交id"
+// @Param submit_ids formData string true "提交id"
+// @Param success formData string true "success"
+// @Param content formData string false "content"
+// @Success 200 {string} string "{"success": true, "message": "创建成功"}"
+// @Router /submit/check/more [POST]
+func CheckSubmits(c *gin.Context) {
+	submit_ids_str := c.Request.FormValue("submit_ids")
+	success := c.Request.FormValue("success")
+	content := c.Request.FormValue("content")
+
+	if success != "false" && success != "true"{
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})
+		return
+	}
+
+	submit_ids := strings.Split(submit_ids_str, `,`)
+	len := len(submit_ids)
+	fmt.Println(len)
+	fmt.Println(submit_ids)
+
+	for _,tmp := range submit_ids{
+		submit_id,_ := strconv.ParseUint(tmp, 0, 64)
+		submit, notFound := service.QueryASubmitByID(submit_id)
+		if notFound || submit.Status != 0 {
+			len--
+			continue
+		}
+		fmt.Println(len)
+		user,_ := service.QueryAUserByID(submit.UserID)
+		if success == "false" {
+			submit.Status = 2
+			submit.Content = content
+			service.SendCheckAnswer(user.Email, false, content)
+		} else if success == "true" {
+			submit.Status = 1
+			submit.Content = content
+			service.MakeUserScholar(user, submit)
+			service.SendCheckAnswer(user.Email, true, content)
+			submit.AcceptTime = sql.NullTime{Time: time.Now(), Valid: true}
+		}
+
+		err := global.DB.Save(submit).Error
+		fmt.Println(submit.AcceptTime)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println(len)
+	if len == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有需要审批的申请", "status": 406})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请审批成功", "status": 200})
+	return
+}
+
+
+
+// ListAllSubmit doc
+// @description 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的；不输入type，则返回所有申请
+// @Tags 管理员
+// @Param type formData int false "提交id"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Router /submit/list [POST]
 func ListAllSubmit(c *gin.Context) {
 	mytype_str := c.Request.FormValue("type")
-	mytype, err := strconv.Atoi(mytype_str)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "type不为正整数", "status": 401})
-		return
+
+	submits := make([]model.SubmitScholar,0)
+	if mytype_str == "" || len(mytype_str) == 0{
+		submits = service.QueryAllSubmit()
+	}else{
+		mytype, err := strconv.Atoi(mytype_str)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "type不为正整数", "status": 401})
+			return
+		}
+		submits, _ = service.QuerySubmitByType(mytype)
 	}
 
-	submits, _ := service.QuerySubmitByType(mytype)
 	submits_arr := make([]interface{}, 0)
+	var err error
 	for _, obj := range submits {
 		// accept_time 是sql。Nulltime h格式，一下的操作只是为了将这个格式转化为要求的格式罢了
 		obj_json, err := json.Marshal(obj)

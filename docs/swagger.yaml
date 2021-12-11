@@ -264,12 +264,12 @@ paths:
         in: formData
         name: min_date
         required: true
-        type: integer
+        type: string
       - description: max_date
         in: formData
         name: max_date
         required: true
-        type: integer
+        type: string
       - description: page
         in: formData
         name: page
@@ -486,12 +486,12 @@ paths:
         in: formData
         name: min_date
         required: true
-        type: integer
+        type: string
       - description: max_date
         in: formData
         name: max_date
         required: true
-        type: integer
+        type: string
       - description: page
         in: formData
         name: page
@@ -1479,7 +1479,7 @@ paths:
       - 社交
   /submit/check:
     post:
-      description: 用户申请创建，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在
+      description: 通过或拒绝某一条申请，401 402 用户id，提交id不是正整数，404提交不存在，405 用户不存在，406-已审核过该申请
       parameters:
       - description: 提交id
         in: formData
@@ -1499,7 +1499,31 @@ paths:
       - description: content
         in: formData
         name: content
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "创建成功"}'
+          schema:
+            type: string
+      tags:
+      - 管理员
+  /submit/check/more:
+    post:
+      description: 通过或拒绝多条申请。406-没有需要审批的申请
+      parameters:
+      - description: 提交id
+        in: formData
+        name: submit_ids
         required: true
+        type: string
+      - description: success
+        in: formData
+        name: success
+        required: true
+        type: string
+      - description: content
+        in: formData
+        name: content
         type: string
       responses:
         "200":
@@ -1510,7 +1534,7 @@ paths:
       - 管理员
   /submit/create:
     post:
-      description: 用户申请创建，402 用户id不是正忽视，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406
+      description: 用户申请创建，402 用户id不是正整数，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406
         该用户已经提交过对该学者的认领
       parameters:
       - description: 作者姓名
@@ -1583,12 +1607,11 @@ paths:
       - 管理员
   /submit/list:
     post:
-      description: 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的
+      description: 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的；不输入type，则返回所有申请
       parameters:
       - description: 提交id
         in: formData
         name: type
-        required: true
         type: integer
       responses:
         "200":

@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/utils"
-	"github.com/gin-gonic/gin"
-	"github.com/olivere/elastic/v7"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +12,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/olivere/elastic/v7"
 )
 
 var ESClient *elastic.Client
@@ -823,19 +824,18 @@ func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool
 
 func parseCondition(condition map[string]interface{}) elastic.Query {
 	theMap := condition
-	delete(theMap, "type")
-	key := GetMapAllKey(theMap)[0]
+	key := theMap["category"]
 	switch key {
 	case "source":
-		return elastic.NewMatchQuery("publisher", condition[key])
+		return elastic.NewMatchQuery("publisher", theMap["content"])
 	case "title":
-		return elastic.NewMatchPhraseQuery("paper_title", condition[key])
+		return elastic.NewMatchPhraseQuery("paper_title", theMap["content"])
 	case "author":
-		return elastic.NewMatchPhraseQuery("authors.aname", condition[key])
+		return elastic.NewMatchPhraseQuery("authors.aname", theMap["content"])
 	case "doi":
-		return elastic.NewTermQuery("doi.keyword", condition[key])
+		return elastic.NewTermQuery("doi.keyword", theMap["content"])
 	case "author_affiliation":
-		return elastic.NewMatchPhraseQuery("authors.afname", condition[key])
+		return elastic.NewMatchPhraseQuery("authors.afname", theMap["content"])
 
 	}
 	return nil
