@@ -191,6 +191,7 @@ func CheckSubmits(c *gin.Context) {
 	fmt.Println(len)
 	if len == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有需要审批的申请", "status": 402})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请审批成功", "status": 200})
