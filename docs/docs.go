@@ -321,6 +321,78 @@ var doc = `{
                 }
             }
         },
+        "/es/query/author/affiliation": {
+            "post": {
+                "description": "es 根据机构姓名查询作者：",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "affiliation_name机构名称",
+                        "name": "affiliation_name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "排序方式，1,代表按照论文数量排序，2代表按照被引用书目排序,0 为默认",
+                        "name": "sort_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "sort_ascending",
+                        "name": "sort_ascending",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表",
+                        "name": "affiliations",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取作者成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"作者不存在\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"success\": false, \"message\": \"错误500\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/author/name": {
             "post": {
                 "description": "es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",
@@ -366,7 +438,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表",
-                        "name": "affiliation",
+                        "name": "affiliations",
                         "in": "formData",
                         "required": true
                     }

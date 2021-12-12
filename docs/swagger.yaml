@@ -197,6 +197,55 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/query/author/affiliation:
+    post:
+      description: es 根据机构姓名查询作者：
+      parameters:
+      - description: affiliation_name机构名称
+        in: formData
+        name: affiliation_name
+        required: true
+        type: string
+      - description: 排序方式，1,代表按照论文数量排序，2代表按照被引用书目排序,0 为默认
+        in: formData
+        name: sort_type
+        required: true
+        type: integer
+      - description: sort_ascending
+        in: formData
+        name: sort_ascending
+        required: true
+        type: boolean
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: 列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表
+        in: formData
+        name: affiliations
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取作者成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "作者不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/query/author/name:
     post:
       description: es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
@@ -228,7 +277,7 @@ paths:
         type: integer
       - description: 列表形式，对结果按照机构进行筛选,不筛选传空列表,为机构id的列表
         in: formData
-        name: affiliation
+        name: affiliations
         required: true
         type: string
       responses:
