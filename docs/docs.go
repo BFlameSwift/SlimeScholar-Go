@@ -2550,6 +2550,31 @@ var doc = `{
                 }
             }
         },
+        "/submit/get/detail": {
+            "post": {
+                "description": "获取入驻申请详细信息",
+                "tags": [
+                    "管理员"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "提交id",
+                        "name": "submit_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"信息获取成功\", \"data\": data}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/submit/get/papers": {
             "post": {
                 "description": "根据作者姓名返回姓名相近的作者并返回文献组",
@@ -2940,5 +2965,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }
