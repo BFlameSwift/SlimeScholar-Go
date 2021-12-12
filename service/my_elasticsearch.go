@@ -736,6 +736,25 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 	if paper["conference_id"].(string) != "" {
 		paper["conference"] = GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
+	urlResult, err := GetsByIndexId("url", paper_id)
+	urls, pdfs := make([]string, 0), make([]string, 0)
+	if err == nil {
+
+		urlMap := make(map[string]interface{})
+		_ = json.Unmarshal(urlResult.Source, &urlMap)
+		for _, url := range urlMap["rel"].([]interface{}) {
+			url := url.(map[string]interface{})
+			//fmt.Println(url["utype"], url["utype"] == 3)
+			if url["utype"] == "3" {
+				pdfs = append(pdfs, url["url"].(string))
+			} else {
+				urls = append(urls, url["url"].(string))
+			}
+
+		}
+	}
+	paper["urls"], paper["pdfs"] = urls, pdfs
+
 	return paper
 }
 
