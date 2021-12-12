@@ -12,6 +12,7 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.Cors())
+	r.Use(middleware.LoggerToFile())
 	r.GET("/", v1.Index)
 	Group := r.Group("api/v1/")
 	{
