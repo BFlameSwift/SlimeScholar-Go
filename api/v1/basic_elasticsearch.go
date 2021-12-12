@@ -434,38 +434,44 @@ func DoiQueryPaper(c *gin.Context) {
 	return
 }
 
-//// MainQueryPaper doc
-//// @description es 根据文章标题 与摘要进行模糊搜索
-//// @Tags elasticsearch
-//// @Param main formData string true "main"
-//// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
-//// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
-//// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
-//// @Router /es/query/paper/main [POST]
-//func MainQueryPaper(c *gin.Context) {
-//	main := c.Request.FormValue("main")
-//	boolQuery := elastic.NewBoolQuery()
-//	queryAbstract := elastic.NewMatchQuery("paperAbstract", main)
-//	queryTitle := elastic.NewMatchQuery("title", main)
-//	boolQuery.Should(queryAbstract, queryTitle)
-//	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).From(0).Size(10).Do(context.Background())
-//	if err != nil {
-//		panic(err)
-//	}
-//	if searchResult.TotalHits() == 0 {
-//		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
-//		fmt.Printf("this title or abstract query %s not existed", main)
-//		return
-//	}
-//	fmt.Println("search title or abstract", main, "hits :", searchResult.TotalHits())
-//	var paperSequences []interface{} = make([]interface{}, 0, 1000)
-//	for _, paper := range searchResult.Hits.Hits {
-//		paperSequences = append(paperSequences, paper.Source)
-//	}
-//	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-//		"details": paperSequences})
-//	return
-//}
+// MainQueryPaper doc
+// @description es 根据文章标题 与摘要进行模糊搜索
+// @Tags elasticsearch
+// @Param main formData string true "main"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数错误"}"
+// @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
+// @Router /es/query/paper/main [POST]
+func MainQueryPaper(c *gin.Context) {
+	main := c.Request.FormValue("main")
+	page, _ := strconv.Atoi(c.Request.FormValue("page"))
+	size, _ := strconv.Atoi(c.Request.FormValue("size"))
+	boolQuery := elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("title", main)).Should(elastic.NewMatchPhraseQuery("abstract", main))
+
+	searchResult, err := service.Client.Search().Index("abstract").Query(boolQuery).Size(size).From((page - 1) * size).Do(context.Background())
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "参数错误", "status": 401})
+		return
+	}
+	if searchResult.TotalHits() == 0 {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		return
+	}
+	fmt.Println("search publisher", main, "hits :", searchResult.TotalHits())
+
+	var paperSequences []interface{} = make([]interface{}, 0, 1000)
+	paperIds := make([]string, 0, 1000)
+	for _, hit := range searchResult.Hits.Hits {
+		paperIds = append(paperIds, hit.Id)
+	}
+	paperSequences = service.GetPapers(paperIds)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
+	return
+}
 
 // AdvancedSearch doc
 // @description es 高级搜索
@@ -1010,6 +1016,8 @@ func FieldQueryPaper(c *gin.Context) {
 // @description es 根据摘要查询文献：精确查询,is_precise=0 为模糊匹配，为1为精准匹配
 // @Tags elasticsearch
 // @Param abstract formData string true "abstract"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
 // @Param is_precise formData bool true "is_precise"
 // @Success 200 {string} string "{"success": true, "message": "获取作者成功"}"
 // @Failure 404 {string} string "{"success": false, "message": "作者不存在"}"
@@ -1017,11 +1025,13 @@ func FieldQueryPaper(c *gin.Context) {
 // @Router /es/query/paper/abstract [POST]
 func AbstractQueryPaper(c *gin.Context) {
 	abstract := c.Request.FormValue("abstract")
+	page, _ := strconv.Atoi(c.Request.FormValue("page"))
+	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("abstract", "abstract", abstract, 1, 10, is_precise)
+	searchResult := service.PaperQueryByField("abstract", "abstract", abstract, page, size, is_precise)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", abstract)
