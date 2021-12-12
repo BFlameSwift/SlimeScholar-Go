@@ -70,6 +70,37 @@ func GetAuthor(c *gin.Context) {
 	return
 }
 
+// GetAffiliation doc
+// @description 获取es会议详细信息
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 会议ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/affiliation [POST]
+func GetAffiliation(c *gin.Context) {
+	thisId := c.Request.FormValue("id")
+	var mapParam map[string]string = make(map[string]string)
+	mapParam["index"], mapParam["id"], mapParam["bodyJson"] = "affiliation", thisId, ""
+
+	_, errorGet := service.Gets(mapParam)
+	if errorGet != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "索引不存在", "status": 404})
+		fmt.Println("this id %s not existed", thisId)
+		return
+	}
+	ret, _ := service.Gets(mapParam)
+	var affiliationMap map[string]interface{} = make(map[string]interface{})
+	bodyByte, _ := json.Marshal(ret.Source)
+	err := json.Unmarshal(bodyByte, &affiliationMap)
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Println(affiliationMap)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": affiliationMap})
+	return
+}
+
 // GetConference doc
 // @description 获取es会议详细信息
 // @Tags elasticsearch

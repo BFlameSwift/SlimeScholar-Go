@@ -494,7 +494,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 		}
 		result_map = IdsGetItems(result_ids, index)
 	}
-	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "fields") || index == "author" || index == "affiliation" {
+	if len(result_map) == 0 && (index == "journal" || index == "conference" || index == "fields" || index == "author" || index == "affiliation") {
 		fmt.Println("啥也没聚合到", len(result_ids))
 		return make([]interface{}, 0, 0)
 	}
