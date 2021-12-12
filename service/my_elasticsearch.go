@@ -727,7 +727,17 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 		paper["reference_msg"] = GetPapers(reference_ids)
 	}
 
-	paper["citation_msg"] = make([]string, 0)
+	citationResult, err := GetsByIndexId("citation", paper_id)
+	if err != nil {
+		paper["citation_msg"] = make([]string, 0)
+	} else {
+		citation_ids_interfaces := PaperRelMakeMap(string(citationResult.Source))
+		citation_ids := make([]string, 0, 1000)
+		for _, str := range citation_ids_interfaces {
+			citation_ids = append(citation_ids, str.(string))
+		}
+		paper["citation_msg"] = GetPapers(citation_ids)
+	}
 	paper["journal"] = make(map[string]interface{})
 	if paper["journal_id"].(string) != "" {
 		paper["journal"] = GetsByIndexIdWithout("journal", paper["journal_id"].(string)).Source
