@@ -224,7 +224,7 @@ func ListAllSubmit(c *gin.Context) {
 	submits_arr := make([]interface{}, 0)
 	var err error
 	for _, obj := range submits {
-		// accept_time 是sql。Nulltime h格式，一下的操作只是为了将这个格式转化为要求的格式罢了
+		// accept_time 是sql.Nulltime 的格式，以下的操作只是为了将这个格式转化为要求的格式罢了
 		obj_json, err := json.Marshal(obj)
 		if err != nil {
 			panic(err)
@@ -290,4 +290,52 @@ func PaperGetAuthors(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "authors": author_maps, "author_count": searchResult.TotalHits()})
 	return
+}
+
+
+// GetSubmitDetail doc
+// @description 获取入驻申请详细信息
+// @Tags 管理员
+// @Param submit_id formData string true "提交id"
+// @Success 200 {string} string "{"success": true, "message": "信息获取成功", "data": data}"
+// @Router /submit/get/detail [POST]
+func GetSubmitDetail(c *gin.Context){
+	submit_id_u64, err := strconv.ParseUint(c.Request.FormValue("submit_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "提交ID不为正整数", "status": 402})
+		return
+	}
+	submit, notFound := service.QueryASubmitByID(submit_id_u64)
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "没有该提交", "status": 404})
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["author_id"] = submit.AuthorID
+	data["real_name"] = submit.AuthorName
+	data["work_email"] = submit.WorkEmail
+	data["affiliation_name"] = submit.AffiliationName
+	data["homepage"] = submit.HomePage
+	data["papers"] = make([]map[string]interface{},0)
+	data["fields"] = strings.Split(submit.Fields, `,`)
+
+	author_id := submit.AuthorID
+	papers := service.GetAuthorAllPaper(author_id)
+	data_papers := make([]map[string]interface{},0)
+	// fmt.Println(papers)
+	for _,tmp := range papers{
+		paper := make(map[string]interface{})
+		fmt.Println(tmp.(map[string]interface{})["paper_id"])
+		paper["paper_id"] = tmp.(map[string]interface{})["paper_id"]
+		paper["paper_title"] = tmp.(map[string]interface{})["paper_title"]
+		paper["publisher"] = tmp.(map[string]interface{})["publisher"]
+		paper["year"] = tmp.(map[string]interface{})["year"]
+		paper["authors"] = tmp.(map[string]interface{})["authors"]
+		data_papers = append(data_papers,paper)
+	}
+	data["papers"] = data_papers
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "data": data})
+
 }
