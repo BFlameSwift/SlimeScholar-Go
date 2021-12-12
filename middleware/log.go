@@ -27,8 +27,15 @@ func LoggerToFile() gin.HandlerFunc {
 	logger.Out = src
 	//设置日志级别
 	logger.SetLevel(logrus.DebugLevel)
+	logger.SetFormatter(&logrus.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
 	//设置日志格式
-	logger.SetFormatter(&logrus.TextFormatter{})
+	logger.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+	//设置日志格式
+	//logger.SetFormatter(&logrus.TextFormatter{})
 	return func(c *gin.Context) {
 		// 开始时间
 		startTime := time.Now()
