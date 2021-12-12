@@ -7,6 +7,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gorm.io/gorm"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -208,4 +209,62 @@ func SortPapers(papers []interface{}, sort_type int) []interface{} {
 		}
 	})
 	return inter
+}
+func GetPaperAuthorsName(paper map[string]interface{}) (ret []string) {
+
+	for _, author := range paper["authors"].([]interface{}) {
+
+		ret = append(ret, author.(map[string]interface{})["author_name"].(string))
+	}
+	return ret
+}
+func GetPaperPages(paper map[string]interface{}) string {
+	ret := ""
+	if paper["first_page"].(string) != "" {
+		ret += ":" + paper["first_page"].(string)
+		if paper["last_page"].(string) != "" {
+			ret += "-" + paper["last_page"].(string)
+		}
+		ret += "."
+	}
+	return ret
+}
+
+// 获取引用文献的最后一段
+func GetPaperCiteType(paper map[string]interface{}) string {
+	doctype := paper["doctype"].(string)
+	if doctype == "Patent" {
+		return "[P]."
+	} else if doctype == "Conference" {
+		return "[C]."
+	} else if doctype == "Journal" {
+		journal, err := GetsByIndexId("journal", paper["journal_id"].(string))
+		journalName := ""
+		if err == nil {
+			journalMap := make(map[string]interface{})
+			_ = json.Unmarshal(journal.Source, &journalMap)
+			journalName += journalMap["name"].(string)
+		}
+		return "[J]." + journalName + "," + paper["year"].(string) + "," + paper["volume"].(string) + GetPaperPages(paper)
+	} else {
+		return "[M]" + "." + paper["publisher"].(string) + "," + paper["year"].(string) + GetPaperPages(paper)
+	}
+	//else if doctype == "BookChapter" || doctype == "Book" {
+	//	return "M"
+	//}
+}
+func CitePaper(paperId string) (ret []interface{}) {
+	paper := GetSimplePaper(paperId)
+	authors := strings.Join(GetPaperAuthorsName(paper), ",")
+	//fmt.Println(authors)
+	title := paper["paper_title"].(string)
+	//fmt.Println(title)
+	citedType := GetPaperCiteType(paper)
+	//fmt.Println(citedType)
+	gbt := make(map[string]string)
+	gbt["GB/T 7714"] = authors + title + citedType
+	ret = append(ret, gbt)
+	//fmt.Println(gbt["GB/T 7714"])
+
+	return ret
 }

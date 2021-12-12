@@ -34,6 +34,7 @@ func GetPaper(c *gin.Context) {
 	}
 	paper := service.GetFullPaper(thisId)
 	paper = service.FullPaperSocial(paper)
+	service.CitePaper(thisId)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": paper})
 	return

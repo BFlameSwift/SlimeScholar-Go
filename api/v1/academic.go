@@ -159,3 +159,24 @@ func FullPapersSocial(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "papers_attribute": service.PapersGetIsCollectedByUser(paperIds, user)})
 	return
 }
+
+// CitePaper doc
+// @description 根据paper_id 获取引用文献格式，返回的是一个字典数组
+// @Tags 学者门户
+// @Param paper_id formData string true "paper_id"
+// @Success 200 {string} string "{"success": true, "message": "获取成共"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数格式错误"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
+// @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
+// @Router /scholar/cite_paper [POST]
+func CitePaper(c *gin.Context) {
+
+	paper_id := c.Request.FormValue("paper_id")
+	_, err := service.GetsByIndexId("paper", paper_id)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "detail": service.CitePaper(paper_id)})
+	return
+}
