@@ -1652,6 +1652,22 @@ paths:
             type: string
       tags:
       - 管理员
+  /submit/get/detail:
+    post:
+      description: 获取入驻申请详细信息
+      parameters:
+      - description: 提交id
+        in: formData
+        name: submit_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "信息获取成功", "data": data}'
+          schema:
+            type: string
+      tags:
+      - 管理员
   /submit/get/papers:
     post:
       description: 根据作者姓名返回姓名相近的作者并返回文献组
