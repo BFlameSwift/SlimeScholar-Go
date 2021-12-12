@@ -382,7 +382,7 @@ func GetSubmitDetail(c *gin.Context){
 }
 
 
-func LogAnalize(filename string)(dest []map[string]interface{}){
+func LogAnalize(filename string)(data []interface{}){
 	f, e := os.Open(filename)
 	var msgList []Msg
 	if e != nil {
@@ -395,19 +395,27 @@ func LogAnalize(filename string)(dest []map[string]interface{}){
 			}
 			line := buf.Text()
 			line = strings.TrimSpace(line) //去掉前后空格
-			line_list := strings.Split(line, ` level=info `)
+			// line_list := strings.Split(line, ` level=info `)
 			var tmp Msg
-			end := strings.Index(line_list[0], "T")
-			start := strings.Index(line_list[0], "=")
-			tmp.time = line_list[0][start+2:end]
-			tmp.msg = line_list[1]
+			// end := strings.Index(line_list[0], "T")
+			// start := strings.Index(line_list[0], "=")
+			line_map := make(map[string]string)
+			_ = json.Unmarshal([]byte(line), &line_map)
+			// tmp.time = line_list[0][start+2:end]
+			// tmp.msg = line_list[1]
+			fmt.Println(line_map["time"])
+			time,_ := time.ParseInLocation("2006-01-02 15:04:05", line_map["time"], time.Local)
+			fmt.Println(time)
+			tmp.time = time.Format("2006-01-02")
+			// fmt.Println(tmp.time)
+			tmp.msg = line_map["msg"]
 			// fmt.Println(tmp)
 			msgList = append(msgList, tmp)
 		}
 	}
 
 	map_tmp := make(map[string]interface{},0)
-	dest = make([]map[string]interface{},0)
+	dest := make([]map[string]interface{},0)
 	for i,_ := range msgList{
     	ai := msgList[i]
     	if _,ok := map_tmp[ai.time];!ok{
@@ -429,5 +437,13 @@ func LogAnalize(filename string)(dest []map[string]interface{}){
     	}
 	}
 	fmt.Println(dest)
-	return dest
+
+	data = make([]interface{},0)
+	for _,tmp := range dest{
+		var a [2]interface{}
+		a[0] = tmp["time"]
+		a[1] = tmp["count"]
+		data = append(data,a)
+	}
+	return data
 }
