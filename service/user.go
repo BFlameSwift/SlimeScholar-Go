@@ -284,3 +284,11 @@ func UserScholarInfo(m map[string]interface{}) (ret_map map[string]interface{}) 
 
 	return ret_map
 }
+
+func QueryUserCount()(userCount int, member int){
+	users := make([]model.User,0)
+	members := make([]model.User,0)
+	global.DB.Find(&users)
+	global.DB.Where("user_type = ?",1).Find(&members)
+	return len(users),len(members)
+}

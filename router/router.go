@@ -19,6 +19,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		SubmitRouter.POST("/check", v1.CheckSubmit)
 		SubmitRouter.POST("/check/more", v1.CheckSubmits)
 		SubmitRouter.POST("/list", v1.ListAllSubmit)
+		SubmitRouter.POST("/count", v1.SubmitCount)
 		SubmitRouter.POST("/get/papers", v1.PaperGetAuthors)
 		SubmitRouter.POST("/get/detail", v1.GetSubmitDetail)
 	}

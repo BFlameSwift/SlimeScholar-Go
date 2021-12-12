@@ -14,7 +14,48 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"gitee.com/online-publish/slime-scholar-go/utils"
+	"os"
+	"bufio"
+
 )
+
+type Msg struct {
+	time, msg string
+}
+
+
+// SubmitCount doc
+// @description 获取统计信息
+// @Tags 管理员
+// @Success 200 {string} string "{"success": true, "message": "执行成功"}"
+// @Router /submit/count [POST]
+func SubmitCount(c *gin.Context){
+	data := make(map[string]interface{},0)
+
+	paper_map := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
+		panic(err)
+	}
+	author_map := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/author/_count")), &author_map); err != nil {
+		panic(err)
+	}
+	data["literCount"] = paper_map["count"]
+	data["authorCount"] = author_map["count"]
+
+	userCount,memberCount := service.QueryUserCount()
+	data["userCount"] = userCount
+	data["memberCount"] = memberCount
+
+	filename := "./scholar.log"
+	activeIndex := LogAnalize(filename)
+	data["activeIndex"] = activeIndex
+
+	data["responseTime"] = 310
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": data})
+}
 
 // CreateSubmit doc
 // @description 用户申请创建，402 用户id不是正整数，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领
@@ -338,4 +379,55 @@ func GetSubmitDetail(c *gin.Context){
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "获取成功", "status": 200, "data": data})
 
+}
+
+
+func LogAnalize(filename string)(dest []map[string]interface{}){
+	f, e := os.Open(filename)
+	var msgList []Msg
+	if e != nil {
+		fmt.Println("File error.")
+	} else {
+		buf := bufio.NewScanner(f)
+		for {
+			if !buf.Scan() {
+				break
+			}
+			line := buf.Text()
+			line = strings.TrimSpace(line) //去掉前后空格
+			line_list := strings.Split(line, ` level=info `)
+			var tmp Msg
+			end := strings.Index(line_list[0], "T")
+			start := strings.Index(line_list[0], "=")
+			tmp.time = line_list[0][start+2:end]
+			tmp.msg = line_list[1]
+			// fmt.Println(tmp)
+			msgList = append(msgList, tmp)
+		}
+	}
+
+	map_tmp := make(map[string]interface{},0)
+	dest = make([]map[string]interface{},0)
+	for i,_ := range msgList{
+    	ai := msgList[i]
+    	if _,ok := map_tmp[ai.time];!ok{
+        	tmp := make(map[string]interface{},0)
+			tmp["time"] = ai.time
+			tmp["count"] = 1
+			dest = append(dest,tmp)
+        	map_tmp[ai.time] = ai;
+    	}else{
+        	for j,_ := range dest{
+            	var dj = dest[j];
+            	if(dj["time"].(string) == ai.time){
+                	count := dj["count"].(int)
+					dj["count"] = count+1
+					dest[j] = dj
+                	break
+            	}
+        	}
+    	}
+	}
+	fmt.Println(dest)
+	return dest
 }
