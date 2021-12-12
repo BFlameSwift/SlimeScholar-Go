@@ -2483,6 +2483,22 @@ var doc = `{
                 }
             }
         },
+        "/submit/count": {
+            "post": {
+                "description": "获取统计信息",
+                "tags": [
+                    "管理员"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"执行成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/submit/create": {
             "post": {
                 "description": "用户申请创建，402 用户id不是正整数，404用户不存在，401 申请创建失败。后端炸了，405！！！该作者已被成功认领,并直接返回认领了该作者的学者姓名，406 该用户已经提交过对该学者的认领",
