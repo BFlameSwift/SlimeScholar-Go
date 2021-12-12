@@ -17,19 +17,20 @@ func LoggerToFile() gin.HandlerFunc {
 	//日志文件
 	fileName := path.Join(logFilePath, logFileName)
 	//写入文件
-	src, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	src, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_SYNC, 0666)
 	if err != nil {
 		fmt.Println("err", err)
 	}
+
 	//实例化
 	logger := logrus.New()
 	//设置输出
 	logger.Out = src
 	//设置日志级别
 	logger.SetLevel(logrus.DebugLevel)
-	logger.SetFormatter(&logrus.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+	//logger.SetFormatter(&logrus.TextFormatter{
+	//	TimestampFormat: "2006-01-02 15:04:05",
+	//})
 	//设置日志格式
 	logger.SetFormatter(&logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
