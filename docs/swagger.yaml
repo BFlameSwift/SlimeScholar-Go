@@ -1317,6 +1317,41 @@ paths:
       - Authorization: []
       tags:
       - 社交
+  /social/follow/user:
+    post:
+      description: 新建标签
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      - description: 被关注用户ID
+        in: formData
+        name: be_user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "标签创建成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /social/get/collect/paper:
     post:
       description: 查看用户文章列表
@@ -1612,6 +1647,45 @@ paths:
             type: string
         "400":
           description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
+  /social/unfollow/user:
+    post:
+      description: 新建标签
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      - description: 被取消关注用户ID
+        in: formData
+        name: be_user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "标签创建成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "402":
+          description: '{"success": false, "message": "用户未关注该被关注用户"}'
           schema:
             type: string
         "404":

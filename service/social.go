@@ -236,28 +236,29 @@ func PapersGetIsCollectedByUser(paperIds []string, user model.User) (ret []inter
 			}
 		}
 		ret = append(ret, item)
-
 	}
 	return ret
 }
 
 // 根据userid与be_follow_user_id 实现关注操作，user关注列表增加，befollow被关注列表增加
-func FollowUser(followedUserId uint64, userId uint64) {
+func FollowUser(userId uint64, followedUserId uint64) {
 	userIdStr := strconv.Itoa(int(userId))
 	followedUserIdStr := strconv.Itoa(int(followedUserId))
 	RedisSaveValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr)
 	RedisSaveValue(utils.BE_FOLLOWED_USER_PREFIX+followedUserIdStr, userIdStr)
 }
 
-//func CanCelFollowUser(followedUserId uint64, userId uint64) bool {
-//	userIdStr := strconv.Itoa(int(userId))
-//	followedUserIdStr := strconv.Itoa(int(followedUserId))
-//	/// 用户未关注，却仍然使用
-//	if !RedisKeyIsExistValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr) {
-//		return false
-//	}
-//
-//}
+func CanCelFollowUser(userId uint64, followedUserId uint64) bool {
+	userIdStr := strconv.Itoa(int(userId))
+	followedUserIdStr := strconv.Itoa(int(followedUserId))
+	/// 用户未关注，却仍然使用
+	if !RedisKeyIsExistValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr) {
+		return false
+	}
+	RedisRemoveValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr)
+	RedisRemoveValue(utils.BE_FOLLOWED_USER_PREFIX+followedUserIdStr, userIdStr)
+	return true
+}
 
 // 根据userid与be_follow_user_id 实现关注操作，user关注列表增加，befollow被关注列表增加
 func GetUserFollowingList(userId uint64) (userIdList []uint64) {

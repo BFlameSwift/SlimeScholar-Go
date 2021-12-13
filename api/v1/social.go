@@ -737,3 +737,64 @@ func VerifyLogin(userID uint64, authorization string, c *gin.Context) (user mode
 	}
 	return user, false
 }
+
+// FollowUser doc
+// @description 新建标签
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData int true "用户ID"
+// @Param be_user_id formData int true "被关注用户ID"
+// @Success 200 {string} string "{"success": true, "message": "标签创建成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/follow/user [POST]
+func FollowUser(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	beFollower, _ := strconv.ParseUint(c.Request.FormValue("be_user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+	follower, notFound := service.QueryAUserByID(beFollower)
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": true, "status": 404, "message": "被关注用户不存在"})
+		return
+	}
+	service.FollowUser(userID, follower.UserID)
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签创建成功"})
+}
+
+// UnFollowUser doc
+// @description 新建标签
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData int true "用户ID"
+// @Param be_user_id formData int true "被取消关注用户ID"
+// @Success 200 {string} string "{"success": true, "message": "标签创建成功"}"
+// @Failure 402 {string} string "{"success": false, "message": "用户未关注该被关注用户"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/unfollow/user [POST]
+func UnFollowUser(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	beFollower, _ := strconv.ParseUint(c.Request.FormValue("be_user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+	_, notFound := service.QueryAUserByID(beFollower)
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": true, "status": 404, "message": "被关注用户不存在"})
+		return
+	}
+	success := service.CanCelFollowUser(userID, beFollower)
+	if !success {
+		c.JSON(http.StatusOK, gin.H{"success": true, "status": 402, "message": "用户未关注该被关注用户"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签创建成功"})
+}

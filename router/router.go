@@ -84,5 +84,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		SocialRouter.POST("/get/comments", v1.GetPaperComment)
 		SocialRouter.POST("/get/replies", v1.GetComReply)
 		SocialRouter.POST("/get/paper", v1.FullPapersSocial)
+
+		SocialRouter.POST("/follow/user", v1.FollowUser)
+		SocialRouter.POST("/unfollow/user", v1.UnFollowUser)
 	}
 }
