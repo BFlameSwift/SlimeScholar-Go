@@ -1925,6 +1925,30 @@ paths:
             type: string
       tags:
       - 管理员
+  /submit/login:
+    post:
+      description: "登录 200-成功\t401-用户不存在\t402-密码错误\t403-用户尚未确认邮箱\t405-用户不是管理员"
+      parameters:
+      - description: 用户名
+        in: formData
+        name: username
+        type: string
+      - description: 用户邮箱
+        in: formData
+        name: email
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "登录成功", "detail": user的信息}'
+          schema:
+            type: string
+      tags:
+      - 管理员
   /user/confirm:
     post:
       description: 验证邮箱

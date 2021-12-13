@@ -447,3 +447,57 @@ func LogAnalize(filename string)(data []interface{}){
 	}
 	return data
 }
+
+// AdminLogin doc
+// @description 登录 200-成功	401-用户不存在	402-密码错误	403-用户尚未确认邮箱	405-用户不是管理员
+// @Tags 管理员
+// @Param username formData string false "用户名"
+// @Param email formData string false "用户邮箱"
+// @Param password formData string true "密码"
+// @Success 200 {string} string "{"success": true, "message": "登录成功", "detail": user的信息}"
+// @Router /submit/login [POST]
+func AdminLogin(c *gin.Context) {
+	username := c.Request.FormValue("username")
+	email := c.Request.FormValue("email")
+	password := c.Request.FormValue("password")
+	user, notFound := model.User{}, true
+	if username != "" {
+		user, notFound = service.QueryAUserByUsername(username)
+	} else {
+		user, notFound = service.QueryAUserByEmail(email)
+	}
+	if notFound {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户不存在", "status": 401})
+	} else {
+		if user.Password != password {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误", "status": 402})
+		} else{
+			if user.UserType != 2{
+				c.JSON(http.StatusOK, gin.H{"success": false, "message": "该用户不是管理员", "status": 405})
+			}else{
+				if user.HasConfirmed == false {
+					c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户尚未确认邮箱", "status": 403})
+				} else {
+					claims := &model.JWTClaims{
+						UserID:   user.UserID,
+						Username: user.Username,
+						Password: password,
+					}
+					claims.IssuedAt = time.Now().Unix()
+					claims.ExpiresAt = time.Now().Add(time.Second * time.Duration(utils.ExpireTime)).Unix()
+					signedToken, err := service.GetToken(claims)
+					if err != nil {
+						c.String(http.StatusNotFound, err.Error())
+						return
+					}
+					c.JSON(http.StatusOK, gin.H{
+						"success":       true,
+						"message":       "登录成功",
+						"detail":        user,
+						"status":        200,
+						"Authorization": signedToken})
+				}
+			}
+		}
+	}
+}
