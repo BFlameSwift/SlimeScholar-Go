@@ -739,7 +739,7 @@ func VerifyLogin(userID uint64, authorization string, c *gin.Context) (user mode
 }
 
 // FollowUser doc
-// @description 新建标签
+// @description 关注用户
 // @Tags 社交
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
@@ -767,7 +767,7 @@ func FollowUser(c *gin.Context) {
 }
 
 // UnFollowUser doc
-// @description 新建标签
+// @description 取消关注用户
 // @Tags 社交
 // @Security Authorization
 // @Param Authorization header string false "Authorization"
@@ -797,4 +797,60 @@ func UnFollowUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签创建成功"})
+}
+
+// GetUserFollowingList doc
+// @description 新建
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData int true "用户ID"
+// @Success 200 {string} string "{"success": true, "message": "查找成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/get/user/following [POST]
+func GetUserFollowingList(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+
+	followingList := service.GetUserFollowingList(userID)
+	userList := make([]model.User, 0)
+	for _, id := range followingList {
+		thisUser, _ := service.QueryAUserByID(id)
+		userList = append(userList, thisUser)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "查找成功", "user_list": userList})
+}
+
+// GetUserFollowedList doc
+// @description 获取用户的粉丝列表
+// @Tags 社交
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData int true "用户ID"
+// @Success 200 {string} string "{"success": true, "message": "查找成功"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Failure 400 {string} string "{"success": false, "message": "用户未登录"}"
+// @Router /social/get/user/followed [POST]
+func GetUserFollowedList(c *gin.Context) {
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	_, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+
+	followingList := service.GetUserFollowedList(userID)
+	userList := make([]model.User, 0)
+	for _, id := range followingList {
+		thisUser, _ := service.QueryAUserByID(id)
+		userList = append(userList, thisUser)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "查找成功", "user_list": userList})
 }

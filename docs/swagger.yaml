@@ -1319,7 +1319,7 @@ paths:
       - 社交
   /social/follow/user:
     post:
-      description: 新建标签
+      description: 关注用户
       parameters:
       - description: Authorization
         in: header
@@ -1555,6 +1555,66 @@ paths:
       - Authorization: []
       tags:
       - 社交
+  /social/get/user/followed:
+    post:
+      description: 获取用户的粉丝列表
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "查找成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
+  /social/get/user/following:
+    post:
+      description: 新建
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "查找成功"}'
+          schema:
+            type: string
+        "400":
+          description: '{"success": false, "message": "用户未登录"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 社交
   /social/like/cancel:
     post:
       description: 取消点赞
@@ -1659,7 +1719,7 @@ paths:
       - 社交
   /social/unfollow/user:
     post:
-      description: 新建标签
+      description: 取消关注用户
       parameters:
       - description: Authorization
         in: header

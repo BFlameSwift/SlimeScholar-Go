@@ -87,5 +87,7 @@ func InitRouter(Router *gin.RouterGroup) {
 
 		SocialRouter.POST("/follow/user", v1.FollowUser)
 		SocialRouter.POST("/unfollow/user", v1.UnFollowUser)
+		SocialRouter.POST("/get/user/following", v1.GetUserFollowingList)
+		SocialRouter.POST("/get/user/followed", v1.GetUserFollowingList)
 	}
 }
