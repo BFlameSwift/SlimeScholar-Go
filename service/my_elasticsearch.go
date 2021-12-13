@@ -10,7 +10,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
@@ -24,8 +23,7 @@ var Timeout = "1s" //超时时间
 
 var host = utils.ELASTIC_SEARCH_HOST //这个是es服务地址,我的是配置到配置文件中了，测试的时候可以写死 比如 http://127.0.0.1:9200
 
-//下面定义的是 聚合时候用的一些参数
-
+// 初始化es链接信息
 func Init() {
 	elastic.SetSniff(false) //必须 关闭 Sniffing
 	//es 配置
@@ -57,7 +55,7 @@ func Init() {
 	ESClient = Client
 }
 
-//创建
+//根据index用id创建对应的文档
 func Create(Params map[string]string) string {
 	//使用字符串
 	var res *elastic.IndexResponse
@@ -115,26 +113,7 @@ func Update(Params map[string]string) string {
 
 }
 
-//修改
-func RealButerrorUpdate(Params map[string]string) string {
-	var res *elastic.UpdateResponse
-	var err error
-	script := elastic.NewScript("ctx._source.retweets += params.num").Param("num", 1)
-	res, err = Client.Update().
-		Index(Params["index"]).
-		Type(Params["type"]).
-		Id(Params["id"]).
-		Script(script).
-		Do(context.Background())
-
-	if err != nil {
-		println(err.Error())
-		panic(err)
-	}
-	fmt.Printf("update age %s\n", res.Result)
-	return res.Result
-
-}
+//根据index以及id获取文档信息，并返回错误信息
 func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
@@ -146,15 +125,11 @@ func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	//}
 	return get1, err
 }
-func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
-	//通过id查找
-	var get1 *elastic.GetResult
-	//var err error
 
+//根据index以及id获取文档信息，但不返回错误信息
+func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
+	var get1 *elastic.GetResult
 	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
-	//if err != nil {
-	//	panic(err)
-	//}
 	return get1
 }
 
@@ -172,105 +147,6 @@ func Gets(Params map[string]string) (*elastic.GetResult, error) {
 	return get1, err
 }
 
-//搜索
-func Query(Params map[string]string) *elastic.SearchResult {
-	var res *elastic.SearchResult
-	var err error
-	//取所有
-	res, err = Client.Search(Params["index"]).Type(Params["type"]).Do(context.Background())
-	if len(Params["queryString"]) > 0 {
-		//字段相等
-		q := elastic.NewQueryStringQuery(Params["queryString"])
-		res, err = Client.Search(Params["index"]).Type(Params["type"]).Query(q).Do(context.Background())
-	}
-	if err != nil {
-		println(err.Error())
-	}
-
-	//if res.Hits.TotalHits > 0 {
-	//	fmt.Printf("Found a total of %d Employee \n", res.Hits.TotalHits)
-	//}
-	return res
-}
-
-//简单分页 可用
-
-func List(Params map[string]string) *elastic.SearchResult {
-	var res *elastic.SearchResult
-	var err error
-	size, _ := strconv.Atoi(Params["size"])
-	page, _ := strconv.Atoi(Params["page"])
-	q := elastic.NewQueryStringQuery(Params["queryString"])
-
-	//排序类型 desc asc es 中只使用 bool 值  true or false
-	sort_type := true
-	if Params["sort_type"] == "desc" {
-		sort_type = false
-	}
-	//fmt.Printf(" sort info  %s,%s\n", Params["sort"],Params["sort_type"])
-	if size < 0 || page < 0 {
-		fmt.Printf("param error")
-		return res
-	}
-	if len(Params["queryString"]) > 0 {
-		res, err = Client.Search(Params["index"]).
-			Type(Params["type"]).
-			Query(q).
-			Size(size).
-			From((page)*size).
-			Sort(Params["sort"], sort_type).
-			Timeout(Timeout).
-			Do(context.Background())
-
-	} else {
-		res, err = Client.Search(Params["index"]).
-			Type(Params["type"]).
-			Size(size).
-			From((page)*size).
-			Sort(Params["sort"], sort_type).
-			//SortBy(elastic.NewFieldSort("add_time").UnmappedType("long").Desc(), elastic.NewScoreSort()).
-			Timeout(Timeout).
-			Do(context.Background())
-	}
-
-	if err != nil {
-		println("func list error:" + err.Error())
-	}
-	return res
-
-}
-
-//聚合 平均 可用
-func Aggregation(Params map[string]string) *elastic.SearchResult {
-	var res *elastic.SearchResult
-	var err error
-	//需要聚合的指标 求平均
-	avg := elastic.NewAvgAggregation().Field(Params["avg"])
-	//单位时间和指定字段
-	aggs := elastic.NewDateHistogramAggregation().
-		Interval("day").
-		Field(Params["field"]).
-		//TimeZone("Asia/Shanghai").
-		SubAggregation(Params["agg_name"], avg)
-
-	res, err = Client.Search(Params["index"]).
-		Type(Params["type"]).
-		Size(0).
-		Aggregation(Params["aggregation_name"], aggs).
-		//Sort(Params["sort"],sort_type).
-		Timeout(Timeout).
-		Do(context.Background())
-
-	if err != nil {
-		println("func Aggregation error:" + err.Error())
-	}
-	println("func Aggregation here 297")
-	return res
-}
-func GetPaperById(id string) {
-	// TODO
-}
-
 // 匹配搜索，非完全匹配按照index和字段搜索
 func QueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	boolQuery := elastic.NewBoolQuery()
@@ -285,6 +161,8 @@ func QueryByField(index string, field string, content string, page int, size int
 
 	return searchResult
 }
+
+// 通用的paper搜索部分，包含对各种类型的聚合
 func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool) *elastic.SearchResult {
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
@@ -318,6 +196,8 @@ func MatchPhraseQuery(index string, field string, content string, page int, size
 	}
 	return searchResult
 }
+
+//根据多个id，使用mget一次get多个文档，返回列表格式
 func IdsGetList(id_list []string, index string) (retList []interface{}) {
 	mul_item := Client.MultiGet()
 	fmt.Println("mget : ", index)
@@ -380,12 +260,14 @@ func IdsGetItems(id_list []string, index string) map[string]interface{} {
 	return result_map
 }
 
+// 简化paper格式
 func SimplifyPaper(m map[string]interface{}) map[string]interface{} {
 	var ret map[string]interface{} = make(map[string]interface{})
 	ret["id"], ret["authors"], ret["citation_count"], ret["journalName"], ret["paperAbstract"], ret["reference_count"], ret["year"], ret["title"] = m["id"], m["authors"], m["citation_num"], m["journalName"], m["paperAbstract"], m["reference_num"], m["year"], m["title"]
 	return ret
 }
 
+// 处理paper中的作者信息，并对作者按照作者位次排序
 func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	var inter []interface{} = m["rel"].([]interface{})
 	// ret_arr := make([]interface{}, 0, len(inter))
@@ -413,6 +295,8 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	ret_map["rel"] = inter
 	return ret_map
 }
+
+//将interface[] 转化为string[]
 func InterfaceListToStringList(list []interface{}) []string {
 	ret_list := make([]string, 0, 1000)
 	for _, id := range list {
@@ -429,6 +313,8 @@ func ParseFields(ids []string, index string) []interface{} {
 	}
 	return ret_list
 }
+
+// 充实paper格式
 func ComplePaper(paper map[string]interface{}) (paper_map map[string]interface{}) {
 	// 补全paper中的作者与领域信息，主要是paper作者可能为空字段
 
@@ -474,6 +360,7 @@ func PaperRelMakeMap(str string) []interface{} {
 
 }
 
+// 根据搜索结果对各个领域尽心聚合处理
 func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []interface{}) {
 	agg, found := result.Aggregations.Terms(index)
 	if !found {
@@ -516,6 +403,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	return my_list
 }
 
+//筛选paperj进行筛选
 func SelectTypeQuery(doctypes []string, journals []string, conferences []string, publishers []string, min_year int, max_year int) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 
@@ -559,88 +447,7 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 	return boolQuery
 }
 
-func SimplifyAdvanceSearch(must []string, should []string, not []string, field string, boolQuery *elastic.BoolQuery) *elastic.BoolQuery {
-	if len(must) > 0 {
-		query := elastic.NewBoolQuery()
-		for _, item := range must {
-			item_list := strings.Split(strings.TrimSpace(item), " ")
-			for _, str := range item_list {
-				query.Must(elastic.NewMatchQuery(field, str))
-			}
-		}
-		boolQuery.Must(query)
-	}
-	if len(should) > 0 {
-		query := elastic.NewBoolQuery()
-		for _, item := range should {
-			item_list := strings.Split(strings.TrimSpace(item), " ")
-			for _, str := range item_list {
-				query.Should(elastic.NewMatchQuery(field, str))
-			}
-		}
-		boolQuery.Should(query)
-	}
-	if len(not) > 0 {
-		query := elastic.NewBoolQuery()
-		for _, item := range not {
-			item_list := strings.Split(strings.TrimSpace(item), " ")
-			for _, str := range item_list {
-				query.Should(elastic.NewMatchQuery(field, str))
-			}
-		}
-		boolQuery.MustNot(query)
-	}
-	return boolQuery
-}
-
-func LogicSearch(musts map[string]([]string), shoulds map[string][]string, nots map[string][]string, boolQuery *elastic.BoolQuery) *elastic.BoolQuery {
-	var nilStringArray = make([]string, 0)
-	boolQuery = SimplifyAdvanceSearch(musts["title"], nilStringArray, nilStringArray, "paper_title", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["author"], nilStringArray, nilStringArray, "authors.aname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["field"], nilStringArray, nilStringArray, "field", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["doi"], nilStringArray, nilStringArray, "doi.keyword", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["author_affiliation"], nilStringArray, nilStringArray, "authors.afname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(musts["source"], nilStringArray, nilStringArray, "publisher", boolQuery)
-
-	mustQuery := boolQuery
-	boolQuery = boolQuery.Must(mustQuery)
-
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["title"], nilStringArray, "paper_title", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author"], nilStringArray, "authors.aname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["field"], nilStringArray, "field", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["doi"], nilStringArray, "doi.keyword", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["author_affiliation"], nilStringArray, "authors.afname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, shoulds["source"], nilStringArray, "publisher", boolQuery)
-
-	orQuery := boolQuery
-	boolQuery = boolQuery.Should(orQuery)
-
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["title"], "paper_title", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author"], "authors.aname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["field"], "field", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["doi"], "doi.keyword", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["author_affiliation"], "authors.afname", boolQuery)
-	boolQuery = SimplifyAdvanceSearch(nilStringArray, nilStringArray, nots["source"], "publisher", boolQuery)
-
-	notQuery := boolQuery
-	boolQuery = boolQuery.MustNot(notQuery)
-	return boolQuery
-}
-
-func AdvancedSearch(min_year int, max_year int, musts map[string]([]string), shoulds map[string][]string, nots map[string][]string) *elastic.BoolQuery {
-	boolQuery := elastic.NewBoolQuery()
-	// 很臭。。有办法但是懒得弄了。。should must的逻辑麻烦
-	//fmt.Println(len(doctypes))
-	boolQuery = LogicSearch(musts, shoulds, nots, boolQuery)
-	if min_year > 10 {
-		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
-	}
-	if max_year < 2022 {
-		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
-	} // 尽量减少筛选优化速度
-
-	return boolQuery
-}
+// 搜索结果绝活部分
 func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{} {
 	aggregation := make(map[string]interface{})
 

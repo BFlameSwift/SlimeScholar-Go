@@ -67,6 +67,7 @@ func GetTopNKey(m map[string]int, n int) (ret []string) {
 	return ret
 }
 
+//对map按照value排序后返回
 func GetAllSortedKey(m map[string]int) (ret []string) {
 	pl := RankByWordCount(m)
 	for i := 0; i < len(pl); i++ {
@@ -75,6 +76,7 @@ func GetAllSortedKey(m map[string]int) (ret []string) {
 	return ret
 }
 
+//忽略所恶的将字符串转化为数字
 func PureAtoi(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
