@@ -14,3 +14,6 @@ const (
 
 const LOG_FILE_PATH = "./"
 const LOG_FILE_NAME = "scholar.log"
+
+const FOLLOW_USER_PREFIX = "follow"
+const BE_FOLLOWED_USER_PREFIX = "befollow"

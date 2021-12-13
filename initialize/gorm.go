@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/service"
 	"log"
 	"os"
 	"time"
@@ -57,4 +58,14 @@ func InitMySQL() {
 		// 生成新的数据库表
 		&model.PaperReference{},
 	)
+}
+
+// 初始化Elasticsearch 链接
+func InitElasticSearch() {
+	service.Init()
+}
+
+// 初始化Redis连接
+func InitRedis() {
+	service.InitRedis()
 }

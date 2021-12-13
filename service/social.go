@@ -2,10 +2,11 @@ package service
 
 import (
 	"errors"
-
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 //创建标签
@@ -238,4 +239,44 @@ func PapersGetIsCollectedByUser(paperIds []string, user model.User) (ret []inter
 
 	}
 	return ret
+}
+
+// 根据userid与be_follow_user_id 实现关注操作，user关注列表增加，befollow被关注列表增加
+func FollowUser(followedUserId uint64, userId uint64) {
+	userIdStr := strconv.Itoa(int(userId))
+	followedUserIdStr := strconv.Itoa(int(followedUserId))
+	RedisSaveValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr)
+	RedisSaveValue(utils.BE_FOLLOWED_USER_PREFIX+followedUserIdStr, userIdStr)
+}
+
+//func CanCelFollowUser(followedUserId uint64, userId uint64) bool {
+//	userIdStr := strconv.Itoa(int(userId))
+//	followedUserIdStr := strconv.Itoa(int(followedUserId))
+//	/// 用户未关注，却仍然使用
+//	if !RedisKeyIsExistValue(utils.FOLLOW_USER_PREFIX+userIdStr, followedUserIdStr) {
+//		return false
+//	}
+//
+//}
+
+// 根据userid与be_follow_user_id 实现关注操作，user关注列表增加，befollow被关注列表增加
+func GetUserFollowingList(userId uint64) (userIdList []uint64) {
+	userIdStr := strconv.Itoa(int(userId))
+	list := RedisGetValueList(utils.FOLLOW_USER_PREFIX + userIdStr)
+	for _, item := range list {
+		itemU64, _ := strconv.ParseUint(item, 10, 64)
+		userIdList = append(userIdList, itemU64)
+	}
+	return userIdList
+}
+
+// 格努befollowuserid获取用户的粉丝列表
+func GetUserFollowedList(userId uint64) (userIdList []uint64) {
+	userIdStr := strconv.Itoa(int(userId))
+	list := RedisGetValueList(utils.BE_FOLLOWED_USER_PREFIX + userIdStr)
+	for _, item := range list {
+		itemU64, _ := strconv.ParseUint(item, 10, 64)
+		userIdList = append(userIdList, itemU64)
+	}
+	return userIdList
 }
