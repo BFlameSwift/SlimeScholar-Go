@@ -1,37 +1,35 @@
 package v1
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"gitee.com/online-publish/slime-scholar-go/utils"
-	"os"
-	"bufio"
-
 )
 
 type Msg struct {
 	time, msg string
 }
 
-
 // SubmitCount doc
 // @description 获取统计信息
 // @Tags 管理员
 // @Success 200 {string} string "{"success": true, "message": "执行成功"}"
 // @Router /submit/count [POST]
-func SubmitCount(c *gin.Context){
-	data := make(map[string]interface{},0)
+func SubmitCount(c *gin.Context) {
+	data := make(map[string]interface{}, 0)
 
 	paper_map := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
@@ -44,7 +42,7 @@ func SubmitCount(c *gin.Context){
 	data["literCount"] = paper_map["count"]
 	data["authorCount"] = author_map["count"]
 
-	userCount,memberCount := service.QueryUserCount()
+	userCount, memberCount := service.QueryUserCount()
 	data["userCount"] = userCount
 	data["memberCount"] = memberCount
 
@@ -96,9 +94,10 @@ func CreateSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "您已经是认证学者，请勿重复申请", "status": 406})
 		return
 	}
-	// TODO Paper COunt根据实际输入。：
+	//后续对papers可能需要处理
+	papers := service.GetAuthorAllPaper(author_id)
 	submit := model.SubmitScholar{AffiliationName: affiliation_name, AuthorName: author_name, WorkEmail: work_email,
-		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "", PaperCount: 12,
+		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "", PaperCount: len(papers),
 		CreatedTime: time.Now()}
 
 	err = service.CreateASubmit(&submit)
@@ -148,7 +147,7 @@ func CheckSubmit(c *gin.Context) {
 	}
 	fmt.Println("check user submit", user.UserID)
 
-	if submit.Status != 0{
+	if submit.Status != 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "已审核过该申请", "status": 406})
 		return
 	}
@@ -191,7 +190,7 @@ func CheckSubmits(c *gin.Context) {
 	success := c.Request.FormValue("success")
 	content := c.Request.FormValue("content")
 
-	if success != "false" && success != "true"{
+	if success != "false" && success != "true" {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "success 不为true false", "status": 403})
 		return
 	}
@@ -201,15 +200,15 @@ func CheckSubmits(c *gin.Context) {
 	fmt.Println(len)
 	fmt.Println(submit_ids)
 
-	for _,tmp := range submit_ids{
-		submit_id,_ := strconv.ParseUint(tmp, 0, 64)
+	for _, tmp := range submit_ids {
+		submit_id, _ := strconv.ParseUint(tmp, 0, 64)
 		submit, notFound := service.QueryASubmitByID(submit_id)
 		if notFound || submit.Status != 0 {
 			len--
 			continue
 		}
 		fmt.Println(len)
-		user,_ := service.QueryAUserByID(submit.UserID)
+		user, _ := service.QueryAUserByID(submit.UserID)
 		if success == "false" {
 			submit.Status = 2
 			submit.Content = content
@@ -239,8 +238,6 @@ func CheckSubmits(c *gin.Context) {
 	return
 }
 
-
-
 // ListAllSubmit doc
 // @description 列举出所有type类型的submit，0表示未审批的，1表示审批成功的，2表示审批失败的；不输入type，则返回所有申请
 // @Tags 管理员
@@ -250,10 +247,10 @@ func CheckSubmits(c *gin.Context) {
 func ListAllSubmit(c *gin.Context) {
 	mytype_str := c.Request.FormValue("type")
 
-	submits := make([]model.SubmitScholar,0)
-	if mytype_str == "" || len(mytype_str) == 0{
+	submits := make([]model.SubmitScholar, 0)
+	if mytype_str == "" || len(mytype_str) == 0 {
 		submits = service.QueryAllSubmit()
-	}else{
+	} else {
 		mytype, err := strconv.Atoi(mytype_str)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "type不为正整数", "status": 401})
@@ -333,14 +330,13 @@ func PaperGetAuthors(c *gin.Context) {
 	return
 }
 
-
 // GetSubmitDetail doc
 // @description 获取入驻申请详细信息
 // @Tags 管理员
 // @Param submit_id formData string true "提交id"
 // @Success 200 {string} string "{"success": true, "message": "信息获取成功", "data": data}"
 // @Router /submit/get/detail [POST]
-func GetSubmitDetail(c *gin.Context){
+func GetSubmitDetail(c *gin.Context) {
 	submit_id_u64, err := strconv.ParseUint(c.Request.FormValue("submit_id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "提交ID不为正整数", "status": 402})
@@ -358,14 +354,14 @@ func GetSubmitDetail(c *gin.Context){
 	data["work_email"] = submit.WorkEmail
 	data["affiliation_name"] = submit.AffiliationName
 	data["homepage"] = submit.HomePage
-	data["papers"] = make([]map[string]interface{},0)
+	data["papers"] = make([]map[string]interface{}, 0)
 	data["fields"] = strings.Split(submit.Fields, `,`)
 
 	author_id := submit.AuthorID
 	papers := service.GetAuthorAllPaper(author_id)
-	data_papers := make([]map[string]interface{},0)
+	data_papers := make([]map[string]interface{}, 0)
 	// fmt.Println(papers)
-	for _,tmp := range papers{
+	for _, tmp := range papers {
 		paper := make(map[string]interface{})
 		fmt.Println(tmp.(map[string]interface{})["paper_id"])
 		paper["paper_id"] = tmp.(map[string]interface{})["paper_id"]
@@ -373,7 +369,7 @@ func GetSubmitDetail(c *gin.Context){
 		paper["publisher"] = tmp.(map[string]interface{})["publisher"]
 		paper["year"] = tmp.(map[string]interface{})["year"]
 		paper["authors"] = tmp.(map[string]interface{})["authors"]
-		data_papers = append(data_papers,paper)
+		data_papers = append(data_papers, paper)
 	}
 	data["papers"] = data_papers
 
@@ -381,8 +377,7 @@ func GetSubmitDetail(c *gin.Context){
 
 }
 
-
-func LogAnalize(filename string)(data []interface{}){
+func LogAnalize(filename string) (data []interface{}) {
 	f, e := os.Open(filename)
 	var msgList []Msg
 	if e != nil {
@@ -404,7 +399,7 @@ func LogAnalize(filename string)(data []interface{}){
 			// tmp.time = line_list[0][start+2:end]
 			// tmp.msg = line_list[1]
 			fmt.Println(line_map["time"])
-			time,_ := time.ParseInLocation("2006-01-02 15:04:05", line_map["time"], time.Local)
+			time, _ := time.ParseInLocation("2006-01-02 15:04:05", line_map["time"], time.Local)
 			fmt.Println(time)
 			tmp.time = time.Format("2006-01-02")
 			// fmt.Println(tmp.time)
@@ -414,36 +409,36 @@ func LogAnalize(filename string)(data []interface{}){
 		}
 	}
 
-	map_tmp := make(map[string]interface{},0)
-	dest := make([]map[string]interface{},0)
-	for i,_ := range msgList{
-    	ai := msgList[i]
-    	if _,ok := map_tmp[ai.time];!ok{
-        	tmp := make(map[string]interface{},0)
+	map_tmp := make(map[string]interface{}, 0)
+	dest := make([]map[string]interface{}, 0)
+	for i, _ := range msgList {
+		ai := msgList[i]
+		if _, ok := map_tmp[ai.time]; !ok {
+			tmp := make(map[string]interface{}, 0)
 			tmp["time"] = ai.time
 			tmp["count"] = 1
-			dest = append(dest,tmp)
-        	map_tmp[ai.time] = ai;
-    	}else{
-        	for j,_ := range dest{
-            	var dj = dest[j];
-            	if(dj["time"].(string) == ai.time){
-                	count := dj["count"].(int)
-					dj["count"] = count+1
+			dest = append(dest, tmp)
+			map_tmp[ai.time] = ai
+		} else {
+			for j, _ := range dest {
+				var dj = dest[j]
+				if dj["time"].(string) == ai.time {
+					count := dj["count"].(int)
+					dj["count"] = count + 1
 					dest[j] = dj
-                	break
-            	}
-        	}
-    	}
+					break
+				}
+			}
+		}
 	}
 	fmt.Println(dest)
 
-	data = make([]interface{},0)
-	for _,tmp := range dest{
+	data = make([]interface{}, 0)
+	for _, tmp := range dest {
 		var a [2]interface{}
 		a[0] = tmp["time"]
 		a[1] = tmp["count"]
-		data = append(data,a)
+		data = append(data, a)
 	}
 	return data
 }
