@@ -2931,6 +2931,43 @@ var doc = `{
                 }
             }
         },
+        "/submit/login": {
+            "post": {
+                "description": "登录 200-成功\t401-用户不存在\t402-密码错误\t403-用户尚未确认邮箱\t405-用户不是管理员",
+                "tags": [
+                    "管理员"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "username",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户邮箱",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "密码",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"登录成功\", \"detail\": user的信息}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/confirm": {
             "post": {
                 "description": "验证邮箱",
@@ -3258,5 +3295,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }
