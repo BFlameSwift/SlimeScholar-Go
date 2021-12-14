@@ -200,16 +200,17 @@ func TitleQueryPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	//其他的aggregation都集成起来了，毕竟每一个都查询都十行代码挺臭的
-	//aggregation := make(map[string]interface{})
-	//
-	//aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
-	//fmt.Println(aggregation["doctype"])
-	//aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
-	//aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
-	//aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
-	//aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
+	aggregation := make(map[string]interface{})
+
+	aggregation["doctype"] = service.Paper_Aggregattion(searchResult, "doctype")
+	fmt.Println(aggregation["doctype"])
+	aggregation["journal"] = service.Paper_Aggregattion(searchResult, "journal")
+	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
+	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
+	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
+		"details": paperSequences, "aggregation": aggregation})
 	return
 }
 
