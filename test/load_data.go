@@ -509,19 +509,19 @@ func print1() {
 	}
 }
 
-func main() {
-	fmt.Println(service.TimeStrToTimeDefault("2006-10-01 00:00:00"))
-	//	service.Init()
-	//	load_fields()
-	//	//load_paper()
-	//
-	//	//print1()
-	//	//load_authors()
-	//
-	//	//load_journal()
-	//	//load_incitations()
-	//	//load_paper_rel()
-	//	//load_paper_a uthor()
-	//	//load_conference()
-	//	//load_journal()
-}
+//func main() {
+//	fmt.Println(service.TimeStrToTimeDefault("2006-10-01 00:00:00"))
+//	//	service.Init()
+//	//	load_fields()
+//	//	//load_paper()
+//	//
+//	//	//print1()
+//	//	//load_authors()
+//	//
+//	//	//load_journal()
+//	//	//load_incitations()
+//	//	//load_paper_rel()
+//	//	//load_paper_a uthor()
+//	//	//load_conference()
+//	//	//load_journal()
+//}

@@ -69,3 +69,18 @@ func InitElasticSearch() {
 func InitRedis() {
 	service.InitRedis()
 }
+func InitOS() {
+	//if utils.SysType == "linux"{
+	//	utils.LOG_FILE_PATH =
+	//}
+	if utils.SysType == "windows" {
+		utils.LOG_FILE_PATH = "./"
+	}
+}
+
+func Init() {
+	InitElasticSearch()
+	InitRedis()
+	InitMySQL()
+	InitOS()
+}

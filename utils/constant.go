@@ -1,5 +1,7 @@
 package utils
 
+import "runtime"
+
 // token var
 var (
 	Secret     = "SlimeScholar" // 加盐
@@ -12,8 +14,12 @@ const (
 	ErrorReLogin    = "请重新登陆"
 )
 
-const LOG_FILE_PATH = "./"
-const LOG_FILE_NAME = "scholar.log"
-
 const FOLLOW_USER_PREFIX = "follow"
 const BE_FOLLOWED_USER_PREFIX = "befollow"
+
+// 操作系统类型linux/windows
+const SysType = runtime.GOOS
+
+var LOG_FILE_PATH = "./"
+
+const LOG_FILE_NAME = "scholar.log"

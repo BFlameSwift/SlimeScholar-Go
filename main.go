@@ -17,9 +17,7 @@ func main() {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	initialize.InitMySQL()
-	initialize.InitRedis()
-	initialize.InitElasticSearch()
+	initialize.Init()
 	r := initialize.SetupRouter()
 	r.GET("/backend/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
