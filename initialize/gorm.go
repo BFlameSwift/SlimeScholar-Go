@@ -73,12 +73,12 @@ func InitRedis() {
 // InitOS 根据OS的不同配置不同的变量
 func InitOS() {
 	if utils.SysType == "linux" {
-		utils.LOG_FILE_PATH = "/backend"
-		utils.ELASTIC_SEARCH_HOST = "172.18.0.1:9200"
+		utils.LOG_FILE_PATH = "/backend/"
+		utils.ELASTIC_SEARCH_HOST = "http://172.18.0.1:9200"
 
 	} else if utils.SysType == "windows" {
 		utils.LOG_FILE_PATH = "./"
-		utils.ELASTIC_SEARCH_HOST = "124.70.95.61:9200"
+		utils.ELASTIC_SEARCH_HOST = "http://124.70.95.61:9200"
 	}
 }
 
