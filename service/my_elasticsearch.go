@@ -440,7 +440,7 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 	if min_year > 10 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Gte(min_year))
 	}
-	if max_year <= 2022 {
+	if max_year < 2022 {
 		boolQuery.Must(elastic.NewRangeQuery("year").Lte(max_year))
 	} // 尽量优化速度
 

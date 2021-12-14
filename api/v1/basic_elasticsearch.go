@@ -477,8 +477,8 @@ func MainQueryPaper(c *gin.Context) {
 // @description es 高级搜索
 // @Tags elasticsearch
 // @Param conditions formData string true "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，"
-// @Param min_year formData int true "min_year"
-// @Param max_year formData int true "max_year"
+// @Param min_date formData string true "min_date"
+// @Param max_date formData string true "max_date"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
@@ -499,15 +499,19 @@ func AdvancedSearch(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
 		return
 	}
-	min_year := c.Request.FormValue("min_year")
-	max_year := c.Request.FormValue("max_year")
-	minYear, maxYear := 0, 2050
-	if min_year != "" {
-		minYear, _ = strconv.Atoi(min_year)
+	min_date := c.Request.FormValue("min_date")
+	max_date := c.Request.FormValue("max_date")
+	if min_date == "0" {
+		min_date = "1200-01-01 00:00:00"
+	} else {
+		min_date += " 00:00:00"
 	}
-	if max_year == "" {
-		maxYear, _ = strconv.Atoi(max_year)
+	if max_date == "0" {
+		min_date = "2050-01-01 00:00:00"
+	} else {
+		max_date += " 00:00:00"
 	}
+	minDate, maxDate := service.TimeStrToTimeDefault(min_date), service.TimeStrToTimeDefault(max_date)
 
 	conditionsJson := c.Request.FormValue("conditions")
 	var conditions []interface{}
@@ -517,9 +521,9 @@ func AdvancedSearch(c *gin.Context) {
 		return
 	}
 	fmt.Println(conditions)
+	fmt.Println(minDate, maxDate)
 
 	boolQuery := service.AdvancedCondition(conditions)
-	boolQuery.Must(elastic.NewRangeQuery("year").Gte(minYear).Lte(maxYear))
 	// boolQuery.Must(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
 	//boolQuery.Must(elastic.NewMatchQuery("paper_title", title))
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
@@ -564,8 +568,8 @@ func AdvancedSearch(c *gin.Context) {
 // @description es 高级检索筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份
 // @Tags elasticsearch
 // @Param conditions formData string true "conditions 为条件，表示字典的列表：type 123表示运算符must or，not，"
-// @Param min_year formData int true "min_year"
-// @Param max_year formData int true "max_year"
+// @Param min_date formData string true "min_date"
+// @Param max_date formData string true "max_date"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
 // @Param doctypes formData string true "doctypes"
@@ -584,15 +588,19 @@ func AdvancedSelectPaper(c *gin.Context) {
 	var sort_ascending bool
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
-	min_year := c.Request.FormValue("min_year")
-	max_year := c.Request.FormValue("max_year")
-	minYear, maxYear := 0, 2050
-	if min_year != "" {
-		minYear, _ = strconv.Atoi(min_year)
+	min_date := c.Request.FormValue("min_date")
+	max_date := c.Request.FormValue("max_date")
+	if min_date == "0" {
+		min_date = "1200-01-01 00:00:00"
+	} else {
+		min_date += " 00:00:00"
 	}
-	if max_year == "" {
-		maxYear, _ = strconv.Atoi(max_year)
+	if max_date == "0" {
+		min_date = "2050-01-01 00:00:00"
+	} else {
+		max_date += " 00:00:00"
 	}
+	minDate, maxDate := service.TimeStrToTimeDefault(min_date), service.TimeStrToTimeDefault(max_date)
 
 	conditionsJson := c.Request.FormValue("conditions")
 	var conditions []interface{}
@@ -619,8 +627,9 @@ func AdvancedSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(conferenceJson), &conferences)
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
-	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, minYear, maxYear)
+	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, 0, 2050)
 	boolQuery.Must(service.AdvancedCondition(conditions))
+	fmt.Println(minDate, maxDate)
 	// boolQuery.Filter(elastic.NewRangeQuery("date").From(minDate).To(maxDate))
 
 	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
