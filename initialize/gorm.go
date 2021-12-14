@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// 初始化 MySQL 的相关配置
+// InitMySQL 初始化 MySQL 的相关配置
 func InitMySQL() {
 	addr, port, username, password, database := utils.ADDR, utils.PORT, utils.USER, utils.PASSWORD, utils.DATABASE
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, addr, port, database)
@@ -60,21 +60,25 @@ func InitMySQL() {
 	)
 }
 
-// 初始化Elasticsearch 链接
+// InitElasticSearch 初始化Elasticsearch 链接
 func InitElasticSearch() {
 	service.Init()
 }
 
-// 初始化Redis连接
+// InitRedis 初始化Redis连接
 func InitRedis() {
 	service.InitRedis()
 }
+
+// InitOS 根据OS的不同配置不同的变量
 func InitOS() {
-	//if utils.SysType == "linux"{
-	//	utils.LOG_FILE_PATH =
-	//}
-	if utils.SysType == "windows" {
+	if utils.SysType == "linux" {
+		utils.LOG_FILE_PATH = "/backend"
+		utils.ELASTIC_SEARCH_HOST = "172.18.0.1:9200"
+
+	} else if utils.SysType == "windows" {
 		utils.LOG_FILE_PATH = "./"
+		utils.ELASTIC_SEARCH_HOST = "124.70.95.61:9200"
 	}
 }
 
