@@ -2,8 +2,10 @@ package service
 
 import (
 	"encoding/json"
+	"math"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -92,4 +94,21 @@ const (
 func TimeStrToTimeDefault(str string) time.Time {
 	parseTime, _ := time.ParseInLocation(DefaultLayout, str, time.Local)
 	return parseTime
+}
+
+// 时间戳转日期
+func TimestampToDate(stamp int64) string {
+	thisTime := time.Unix(stamp, 0)
+	return thisTime.Format("2006-01-02 15:04:05")
+}
+
+// 时间戳转化为年份
+func TimestampToYear(stamp int64) string {
+	timeStr := TimestampToDate(stamp)
+	return strings.Split(timeStr, "-")[0]
+}
+
+//将float64转成精确的int64
+func Wrap(num float64, retain int) int64 {
+	return int64(num * math.Pow10(retain))
 }

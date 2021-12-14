@@ -169,6 +169,8 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+	minYear := elastic.NewMinAggregation().Field("date")
+	maxYear := elastic.NewMaxAggregation().Field("date")
 
 	boolQuery := elastic.NewBoolQuery()
 	if is_precise == false {
@@ -178,7 +180,7 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	}
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", minYear).Aggregation("max_year", maxYear).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
@@ -457,6 +459,20 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 	aggregation["conference"] = Paper_Aggregattion(searchResult, "conference")
 	aggregation["fields"] = Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = Paper_Aggregattion(searchResult, "publisher")
+	minAgg, found := searchResult.Aggregations.Max("min_year")
+	if found {
+		aggregation["min_year"] = TimestampToYear(Wrap(*minAgg.Value, -3))
+		fmt.Println("min_year!!!!!: ", minAgg.Value, *minAgg.Value)
+	} else {
+		aggregation["min_year"] = 1900
+	}
+	maxAgg, found := searchResult.Aggregations.Max("max_year")
+	if found {
+
+		aggregation["max_year"] = TimestampToYear(Wrap(*maxAgg.Value, -3))
+	} else {
+		aggregation["min_year"] = 2021
+	}
 	return aggregation
 }
 
