@@ -538,16 +538,16 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "min_date",
-                        "name": "min_date",
+                        "type": "integer",
+                        "description": "min_year",
+                        "name": "min_year",
                         "in": "formData",
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "max_date",
-                        "name": "max_date",
+                        "type": "integer",
+                        "description": "max_year",
+                        "name": "max_year",
                         "in": "formData",
                         "required": true
                     },
@@ -986,16 +986,16 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "min_date",
-                        "name": "min_date",
+                        "type": "integer",
+                        "description": "min_year",
+                        "name": "min_year",
                         "in": "formData",
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "max_date",
-                        "name": "max_date",
+                        "type": "integer",
+                        "description": "max_year",
+                        "name": "max_year",
                         "in": "formData",
                         "required": true
                     },
