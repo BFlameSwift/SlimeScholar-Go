@@ -232,7 +232,16 @@ func QueryASubmitExist(user_id uint64) (submit model.SubmitScholar, notFound boo
 		return submit, false
 	}
 }
-
+func QueryUserIsScholar(user_id uint64) (submit model.SubmitScholar, notFound bool) {
+	err := global.DB.Where("user_id = ? AND status = 1", user_id).First(&submit).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return submit, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return submit, false
+	}
+}
 func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool) {
 	err := global.DB.Where("status = ?", mytype).Find(&submits).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
@@ -244,7 +253,7 @@ func QuerySubmitByType(mytype int) (submits []model.SubmitScholar, notFound bool
 	}
 }
 
-func QueryAllSubmit()(submits []model.SubmitScholar){
+func QueryAllSubmit() (submits []model.SubmitScholar) {
 	global.DB.Find(&submits)
 	return submits
 }
@@ -285,10 +294,10 @@ func UserScholarInfo(m map[string]interface{}) (ret_map map[string]interface{}) 
 	return ret_map
 }
 
-func QueryUserCount()(userCount int, member int){
-	users := make([]model.User,0)
-	members := make([]model.User,0)
+func QueryUserCount() (userCount int, member int) {
+	users := make([]model.User, 0)
+	members := make([]model.User, 0)
 	global.DB.Find(&users)
-	global.DB.Where("user_type = ?",1).Find(&members)
-	return len(users),len(members)
+	global.DB.Where("user_type = ?", 1).Find(&members)
+	return len(users), len(members)
 }

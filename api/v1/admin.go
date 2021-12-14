@@ -46,11 +46,11 @@ func SubmitCount(c *gin.Context) {
 	data["userCount"] = userCount
 	data["memberCount"] = memberCount
 
-	filename := "./scholar.log"
+	filename := utils.LOG_FILE_PATH + utils.LOG_FILE_NAME
 	activeIndex := LogAnalize(filename)
 	data["activeIndex"] = activeIndex
-
-	data["responseTime"] = 310
+	//TODO response time
+	data["responseTime"] = 404
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": data})
 }
@@ -90,7 +90,7 @@ func CreateSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "该作者已被认领", "status": 405, "the_authorname": the_submit.AuthorName})
 		return
 	}
-	if _, notFound := service.QueryASubmitExist(user_id_u64); !notFound {
+	if _, notFound := service.QueryUserIsScholar(user_id_u64); !notFound {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "您已经是认证学者，请勿重复申请", "status": 406})
 		return
 	}
@@ -466,10 +466,10 @@ func AdminLogin(c *gin.Context) {
 	} else {
 		if user.Password != password {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误", "status": 402})
-		} else{
-			if user.UserType != 2{
+		} else {
+			if user.UserType != 2 {
 				c.JSON(http.StatusOK, gin.H{"success": false, "message": "该用户不是管理员", "status": 405})
-			}else{
+			} else {
 				if user.HasConfirmed == false {
 					c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户尚未确认邮箱", "status": 403})
 				} else {
