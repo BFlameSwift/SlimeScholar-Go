@@ -174,10 +174,12 @@ func ProcAuthorMsg(people map[string]interface{}, papers []interface{}) map[stri
 	for _, paper := range papers {
 		if paper.(map[string]interface{})["fields"] != nil {
 			for _, field := range paper.(map[string]interface{})["fields"].([]interface{}) {
-				if _, ok := fields_map[field.(string)]; ok {
-					fields_map[field.(string)]++
+				//fmt.Println(field)
+				fieldStr := field.(map[string]interface{})["field_id"].(string)
+				if _, ok := fields_map[fieldStr]; ok {
+					fields_map[fieldStr]++
 				} else {
-					fields_map[field.(string)] = 1
+					fields_map[fieldStr] = 1
 				}
 			}
 		}

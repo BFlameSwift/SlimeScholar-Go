@@ -469,7 +469,7 @@ func MainQueryPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
+		"details": paperSequences})
 	return
 }
 
