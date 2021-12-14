@@ -1,6 +1,6 @@
 package utils
 
-const ADDR, PORT, USER, PASSWORD, DATABASE = "82.156.217.192", "3306", "root", "db1921@", "scholar"
+const ADDR, PORT, USER, PASSWORD, DATABASE = "124.70.95.61", "3306", "db", "db1921@", "scholar"
 
 //const CLOUD_ELASTIC_SEARCH_HOST = "http://82.156.217.192:9200"
 
