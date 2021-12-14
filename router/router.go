@@ -49,9 +49,10 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/affiliation", v1.GetAffiliation)
 		EsRouter.POST("/get/journal", v1.GetJournal)
 		EsRouter.POST("/query/paper/title", v1.TitleQueryPaper)
+		EsRouter.POST("/select/paper/title", v1.TitleSelectPaper)
 		EsRouter.POST("/query/paper/advanced", v1.AdvancedSearch)
 		EsRouter.POST("/select/paper/advanced", v1.AdvancedSelectPaper)
-		EsRouter.POST("/select/paper/title", v1.TitleSelectPaper)
+
 		EsRouter.POST("/query/paper/author_name", v1.AuthorNameQueryPaper)
 		EsRouter.POST("/select/paper/author_name", v1.AuthorNameSelectPaper)
 		EsRouter.POST("/query/paper/affiliation_name", v1.AffiliationNameQueryPaper)
@@ -62,6 +63,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/query/author/affiliation", v1.AffiliationNameQueryAuthor)
 		EsRouter.POST("/query/paper/doi", v1.DoiQueryPaper)
 		EsRouter.POST("/query/paper/field", v1.FieldQueryPaper)
+		EsRouter.POST("/select/paper/field", v1.FieldSelectPaper)
 		EsRouter.POST("/query/paper/abstract", v1.AbstractQueryPaper)
 		EsRouter.POST("/query/paper/main", v1.MainQueryPaper)
 	}

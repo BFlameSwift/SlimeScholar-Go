@@ -739,6 +739,69 @@ var doc = `{
                         "name": "page",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "min_year",
+                        "name": "min_year",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "max_year",
+                        "name": "max_year",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "doctypes",
+                        "name": "doctypes",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "conferences",
+                        "name": "conferences",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "journals",
+                        "name": "journals",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "publishers",
+                        "name": "publishers",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "sort_type",
+                        "name": "sort_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "sort_ascending",
+                        "name": "sort_ascending",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3295,5 +3358,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }

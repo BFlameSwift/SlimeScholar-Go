@@ -57,12 +57,12 @@ func SemanticScholarApiMulti(mag_id string, fields_pointer *[]string) map[string
 	return m
 }
 
-func main() {
-	//fmt.Println(SemanticScholarApiSingle("1582271227","abstract"))
-	//fmt.Println(GetUrl("127.0.0.1:9200/paper/_count"))
-
-	//requests := make([]string,0,30)
-	//requests = append(requests,"abstract")
-	//requests = append(requests,"title")
-	//fmt.Println(SemanticScholarApi("1582271227",&requests))
-}
+//func main() {
+//	//fmt.Println(SemanticScholarApiSingle("1582271227","abstract"))
+//	//fmt.Println(GetUrl("127.0.0.1:9200/paper/_count"))
+//
+//	//requests := make([]string,0,30)
+//	//requests = append(requests,"abstract")
+//	//requests = append(requests,"title")
+//	//fmt.Println(SemanticScholarApi("1582271227",&requests))
+//}

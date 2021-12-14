@@ -478,6 +478,51 @@ paths:
         name: page
         required: true
         type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      - description: min_year
+        in: formData
+        name: min_year
+        required: true
+        type: integer
+      - description: max_year
+        in: formData
+        name: max_year
+        required: true
+        type: integer
+      - description: doctypes
+        in: formData
+        name: doctypes
+        required: true
+        type: string
+      - description: conferences
+        in: formData
+        name: conferences
+        required: true
+        type: string
+      - description: journals
+        in: formData
+        name: journals
+        required: true
+        type: string
+      - description: publishers
+        in: formData
+        name: publishers
+        required: true
+        type: string
+      - description: sort_type
+        in: formData
+        name: sort_type
+        required: true
+        type: integer
+      - description: sort_ascending
+        in: formData
+        name: sort_ascending
+        required: true
+        type: boolean
       responses:
         "200":
           description: '{"success": true, "message": "获取成功"}'
