@@ -302,7 +302,7 @@ func PaperGetAuthors(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "size 不为整数", "status": 401})
 		return
 	}
-	searchResult, err := service.Client.Search().Index("author").Query(elastic.NewMatchQuery("name", author_name)).From((page - 1) * size).Size(size).Do(context.Background())
+	searchResult, err := service.Client.Search().Index("author").Query(elastic.NewMatchPhraseQuery("name", author_name)).From((page - 1) * size).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
