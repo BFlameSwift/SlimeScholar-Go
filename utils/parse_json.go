@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bufio"
@@ -14,15 +14,6 @@ import (
 
 var cspaper_map map[int64]byte = make(map[int64]byte)
 var closure_map map[int64]byte = make(map[int64]byte)
-
-func getKeys1(m map[int64]byte) int {
-	// 数组默认长度为map长度,后面append时,不需要重新申请内存和拷贝,效率很高
-	j := 0
-	for _ = range m {
-		j++
-	}
-	return j
-}
 
 func load_map() {
 	file_cspaper, err := os.Open("cspaper_ids.txt")
@@ -319,16 +310,16 @@ func make_multi_rel(filename string, mytype string, is_multi bool, main_type str
 	fmt.Println(time.Now(), i, line_num)
 }
 
-func main() {
-	s := time.Now()
-	fmt.Println(s)
-	//load_map()
-
-	// make_json("Papers.txt", "paper",false,"paper_id")
-	fmt.Println(time.Now(), "load paper end")
-	// make_json("Authors.txt", "author",false,"author_id")	make_multi_rel("PaperAuthorAffiliations.txt", "rel_paper_author", true, "paper_id")//2021-11-26 22:51:14.0211883 +0800 CST m=+11773.545295501 269412162 731587019
-	make_multi_rel("PaperReferences.txt", "rel_paper_reference", true, "paper_id")
-	fmt.Println(time.Now())
-	make_multi_rel("PaperFieldsOfStudy.txt", "rel_paper_field", true, "paper_id")
-	make_multi_rel("PaperCitationContexts.txt", "rel_paper_citation", true, "paper_id")
-}
+//func main() {
+//	s := time.Now()
+//	fmt.Println(s)
+//	//load_map()
+//
+//	// make_json("Papers.txt", "paper",false,"paper_id")
+//	fmt.Println(time.Now(), "load paper end")
+//	// make_json("Authors.txt", "author",false,"author_id")	make_multi_rel("PaperAuthorAffiliations.txt", "rel_paper_author", true, "paper_id")//2021-11-26 22:51:14.0211883 +0800 CST m=+11773.545295501 269412162 731587019
+//	make_multi_rel("PaperReferences.txt", "rel_paper_reference", true, "paper_id")
+//	fmt.Println(time.Now())
+//	make_multi_rel("PaperFieldsOfStudy.txt", "rel_paper_field", true, "paper_id")
+//	make_multi_rel("PaperCitationContexts.txt", "rel_paper_citation", true, "paper_id")
+//}
