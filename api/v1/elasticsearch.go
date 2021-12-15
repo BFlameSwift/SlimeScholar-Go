@@ -1043,13 +1043,13 @@ func FieldQueryPaper(c *gin.Context) {
 		return
 	}
 
-	searchResult := service.PaperQueryByField("fields", "name", field, 1, 5, true)
-	if searchResult.TotalHits() == 0 {
+	fieldIds := service.FieldNameGetSimilarIds(field, 5)
+	fmt.Println("search field", field, "hits :", len(fieldIds))
+	if len(fieldIds) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this field query %s not existed", field)
 		return
 	}
-	fmt.Println("search field", field, "hits :", searchResult.TotalHits())
 
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
@@ -1058,11 +1058,11 @@ func FieldQueryPaper(c *gin.Context) {
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
 	boolQuery := elastic.NewBoolQuery()
-	for _, hits := range searchResult.Hits.Hits {
-		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits.Id))
+	for _, hits := range fieldIds {
+		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
 	}
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err = service.Client.Search("paper").Query(boolQuery).Size(10).Aggregation("conference", conference_agg).
+	searchResult, err := service.Client.Search("paper").Query(boolQuery).Size(10).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
 		From((page - 1) * 10).Do(context.Background())
 	if err != nil {
@@ -1127,22 +1127,22 @@ func FieldSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(conferenceJson), &conferences)
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
-	searchResult := service.PaperQueryByField("fields", "name", field, 1, 5, true)
-	if searchResult.TotalHits() == 0 {
+	fieldIds := service.FieldNameGetSimilarIds(field, 5)
+	fmt.Println("search field", field, "hits :", len(fieldIds))
+	if len(fieldIds) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this field query %s not existed", field)
 		return
 	}
-	fmt.Println("search field", field, "hits :", searchResult.TotalHits())
 
 	boolQuery := elastic.NewBoolQuery()
-	for _, hits := range searchResult.Hits.Hits {
-		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits.Id))
+	for _, hits := range fieldIds {
+		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
 	}
 
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	boolQuery = service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	searchResult = service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this field query %s not existed", field)

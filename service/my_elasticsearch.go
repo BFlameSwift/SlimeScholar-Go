@@ -674,6 +674,9 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 		return elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("abstract", theMap["content"])).Should(elastic.NewMatchPhraseQuery("paper_title", theMap["content"]))
 	case "abstract":
 		return elastic.NewMatchPhraseQuery("abstract", theMap["content"])
+	case "field":
+		return FieldNameGetQuery(theMap["content"].(string), 5)
+
 	}
 	return nil
 }
@@ -723,6 +726,33 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 		return searchResult
 	}
 	return nil
+}
+
+func FieldNameGetSimilarIds(field string, size int) (ids []string) {
+	searchResult := PaperQueryByField("fields", "name", field, 1, 5, true)
+	if searchResult.TotalHits() == 0 {
+		return make([]string, 0)
+	}
+	for _, hits := range searchResult.Hits.Hits {
+		ids = append(ids, hits.Id)
+	}
+	return ids
+}
+func FieldNameGetQuery(field string, size int) *elastic.BoolQuery {
+	searchResult := PaperQueryByField("fields", "name", field, 1, 5, true)
+	boolQuery := elastic.NewBoolQuery()
+	if searchResult.TotalHits() == 0 {
+		return boolQuery.Must(elastic.NewMatchNoneQuery())
+	}
+	ids := make([]string, 0)
+	for _, hits := range searchResult.Hits.Hits {
+		ids = append(ids, hits.Id)
+	}
+
+	for _, hits := range ids {
+		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
+	}
+	return boolQuery
 }
 
 // func main() {
