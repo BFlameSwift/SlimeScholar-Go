@@ -56,6 +56,14 @@ type TagPaper struct {
 	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
 }
 
+//收藏
+type Collect struct{
+	ID          uint64    `gorm:"primary_key;" json:"id"`
+	UserID     uint64    `json:"user_id"`
+	PaperID     string    `gorm:"type:varchar(32);" json:"paper_id"`
+	TagCount   uint64	   `gorm:"default:0" json:"tag_count"`
+}
+
 // 浏览记录
 type BrowsingHistory struct {
 	BrowsingID   uint64    `gorm:"primary_key;not null" json:"browsing_id"`
