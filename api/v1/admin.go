@@ -47,10 +47,10 @@ func SubmitCount(c *gin.Context) {
 	data["memberCount"] = memberCount
 
 	filename := "./scholar.log"
-	activeIndex := LogAnalize(filename)
+	activeIndex,responseTime := LogAnalize(filename)
 	data["activeIndex"] = activeIndex
 
-	data["responseTime"] = 310
+	data["responseTime"] = responseTime
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": data})
 }
@@ -377,72 +377,6 @@ func GetSubmitDetail(c *gin.Context) {
 
 }
 
-func LogAnalize(filename string) (data []interface{}) {
-	f, e := os.Open(filename)
-	var msgList []Msg
-	if e != nil {
-		fmt.Println("File error.")
-	} else {
-		buf := bufio.NewScanner(f)
-		for {
-			if !buf.Scan() {
-				break
-			}
-			line := buf.Text()
-			line = strings.TrimSpace(line) //去掉前后空格
-			// line_list := strings.Split(line, ` level=info `)
-			var tmp Msg
-			// end := strings.Index(line_list[0], "T")
-			// start := strings.Index(line_list[0], "=")
-			line_map := make(map[string]string)
-			_ = json.Unmarshal([]byte(line), &line_map)
-			// tmp.time = line_list[0][start+2:end]
-			// tmp.msg = line_list[1]
-			fmt.Println(line_map["time"])
-			time, _ := time.ParseInLocation("2006-01-02 15:04:05", line_map["time"], time.Local)
-			fmt.Println(time)
-			tmp.time = time.Format("2006-01-02")
-			// fmt.Println(tmp.time)
-			tmp.msg = line_map["msg"]
-			// fmt.Println(tmp)
-			msgList = append(msgList, tmp)
-		}
-	}
-
-	map_tmp := make(map[string]interface{}, 0)
-	dest := make([]map[string]interface{}, 0)
-	for i, _ := range msgList {
-		ai := msgList[i]
-		if _, ok := map_tmp[ai.time]; !ok {
-			tmp := make(map[string]interface{}, 0)
-			tmp["time"] = ai.time
-			tmp["count"] = 1
-			dest = append(dest, tmp)
-			map_tmp[ai.time] = ai
-		} else {
-			for j, _ := range dest {
-				var dj = dest[j]
-				if dj["time"].(string) == ai.time {
-					count := dj["count"].(int)
-					dj["count"] = count + 1
-					dest[j] = dj
-					break
-				}
-			}
-		}
-	}
-	fmt.Println(dest)
-
-	data = make([]interface{}, 0)
-	for _, tmp := range dest {
-		var a [2]interface{}
-		a[0] = tmp["time"]
-		a[1] = tmp["count"]
-		data = append(data, a)
-	}
-	return data
-}
-
 // AdminLogin doc
 // @description 登录 200-成功	401-用户不存在	402-密码错误	403-用户尚未确认邮箱	405-用户不是管理员
 // @Tags 管理员
@@ -494,5 +428,97 @@ func AdminLogin(c *gin.Context) {
 				}
 			}
 		}
+	}
+}
+
+func LogAnalize(filename string) (data []interface{},resTime float64) {
+	f, e := os.Open(filename)
+	var msgList []Msg
+	if e != nil {
+		fmt.Println("File error.")
+	} else {
+		buf := bufio.NewScanner(f)
+		for {
+			if !buf.Scan() {
+				break
+			}
+			line := buf.Text()
+			line = strings.TrimSpace(line) //去掉前后空格
+			// line_list := strings.Split(line, ` level=info `)
+			var tmp Msg
+			line_map := make(map[string]string)
+			_ = json.Unmarshal([]byte(line), &line_map)
+			time, _ := time.ParseInLocation("2006-01-02 15:04:05", line_map["time"], time.Local)
+			tmp.time = time.Format("2006-01-02")
+			tmp.msg = line_map["msg"]
+			msgList = append(msgList, tmp)
+		}
+	}
+
+	//获取日活跃数
+	map_tmp := make(map[string]interface{}, 0)
+	dest := make([]map[string]interface{}, 0)
+	for i, _ := range msgList {
+		ai := msgList[i]
+		if _, ok := map_tmp[ai.time]; !ok {
+			tmp := make(map[string]interface{}, 0)
+			tmp["time"] = ai.time
+			tmp["count"] = 1
+			dest = append(dest, tmp)
+			map_tmp[ai.time] = ai
+		} else {
+			for j, _ := range dest {
+				var dj = dest[j]
+				if dj["time"].(string) == ai.time {
+					count := dj["count"].(int)
+					dj["count"] = count + 1
+					dest[j] = dj
+					break
+				}
+			}
+		}
+	}
+	data = make([]interface{}, 0)
+	for _, tmp := range dest {
+		var a [2]interface{}
+		a[0] = tmp["time"]
+		a[1] = tmp["count"]
+		data = append(data, a)
+	}
+	//
+
+	//获取响应时间
+	Reverse(&msgList)
+	msg_count := 0 //记录最近100条POST信息
+	resTime = 0.0
+	for _,tmp := range msgList{
+		if strings.Contains(tmp.msg, "POST") && msg_count < 100{
+			a := tmp.msg
+			fmt.Println(a)
+			end := strings.Index(a, "ms")
+			b := strings.TrimSpace(a[7:end]) //去掉前后空格
+			c,_ := strconv.ParseFloat(b,64)
+			fmt.Println(c)
+			resTime = resTime + c
+			msg_count++ 
+			if msg_count >= 100{
+				break
+			}
+		}
+	}
+	count,_ := strconv.ParseFloat(strconv.Itoa(msg_count),64)
+	resTime = resTime / count
+	resTime, _ = strconv.ParseFloat(fmt.Sprintf("%.5f", resTime), 64)
+	//
+
+	return data,resTime
+}
+func Reverse(arr *[]Msg) {
+	var temp Msg
+	length := len(*arr)
+	for i := 0; i < length/2; i++ {
+		temp = (*arr)[i]
+		(*arr)[i] = (*arr)[length-1-i]
+		(*arr)[length-1-i] = temp
 	}
 }
