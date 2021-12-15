@@ -367,22 +367,23 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 		return
 	}
 
-	affiliationResult := service.QueryByField("affiliation", "name", name, 1, 15)
+	//affiliationResult := service.QueryByField("affiliation", "name", name, 1, 15)
 
 	boolQuery := elastic.NewBoolQuery()
-	query := elastic.NewMatchPhraseQuery("name", name)
+	query := service.IndexFieldsGetQuery("affiliation", "name", name, 12, "affiliation_id")
+	//query := elastic.NewMatchPhraseQuery("name", name)
 	boolQuery.Must(query)
-	orQuery := elastic.NewBoolQuery()
-	for _, affiliation := range affiliations {
-		fmt.Println(affiliation)
-		orQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", affiliation))
-	}
-	boolQuery.Must(orQuery)
-	affiliationIdQuery := elastic.NewBoolQuery()
-	for _, hit := range affiliationResult.Hits.Hits {
-		affiliationIdQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", hit.Id))
-	}
-	boolQuery.Must(affiliationIdQuery)
+	//orQuery := elastic.NewBoolQuery()
+	//for _, affiliation := range affiliations {
+	//	fmt.Println(affiliation)
+	//	orQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", affiliation))
+	//}
+	//boolQuery.Must(orQuery)
+	//affiliationIdQuery := elastic.NewBoolQuery()
+	//for _, hit := range affiliationResult.Hits.Hits {
+	//	affiliationIdQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", hit.Id))
+	//}
+	//boolQuery.Must(affiliationIdQuery)
 	searchResult := service.AuthorQuery(page, size, sort_type, sort_ascending, "author", boolQuery)
 
 	aggregation := make(map[string]interface{})

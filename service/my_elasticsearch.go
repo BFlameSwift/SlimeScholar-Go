@@ -729,7 +729,7 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 }
 
 func FieldNameGetSimilarIds(field string, size int) (ids []string) {
-	searchResult := PaperQueryByField("fields", "name", field, 1, 5, true)
+	searchResult := PaperQueryByField("fields", "name", field, 1, size, true)
 	if searchResult.TotalHits() == 0 {
 		return make([]string, 0)
 	}
@@ -739,18 +739,40 @@ func FieldNameGetSimilarIds(field string, size int) (ids []string) {
 	return ids
 }
 func FieldNameGetQuery(field string, size int) *elastic.BoolQuery {
-	searchResult := PaperQueryByField("fields", "name", field, 1, 5, true)
+
+	ids := FieldNameGetSimilarIds(field, size)
+
 	boolQuery := elastic.NewBoolQuery()
-	if searchResult.TotalHits() == 0 {
-		return boolQuery.Must(elastic.NewMatchNoneQuery())
+	if len(ids) == 0 {
+		boolQuery.Must(elastic.NewMatchNoneQuery())
+		return boolQuery
 	}
-	ids := make([]string, 0)
+	for _, hits := range ids {
+		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
+	}
+	return boolQuery
+}
+func IndexFieldsQueryGetIds(index string, field string, content string, size int) (ids []string) {
+	searchResult := QueryByField(index, field, content, 1, size)
+	if searchResult.TotalHits() == 0 {
+		return make([]string, 0)
+	}
 	for _, hits := range searchResult.Hits.Hits {
 		ids = append(ids, hits.Id)
 	}
+	return ids
+}
 
+func IndexFieldsGetQuery(index string, field string, content string, size int, after_field string) *elastic.BoolQuery {
+	ids := IndexFieldsQueryGetIds(index, field, content, size)
+	boolQuery := elastic.NewBoolQuery()
+	if len(ids) == 0 {
+		boolQuery.Must(elastic.NewMatchNoneQuery())
+		return boolQuery
+	}
+	fmt.Println(ids, "111111111111111111before none")
 	for _, hits := range ids {
-		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
+		boolQuery.Should(elastic.NewMatchPhraseQuery(after_field+".keyword", hits))
 	}
 	return boolQuery
 }

@@ -398,7 +398,10 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 			break
 		}
 		json_str := line
-
+		i++
+		if i < 7000000 {
+			continue
+		}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
 		if m[main_id] == nil {
@@ -431,7 +434,7 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 			}
 			panic(err)
 		}
-		i++
+
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
@@ -500,7 +503,7 @@ func load_fields() {
 }
 func loadPaperAbstract() {
 	service.Init()
-	for i := 5; i < 6; i++ {
+	for i := 4; i < 5; i++ {
 		str := strconv.Itoa(i)
 		proc_paper_rel("H:\\myPaperAbstractsInvertedIndex.txt."+str, "paper", "paper_id", "")
 	}
