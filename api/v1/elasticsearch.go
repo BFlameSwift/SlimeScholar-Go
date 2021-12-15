@@ -1267,3 +1267,21 @@ func AbstractSelectPaper(c *gin.Context) {
 		"details": paperSequences})
 	return
 }
+
+// QueryHotPaper doc
+// @description es 获取热门文献,根据收藏数判定,返回前10篇文章
+// @Tags elasticsearch
+// @Success 200 {string} string "{"success": true, "message": "获取文献成功"}"
+// @Router /es/query/paper/hot [POST]
+func QueryHotPaper(c *gin.Context) {
+	collects := service.QueryCollectTop10()
+	var paper_ids []string
+	for _,collect := range collects{
+		paper_ids = append(paper_ids, collect.PaperId)
+	}
+	paper_detail := service.GetPapers(paper_ids)
+	for i,paper := range paper_detail{
+		paper.(map[string]interface{})["collect_num"] = collects[i].Num
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
+}
