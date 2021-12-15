@@ -466,7 +466,7 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 func GetPapers(paperIds []string) []interface{} {
 	papers := IdsGetList(paperIds, "paper")
 	needFieldList := make([]string, 0)
-	abstractMap := IdsGetItems(paperIds, "abstract")
+	//abstractMap := IdsGetItems(paperIds, "abstract")
 	for _, paper := range papers {
 		paper := paper.(map[string]interface{}) // 省点事
 		if paper["fields"] != nil {
@@ -495,10 +495,8 @@ func GetPapers(paperIds []string) []interface{} {
 		} else {
 			paper["authors"] = make([]interface{}, 0)
 		}
-		abstract := abstractMap[paperIds[i]].(map[string]interface{})["abstract"]
-		if abstract != nil {
-			paper["abstract"] = abstract
-		} else {
+		//abstract := abstractMap[paperIds[i]].(map[string]interface{})["abstract"]
+		if paper["abstract"] == nil {
 			paper["abstract"] = ""
 		}
 		paper["is_collected"] = false
@@ -672,7 +670,10 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 		return elastic.NewTermQuery("doi.keyword", theMap["content"])
 	case "author_affiliation":
 		return elastic.NewMatchPhraseQuery("authors.afname", theMap["content"])
-
+	case "main":
+		return elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("abstract", theMap["content"])).Should(elastic.NewMatchPhraseQuery("paper_title", theMap["content"]))
+	case "abstract":
+		return elastic.NewMatchPhraseQuery("abstract", theMap["content"])
 	}
 	return nil
 }
