@@ -17,7 +17,7 @@ const PAPER_DIR = "E:\\Paper"
 const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
-const BULK_SIZE = 10000
+const BULK_SIZE = 5000
 
 var fieldsMap map[string]int = make(map[string]int)
 var success_num, fail_num = 0, 0
@@ -405,11 +405,12 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 			fmt.Println("linenum!!!!", i)
 			continue
 		}
-		m[other_type] = m["rel"]
+		//m[other_type] = m["rel"]
 		id := m[main_id].(string)
-		delete(m, "rel")
+		//delete(m, "rel")
 		delete(m, main_id)
-		doc := elastic.NewBulkUpdateRequest().Index(index).Id(id).Doc(m).DocAsUpsert(true)
+		//fmt.Println(m)
+		doc := elastic.NewBulkUpdateRequest().Index(index).Id(id).Doc(m)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
 			response, err := bulkRequest.Do(context.Background())
@@ -497,6 +498,13 @@ func load_fields() {
 	service.Init()
 	proc_paper_rel("H:\\myPaperFields.txt", "paper", "paper_id", "fields")
 }
+func loadPaperAbstract() {
+	service.Init()
+	for i := 5; i < 6; i++ {
+		str := strconv.Itoa(i)
+		proc_paper_rel("H:\\myPaperAbstractsInvertedIndex.txt."+str, "paper", "paper_id", "")
+	}
+}
 func loadabstract() {
 	service.Init()
 	for i := 0; i < 1; i++ {
@@ -509,19 +517,20 @@ func print1() {
 	}
 }
 
-//func main() {
-//	fmt.Println(service.TimeStrToTimeDefault("2006-10-01 00:00:00"))
-//	//	service.Init()
-//	//	load_fields()
-//	//	//load_paper()
-//	//
-//	//	//print1()
-//	//	//load_authors()
-//	//
-//	//	//load_journal()
-//	//	//load_incitations()
-//	//	//load_paper_rel()
-//	//	//load_paper_a uthor()
-//	//	//load_conference()
-//	//	//load_journal()
-//}
+func main() {
+	loadPaperAbstract()
+	//fmt.Println(service.TimeStrToTimeDefault("2006-10-01 00:00:00"))
+	//	service.Init()
+	//	load_fields()
+	//	//load_paper()
+	//
+	//	//print1()
+	//	//load_authors()
+	//
+	//	//load_journal()
+	//	//load_incitations()
+	//	//load_paper_rel()
+	//	//load_paper_a uthor()
+	//	//load_conference()
+	//	//load_journal()
+}

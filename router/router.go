@@ -66,6 +66,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/select/paper/field", v1.FieldSelectPaper)
 		EsRouter.POST("/query/paper/abstract", v1.AbstractQueryPaper)
 		EsRouter.POST("/query/paper/main", v1.MainQueryPaper)
+		EsRouter.POST("/select/paper/main", v1.MainSelectPaper)
 	}
 
 	SocialRouter := Router.Group("/social")
