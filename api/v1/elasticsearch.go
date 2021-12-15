@@ -330,13 +330,15 @@ func NameQueryAuthor(c *gin.Context) {
 		return
 	}
 	fmt.Println("search author", name, "hits :", searchResult.TotalHits())
-	var paperSequences []interface{} = make([]interface{}, 0, 1000)
+	ids := make([]string, 0)
+
 	for _, paper := range searchResult.Hits.Hits {
-		paperSequences = append(paperSequences, paper.Source)
+		ids = append(ids, paper.Id)
 	}
+	authors := service.GetAuthors(ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences, "aggregation": aggregation})
+		"details": authors, "aggregation": aggregation})
 	return
 }
 
@@ -373,12 +375,12 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 	query := service.IndexFieldsGetQuery("affiliation", "name", name, 12, "affiliation_id")
 	//query := elastic.NewMatchPhraseQuery("name", name)
 	boolQuery.Must(query)
-	//orQuery := elastic.NewBoolQuery()
-	//for _, affiliation := range affiliations {
-	//	fmt.Println(affiliation)
-	//	orQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", affiliation))
-	//}
-	//boolQuery.Must(orQuery)
+	orQuery := elastic.NewBoolQuery()
+	for _, affiliation := range affiliations {
+		fmt.Println(affiliation)
+		orQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", affiliation))
+	}
+	boolQuery.Must(orQuery)
 	//affiliationIdQuery := elastic.NewBoolQuery()
 	//for _, hit := range affiliationResult.Hits.Hits {
 	//	affiliationIdQuery.Should(elastic.NewMatchPhraseQuery("affiliation_id.keyword", hit.Id))
@@ -395,13 +397,15 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 		return
 	}
 	fmt.Println("search author", name, "hits :", searchResult.TotalHits())
-	var paperSequences []interface{} = make([]interface{}, 0, 1000)
+	ids := make([]string, 0)
+
 	for _, paper := range searchResult.Hits.Hits {
-		paperSequences = append(paperSequences, paper.Source)
+		ids = append(ids, paper.Id)
 	}
+	authors := service.GetAuthors(ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences, "aggregation": aggregation})
+		"details": authors, "aggregation": aggregation})
 	return
 }
 

@@ -776,6 +776,27 @@ func IndexFieldsGetQuery(index string, field string, content string, size int, a
 	}
 	return boolQuery
 }
+func GetAuthors(ids []string) (ret []interface{}) {
+	authors := IdsGetList(ids, "author")
+	affiliationMap := make(map[string]interface{})
+	for _, author := range authors {
+		afid := author.(map[string]interface{})["affiliation_id"].(string)
+		if afid != "" {
+			affiliationMap[afid] = 1
+		}
+	}
+	affiliations := IdsGetItems(GetMapAllKey(affiliationMap), "affiliation")
+	for _, author := range authors {
+		author := author.(map[string]interface{})
+		author["affiliation_name"] = ""
+		if author["affiliation_id"] != "" {
+			author["affiliation"] = affiliations[author["affiliation_id"].(string)]
+			author["affiliation_name"] = affiliations[author["affiliation_id"].(string)].(map[string]interface{})["name"]
+		}
+		ret = append(ret, author)
+	}
+	return ret
+}
 
 // func main() {
 // 	Init()
