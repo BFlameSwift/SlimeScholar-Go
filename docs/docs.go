@@ -826,6 +826,22 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/hot": {
+            "post": {
+                "description": "es 获取热门文献,根据收藏数判定,返回前10篇文章",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取文献成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/paper/main": {
             "post": {
                 "description": "es 根据文章标题 与摘要进行模糊搜索",
