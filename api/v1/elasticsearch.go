@@ -322,7 +322,7 @@ func NameQueryAuthor(c *gin.Context) {
 	searchResult := service.AuthorQuery(page, size, sort_type, sort_ascending, "author", boolQuery)
 
 	aggregation := make(map[string]interface{})
-	aggregation["affiliation"] = service.Paper_Aggregattion(searchResult, "affiliation")
+	aggregation["affiliations"] = service.Paper_Aggregattion(searchResult, "affiliation")
 	//aggregation["author"] = service.Paper_Aggregattion(searchResult, "author")
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -386,7 +386,7 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 	searchResult := service.AuthorQuery(page, size, sort_type, sort_ascending, "author", boolQuery)
 
 	aggregation := make(map[string]interface{})
-	aggregation["affiliation"] = service.Paper_Aggregattion(searchResult, "affiliation")
+	aggregation["affiliations"] = service.Paper_Aggregattion(searchResult, "affiliation")
 	//aggregation["author"] = service.Paper_Aggregattion(searchResult, "author")
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "作者不存在", "status": 404})
@@ -1276,11 +1276,11 @@ func AbstractSelectPaper(c *gin.Context) {
 func QueryHotPaper(c *gin.Context) {
 	collects := service.QueryCollectTop10()
 	var paper_ids []string
-	for _,collect := range collects{
+	for _, collect := range collects {
 		paper_ids = append(paper_ids, collect.PaperId)
 	}
 	paper_detail := service.GetPapers(paper_ids)
-	for i,paper := range paper_detail{
+	for i, paper := range paper_detail {
 		paper.(map[string]interface{})["collect_num"] = collects[i].Num
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
