@@ -163,19 +163,22 @@ func QueryByField(index string, field string, content string, page int, size int
 }
 
 // 通用的paper搜索部分，包含对各种类型的聚合
-func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool) *elastic.SearchResult {
+func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool, boolQuery *elastic.BoolQuery) *elastic.SearchResult {
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
-	boolQuery := elastic.NewBoolQuery()
+	//boolQuery := elastic.NewBoolQuery()
+	//if boolQuery != elastic.NewBoolQuery() {
 	if is_precise == false {
 		boolQuery.Must(elastic.NewMatchQuery(field, content))
 	} else {
 		boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	}
+	//}
+
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
@@ -729,7 +732,7 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 }
 
 func FieldNameGetSimilarIds(field string, size int) (ids []string) {
-	searchResult := PaperQueryByField("fields", "name", field, 1, size, true)
+	searchResult := PaperQueryByField("fields", "name", field, 1, size, true, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		return make([]string, 0)
 	}
@@ -789,6 +792,7 @@ func GetAuthors(ids []string) (ret []interface{}) {
 	for _, author := range authors {
 		author := author.(map[string]interface{})
 		author["affiliation_name"] = ""
+		author["affiliation"] = make(map[string]interface{})
 		if author["affiliation_id"] != "" {
 			author["affiliation"] = affiliations[author["affiliation_id"].(string)]
 			author["affiliation_name"] = affiliations[author["affiliation_id"].(string)].(map[string]interface{})["name"]

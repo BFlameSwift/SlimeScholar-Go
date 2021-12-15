@@ -183,7 +183,7 @@ func TitleQueryPaper(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
 		return
 	}
-	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, false)
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, false, elastic.NewBoolQuery())
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -421,7 +421,7 @@ func DoiQueryPaper(c *gin.Context) {
 	doi := c.Request.FormValue("doi")
 
 	//searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
-	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true)
+	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this abstract query %s not existed", doi)
@@ -454,8 +454,15 @@ func MainQueryPaper(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Request.FormValue("page"))
 	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	boolQuery := elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("paper_title", main)).Should(elastic.NewMatchPhraseQuery("abstract", main))
-
-	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).From((page - 1) * size).Do(context.Background())
+	//searchResult := service.PaperQueryByField("paper")
+	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
+	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
+	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
+	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
+	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "参数错误", "status": 401})
 		return
@@ -474,7 +481,7 @@ func MainQueryPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -740,7 +747,7 @@ func AuthorNameQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "authors.aname", author_name, 1, 10, is_precise)
+	searchResult := service.PaperQueryByField("paper", "authors.aname", author_name, 1, 10, is_precise, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this author_name query %s not existed", author_name)
@@ -842,7 +849,7 @@ func AffiliationNameQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, 1, 10, is_precise)
+	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, 1, 10, is_precise, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", affiliation_name)
@@ -944,7 +951,7 @@ func PublisherQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "publisher", publisher, 1, 10, is_precise)
+	searchResult := service.PaperQueryByField("paper", "publisher", publisher, 1, 10, is_precise, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", publisher)
@@ -1185,7 +1192,7 @@ func AbstractQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "abstract", abstract, page, size, is_precise)
+	searchResult := service.PaperQueryByField("paper", "abstract", abstract, page, size, is_precise, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", abstract)
