@@ -1132,3 +1132,13 @@ func AbstractQueryPaper(c *gin.Context) {
 		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
+
+// QueryHotPaper doc
+// @description es 获取热门文献,根据收藏数判定,返回前10篇文章
+// @Tags elasticsearch
+// @Success 200 {string} string "{"success": true, "message": "获取文献成功"}"
+// @Router /es/query/paper/hot [POST]
+// func QueryHotPaper(c *gin.Context) {
+
+
+// }

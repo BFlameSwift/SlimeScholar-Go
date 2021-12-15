@@ -17,12 +17,26 @@ func CreateATag(tag *model.Tag) (err error) {
 	return nil
 }
 
-//收藏文章
+//收藏文章-打标签
 func CreateATagPaper(tagPaper *model.TagPaper) (err error) {
 	if err = global.DB.Create(&tagPaper).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+//用户第一次收藏文章
+func CreateACollect(collect *model.Collect) (err error) {
+	if err = global.DB.Create(&collect).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+//点赞
+func UpdateACollect(collect *model.Collect) (err error) {
+	err = global.DB.Save(collect).Error
+	return err
 }
 
 //查询用户所有标签
@@ -73,6 +87,21 @@ func QueryATagPaper(tagID uint64, paperID string) (tagPaper model.TagPaper, not 
 	}
 }
 
+//判断用户是否收藏文章
+func QueryACollect(userID uint64,paperID string)(collect model.Collect, notFound bool) {
+	db := global.DB
+	db = db.Where("user_id = ?", userID)
+	db = db.Where("paper_id = ?", paperID)
+	err := db.First(&collect).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return collect, true
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	} else {
+		return collect, false
+	}
+}
+
 //删除标签
 func DeleteATag(tagID uint64) (err error) {
 	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.Tag{}).Error; err != nil {
@@ -87,6 +116,14 @@ func DeleteATag(tagID uint64) (err error) {
 //删除标签文章
 func DeleteATagPaper(ID uint64) (err error) {
 	if err = global.DB.Where("id = ?", ID).Delete(model.TagPaper{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+//删除收藏
+func DeleteACollect(ID uint64) (err error) {
+	if err = global.DB.Where("id = ?", ID).Delete(model.Collect{}).Error; err != nil {
 		return err
 	}
 	return nil

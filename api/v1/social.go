@@ -256,7 +256,18 @@ func DeleteATag(c *gin.Context) {
 	if notFoundTag {
 		c.JSON(http.StatusOK, gin.H{"success": false, "status": 403, "message": "标签不存在"})
 	}
+	tagPapers := service.QueryTagPaper(tag.TagID)
 	service.DeleteATag(tag.TagID)
+	for _,paper := range tagPapers{
+		collect,_ := service.QueryACollect(userID,paper.PaperID)
+		collect.TagCount--
+		if collect.TagCount == 0{
+			service.DeleteACollect(collect.ID)
+		}else{
+			service.UpdateACollect(&collect)
+		}
+		service.DeleteATagPaper(paper.ID)
+	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "status": 200, "message": "标签删除成功"})
 }
 
@@ -282,6 +293,15 @@ func CollectAPaper(c *gin.Context) {
 	}
 
 	id := c.Request.FormValue("paper_id")
+
+	//判断用户是否已收藏过该文章
+	collect,notfound := service.QueryACollect(userID,id)
+	if notfound{
+		collect = model.Collect{UserID:userID,PaperID:id}
+		service.CreateACollect(&collect)
+	}
+	//
+
 	tagName := c.Request.FormValue("tag_name")
 	if tagName == "" || len(tagName) == 0 {
 		tagName = "默认"
@@ -302,6 +322,8 @@ func CollectAPaper(c *gin.Context) {
 			if notFoundPaper {
 				tagPaper := model.TagPaper{TagID: tag.TagID, TagName: tag.TagName, PaperID: id, CreateTime: time.Now()}
 				service.CreateATagPaper(&tagPaper)
+				collect.TagCount++
+				service.UpdateACollect(&collect)
 			} else {
 				tmp--
 			}
@@ -343,12 +365,26 @@ func DeleteCollectPaper(c *gin.Context) {
 	if tagName != "" {
 		tag, _ := service.QueryATag(userID, tagName)
 		tagPaper, _ := service.QueryATagPaper(tag.TagID, id)
+		collect,_ := service.QueryACollect(userID,tagPaper.PaperID)
+		collect.TagCount--
+		if collect.TagCount == 0{
+			service.DeleteACollect(collect.ID)
+		}else{
+			service.UpdateACollect(&collect)
+		}
 		service.DeleteATagPaper(tagPaper.ID)
 	} else {
 		tags := service.QueryTagList(userID)
 		for _, tag := range tags {
 			paper, notfound := service.QueryATagPaper(tag.TagID, id)
 			if !notfound {
+				collect,_ := service.QueryACollect(userID,paper.PaperID)
+				collect.TagCount--
+				if collect.TagCount == 0{
+					service.DeleteACollect(collect.ID)
+				}else{
+					service.UpdateACollect(&collect)
+				}
 				service.DeleteATagPaper(paper.ID)
 			}
 		}

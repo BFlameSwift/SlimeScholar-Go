@@ -57,6 +57,7 @@ func InitMySQL() {
 
 		// 生成新的数据库表
 		&model.PaperReference{},
+		&model.Collect{},
 	)
 }
 
