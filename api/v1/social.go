@@ -88,7 +88,7 @@ func GetCollectPaper(c *gin.Context) {
 		papers = service.QueryTagPaper(tag.TagID)
 	}
 
-	fmt.Println(papers)
+	// fmt.Println(papers)
 	if papers == nil || len(papers) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -102,6 +102,7 @@ func GetCollectPaper(c *gin.Context) {
 	for _, paper := range papers {
 		paper_ids = append(paper_ids, paper.PaperID)
 	}
+	fmt.Println(paper_ids)
 	paper_detail := service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{
