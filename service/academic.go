@@ -3,12 +3,13 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"gitee.com/online-publish/slime-scholar-go/global"
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gorm.io/gorm"
 	"sort"
 	"strings"
 	"time"
+
+	"gitee.com/online-publish/slime-scholar-go/global"
+	"gitee.com/online-publish/slime-scholar-go/model"
+	"gorm.io/gorm"
 )
 
 // 将paper简化到最贱格式
@@ -272,6 +273,13 @@ func GetPaperCiteType(paper map[string]interface{}) string {
 	//	return "M"
 	//}
 }
+func FormatCite(rank int, name string, content string) map[string]interface{} {
+	ret := make(map[string]interface{})
+	ret["id"] = rank
+	ret["name"] = name
+	ret["content"] = content
+	return ret
+}
 
 // CitePaper 根据paperid引用文献
 func CitePaper(paperId string) (ret []interface{}) {
@@ -282,9 +290,7 @@ func CitePaper(paperId string) (ret []interface{}) {
 	//fmt.Println(title)
 	citedType := GetPaperCiteType(paper)
 	//fmt.Println(citedType)
-	gbt := make(map[string]string)
-	gbt["GB/T 7714"] = authors + title + citedType
-	ret = append(ret, gbt)
+	ret = append(ret, FormatCite(1, "GB/T 7714", authors+title+citedType))
 	//fmt.Println(gbt["GB/T 7714"])
 
 	return ret
