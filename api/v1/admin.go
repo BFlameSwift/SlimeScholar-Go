@@ -31,25 +31,25 @@ type Msg struct {
 func SubmitCount(c *gin.Context) {
 	data := make(map[string]interface{}, 0)
 
-	// paper_map := make(map[string]interface{})
-	// if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
-	// 	panic(err)
-	// }
+	paper_map := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
+		panic(err)
+	}
 	
-	// author_map := make(map[string]interface{})
-	// if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/author/_count")), &author_map); err != nil {
-	// 	panic(err)
-	// }
-	// data["literCount"] = paper_map["count"]
-	// // fmt.Println(paper_map["count"])
-	// data["authorCount"] = author_map["count"]
-	// // fmt.Println(author_map["count"])
+	author_map := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/author/_count")), &author_map); err != nil {
+		panic(err)
+	}
+	data["literCount"] = paper_map["count"]
+	// fmt.Println(paper_map["count"])
+	data["authorCount"] = author_map["count"]
+	// fmt.Println(author_map["count"])
 
-	// userCount, memberCount := service.QueryUserCount()
-	// data["userCount"] = userCount
-	// // fmt.Println(data["userCount"])
-	// data["memberCount"] = memberCount
-	// // fmt.Println(data["memberCount"])
+	userCount, memberCount := service.QueryUserCount()
+	data["userCount"] = userCount
+	// fmt.Println(data["userCount"])
+	data["memberCount"] = memberCount
+	// fmt.Println(data["memberCount"])
 
 	filename := utils.LOG_FILE_PATH + utils.LOG_FILE_NAME
 	activeIndex,responseTime := LogAnalize(filename)
