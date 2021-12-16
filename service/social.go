@@ -79,6 +79,14 @@ func QueryCollectTop10() (collects []PaperCollect) {
 	return collects
 }
 
+//查询用户的所有收藏文章
+func QueryUserCollect(userid uint64)(collects []model.Collect){
+	collects = make([]model.Collect, 0)
+	//TODO 按时间排序
+	global.DB.Where("user_id=?", userid).Find(&collects)
+	return collects
+}
+
 //精确查询标签文章
 func QueryATagPaper(tagID uint64, paperID string) (tagPaper model.TagPaper, not bool) {
 	err := global.DB.Where("tag_id = ? AND paper_id = ?", tagID, paperID).First(&tagPaper).Error

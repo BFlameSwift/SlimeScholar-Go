@@ -74,35 +74,36 @@ func GetCollectPaper(c *gin.Context) {
 	}
 
 	tagName := c.Request.FormValue("tag_name")
-	papers := make([]model.TagPaper, 0)
+	var paper_ids []string
 	if tagName == "" {
-		tags := service.QueryTagList(userID)
-		for _, tag := range tags {
-			tag_papers := service.QueryTagPaper(tag.TagID)
-			for _, tmp := range tag_papers {
-				papers = append(papers, tmp)
-			}
+		papers := service.QueryUserCollect(userID)
+		if papers == nil || len(papers) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"status":  402,
+				"message": "标签下没有文章",
+			})
+			return
+		}
+		for _, paper := range papers {
+			paper_ids = append(paper_ids, paper.PaperID)
 		}
 	} else {
 		tag, _ := service.QueryATag(userID, tagName)
-		papers = service.QueryTagPaper(tag.TagID)
+		papers := service.QueryTagPaper(tag.TagID)
+		if papers == nil || len(papers) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"status":  402,
+				"message": "标签下没有文章",
+			})
+			return
+		}
+		for _, paper := range papers {
+			paper_ids = append(paper_ids, paper.PaperID)
+		}
 	}
 
-	// fmt.Println(papers)
-	if papers == nil || len(papers) == 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"status":  402,
-			"message": "标签下没有文章",
-		})
-		return
-	}
-
-	var paper_ids []string
-	for _, paper := range papers {
-		paper_ids = append(paper_ids, paper.PaperID)
-	}
-	fmt.Println(paper_ids)
 	paper_detail := service.GetPapers(paper_ids)
 
 	c.JSON(http.StatusOK, gin.H{
