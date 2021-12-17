@@ -150,7 +150,7 @@ func Gets(Params map[string]string) (*elastic.GetResult, error) {
 // 匹配搜索，非完全匹配按照index和字段搜索
 func QueryByField(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	boolQuery := elastic.NewBoolQuery()
-	boolQuery.Must(elastic.NewMatchQuery(field, content))
+	boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).
 		From((page - 1) * size).Do(context.Background())
@@ -711,7 +711,8 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 	case "abstract":
 		return elastic.NewMatchPhraseQuery("abstract", theMap["content"])
 	case "field":
-		return FieldNameGetQuery(theMap["content"].(string), 5)
+		return IndexFieldsGetQuery("field", "name", theMap["content"].(string), 5, "fields")
+		//return FieldNameGetQuery(theMap["content"].(string), 5)
 
 	}
 	return nil
@@ -806,7 +807,7 @@ func IndexFieldsGetQuery(index string, field string, content string, size int, a
 		boolQuery.Must(elastic.NewMatchNoneQuery())
 		return boolQuery
 	}
-	fmt.Println(ids, "111111111111111111before none")
+
 	for _, hits := range ids {
 		boolQuery.Should(elastic.NewMatchPhraseQuery(after_field+".keyword", hits))
 	}
