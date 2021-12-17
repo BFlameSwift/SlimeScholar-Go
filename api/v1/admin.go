@@ -35,22 +35,29 @@ func SubmitCount(c *gin.Context) {
 	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
 		panic(err)
 	}
+	
 	author_map := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/author/_count")), &author_map); err != nil {
 		panic(err)
 	}
 	data["literCount"] = paper_map["count"]
+	// fmt.Println(paper_map["count"])
 	data["authorCount"] = author_map["count"]
+	// fmt.Println(author_map["count"])
 
 	userCount, memberCount := service.QueryUserCount()
 	data["userCount"] = userCount
+	// fmt.Println(data["userCount"])
 	data["memberCount"] = memberCount
+	// fmt.Println(data["memberCount"])
 
 	filename := utils.LOG_FILE_PATH + utils.LOG_FILE_NAME
 	activeIndex,responseTime := LogAnalize(filename)
 	data["activeIndex"] = activeIndex
+	fmt.Println(data["activeIndex"])
 
 	data["responseTime"] = responseTime
+	fmt.Println(data["responseTime"])
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": data})
 }
@@ -495,9 +502,17 @@ func LogAnalize(filename string) (data []interface{},resTime float64) {
 		if strings.Contains(tmp.msg, "POST") && msg_count < 100{
 			a := tmp.msg
 			fmt.Println(a)
-			end := strings.Index(a, "ms")
+			end := strings.Index(a, "s")
 			b := strings.TrimSpace(a[7:end]) //去掉前后空格
-			c,_ := strconv.ParseFloat(b,64)
+			len := len(b)
+			for i := len-1; i >= 0; i-- {
+                if !(b[i] >= '0' && b[i] <= '9'){
+					len--
+				}else{
+					break
+				}
+        	}
+			c,_ := strconv.ParseFloat(b[:len],64)
 			fmt.Println(c)
 			resTime = resTime + c
 			msg_count++ 
