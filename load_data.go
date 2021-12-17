@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"time"
 )
 
 const AUTHOR_DIR = "H:\\Scholar"
@@ -384,24 +385,20 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 	}
 	scanner := bufio.NewScanner(open)
 	i := 0
-	fin, error := os.OpenFile(file_path, os.O_RDONLY, 0)
-	if error != nil {
-		panic(error)
-	}
-	defer fin.Close()
 	client := service.ESClient
 	bulkRequest := client.Bulk()
-	reader := bufio.NewReader(fin)
-	for {
-		line, error_read := reader.ReadString('\n')
+	//reader := bufio.NewReader(fin)
+	for scanner.Scan() {
+		i++
+		if i < 25000000 {
+			continue
+		}
+		line := scanner.Text()
+		//line, error_read := reader.ReadString('\n')
 		if len(line) == 0 {
 			break
 		}
 		json_str := line
-		i++
-		if i < 7000000 {
-			continue
-		}
 		var m map[string]interface{}
 		_ = json.Unmarshal([]byte(json_str), &m)
 		if m[main_id] == nil {
@@ -425,14 +422,7 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 			if fail_num > 0 {
 				fmt.Println((response.Failed()[0].Error))
 			}
-			fmt.Println("success_num", success_num, "fail_num", fail_num)
-		}
-		if error_read != nil {
-			if err == io.EOF {
-				fmt.Printf("%#v\n", line)
-				break
-			}
-			panic(err)
+			fmt.Println("success_num", success_num, "fail_num", fail_num, time.Now())
 		}
 
 	}
@@ -503,7 +493,7 @@ func load_fields() {
 }
 func loadPaperAbstract() {
 	service.Init()
-	for i := 4; i < 5; i++ {
+	for i := 5; i < i+1; i++ {
 		str := strconv.Itoa(i)
 		proc_paper_rel("H:\\myPaperAbstractsInvertedIndex.txt."+str, "paper", "paper_id", "")
 	}

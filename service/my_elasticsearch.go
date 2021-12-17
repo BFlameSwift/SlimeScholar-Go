@@ -275,26 +275,38 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	var inter []interface{} = m["rel"].([]interface{})
 	// ret_arr := make([]interface{}, 0, len(inter))
 	ret_map := make(map[string]interface{})
+	// 按照作者次序排序
+	sort.Slice(inter, func(i, j int) bool {
+		if inter[i].(map[string]interface{})["order"] == inter[j].(map[string]interface{})["order"] {
+			return inter[i].(map[string]interface{})["aid"].(string) < inter[j].(map[string]interface{})["aid"].(string)
+		}
+		aid1, _ := strconv.Atoi(inter[i].(map[string]interface{})["order"].(string))
+		aid2, _ := strconv.Atoi(inter[j].(map[string]interface{})["order"].(string))
+		return aid1 < aid2
+	})
+	affiliationIdMap := make(map[string]int)
 	for _, v := range inter {
 		v_map := v.(map[string]interface{})
 		v_map["author_id"] = v_map["aid"]
 		v_map["author_name"] = v_map["aname"]
 		v_map["affiliation_id"] = v_map["afid"]
 		v_map["affiliation_name"] = v_map["afname"]
+		v_map["affiliation_order"] = 0
+		if v_map["afid"].(string) != "" {
+			if order, ok := affiliationIdMap[v_map["afid"].(string)]; ok {
+				v_map["affiliation_order"] = order
+			} else {
+				lenMap := len(affiliationIdMap)
+				affiliationIdMap[v_map["afid"].(string)] = lenMap + 1
+				v_map["affiliation_order"] = lenMap + 1
+			}
+		}
 		delete(v_map, "aid")
 		delete(v_map, "afid")
 		delete(v_map, "aname")
 		delete(v_map, "afname")
 	}
-	// 按照作者次序排序
-	sort.Slice(inter, func(i, j int) bool {
-		if inter[i].(map[string]interface{})["order"] == inter[j].(map[string]interface{})["order"] {
-			return inter[i].(map[string]interface{})["author_id"].(string) < inter[j].(map[string]interface{})["author_id"].(string)
-		}
-		aid1, _ := strconv.Atoi(inter[i].(map[string]interface{})["order"].(string))
-		aid2, _ := strconv.Atoi(inter[j].(map[string]interface{})["order"].(string))
-		return aid1 < aid2
-	})
+
 	ret_map["rel"] = inter
 	return ret_map
 }
@@ -468,7 +480,7 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 // 其中，abstract，field，都不一定有，所以要尽可能保证安全性
 func GetPapers(paperIds []string) []interface{} {
 	papers := IdsGetList(paperIds, "paper")
-	needFieldList := make([]string, 0)
+	needFieldList, affiliationIdMap := make([]string, 0), make(map[string]interface{})
 	//abstractMap := IdsGetItems(paperIds, "abstract")
 	for _, paper := range papers {
 		paper := paper.(map[string]interface{}) // 省点事
@@ -478,9 +490,17 @@ func GetPapers(paperIds []string) []interface{} {
 				// 可能会冗余几个，但是也不太碍事
 			}
 		}
-
+		if paper["authors"] != nil {
+			for _, author := range paper["authors"].([]interface{}) {
+				id := author.(map[string]interface{})["afid"].(string)
+				if id != "" {
+					affiliationIdMap[id] = 1
+				}
+			}
+		}
 	}
 	fieldsItems := IdsGetItems(needFieldList, "fields")
+	affiliationMap := IdsGetItems(GetMapAllKey(affiliationIdMap), "affiliation")
 	thisFieldList := make([]interface{}, 0)
 
 	for i, paper := range papers {
@@ -491,13 +511,26 @@ func GetPapers(paperIds []string) []interface{} {
 			}
 		}
 		// 格式化authors
+		//paperAffiliationNames := make([]string, 0)
+		paperAffiliationNameMap := make(map[string]int)
 		if paper["authors"] != nil {
 			authors_map := make(map[string]interface{})
 			authors_map["rel"] = paper["authors"]
 			paper["authors"] = (ParseRelPaperAuthor(authors_map))["rel"]
+			for index, author := range paper["authors"].([]interface{}) {
+				afid := author.(map[string]interface{})["affiliation_id"].(string)
+				if afid != "" {
+					afname := affiliationMap[afid].(map[string]interface{})["name"].(string)
+					if _, ok := paperAffiliationNameMap[afname]; !ok {
+						paperAffiliationNameMap[afname] = 1 - index
+					}
+				}
+			}
 		} else {
 			paper["authors"] = make([]interface{}, 0)
 		}
+
+		paper["author_affiliation"] = GetAllSortedKey(paperAffiliationNameMap)
 		//abstract := abstractMap[paperIds[i]].(map[string]interface{})["abstract"]
 		if paper["abstract"] == nil {
 			paper["abstract"] = ""
