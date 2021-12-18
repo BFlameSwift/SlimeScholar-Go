@@ -3,6 +3,9 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/olivere/elastic/v7"
+	"golang.org/x/net/context"
 	"sort"
 	"strings"
 	"time"
@@ -294,4 +297,47 @@ func CitePaper(paperId string) (ret []interface{}) {
 	//fmt.Println(gbt["GB/T 7714"])
 
 	return ret
+}
+
+// 根据文献id获取引用此文献的文献
+func GetCitationPapers(paperIds []string, size int) ([]string, []int64) {
+	boolQuery, idsQuery := elastic.NewBoolQuery(), elastic.NewBoolQuery()
+	for _, id := range paperIds {
+		idsQuery.Should(elastic.NewMatchPhraseQuery("rel.keyword", id))
+	}
+	boolQuery.Must(idsQuery)
+
+	searchResult, err := Client.Search().Index("reference").Query(boolQuery).Size(size).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	citationsIds := make([]string, 0)
+	mulIdsQuery := elastic.NewIdsQuery()
+	for _, hit := range searchResult.Hits.Hits {
+		citationsIds = append(citationsIds, hit.Id)
+		mulIdsQuery.Ids(hit.Id)
+	}
+
+	fmt.Println("citation_count:!!!!!", len(citationsIds))
+	yearAggregation := elastic.NewTermsAggregation().Field("year.keyword")
+
+	searchResult, err = Client.Search().Index("paper").Query(mulIdsQuery).Size(0).Aggregation("year", yearAggregation).Do(context.Background())
+
+	agg, found := searchResult.Aggregations.Terms("year")
+
+	if !found {
+		return make([]string, 0), make([]int64, 0)
+	}
+	yearList, citationCountList := make([]string, 0), make([]int64, 0)
+	//citationMap := make(map[string]int)
+	for _, bucket := range agg.Buckets {
+		if bucket.Key.(string) == "" {
+			continue
+		}
+		//citationMap[bucket.Key.(string)] =
+		yearList = append(yearList, bucket.Key.(string))
+		citationCountList = append(citationCountList, bucket.DocCount)
+	}
+
+	return yearList, citationCountList
 }

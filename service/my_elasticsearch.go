@@ -157,7 +157,6 @@ func QueryByField(index string, field string, content string, page int, size int
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(searchResult.TotalHits())
 
 	return searchResult
 }

@@ -1249,6 +1249,30 @@ paths:
             type: string
       tags:
       - 学者门户
+  /scholar/get/citation/paper:
+    post:
+      description: 获取es期刊详细信息
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 期刊ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - 学者门户
   /scholar/info:
     post:
       description: 获取学者信息
