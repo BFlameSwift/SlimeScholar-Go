@@ -523,7 +523,7 @@ func LogAnalize(filename string) (data []interface{},resTime float64) {
 	}
 	count,_ := strconv.ParseFloat(strconv.Itoa(msg_count),64)
 	resTime = resTime / count
-	resTime, _ = strconv.ParseFloat(fmt.Sprintf("%.5f", resTime), 64)
+	resTime, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", resTime), 64)
 	//
 
 	return data,resTime
