@@ -34,7 +34,7 @@ func StructToMap(s interface{}) (ret_map map[string]interface{}) {
 
 // 对mao 按照key 排序
 
-func RankByWordCount(wordFrequencies map[string]int) PairList {
+func RankByWordCount(wordFrequencies map[string]int, ascending bool) PairList {
 	pl := make(PairList, len(wordFrequencies))
 	i := 0
 	for k, v := range wordFrequencies {
@@ -44,7 +44,11 @@ func RankByWordCount(wordFrequencies map[string]int) PairList {
 	//从小到大排序
 	//sort.Sort(pl)
 	//从大到小排序
-	sort.Sort(sort.Reverse(pl))
+	if ascending {
+		sort.Sort(pl)
+	} else {
+		sort.Sort(sort.Reverse(pl))
+	}
 	return pl
 }
 
@@ -60,7 +64,7 @@ func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func GetTopNKey(m map[string]int, n int) (ret []string) {
-	pl := RankByWordCount(m)
+	pl := RankByWordCount(m, false)
 	for i := 0; i < len(pl) && i < n; i++ {
 		ret = append(ret, pl[i].Key)
 	}
@@ -69,7 +73,7 @@ func GetTopNKey(m map[string]int, n int) (ret []string) {
 
 //对map按照value排序后返回
 func GetAllSortedKey(m map[string]int) (ret []string) {
-	pl := RankByWordCount(m)
+	pl := RankByWordCount(m, false)
 	for i := 0; i < len(pl); i++ {
 		ret = append(ret, pl[i].Key)
 	}

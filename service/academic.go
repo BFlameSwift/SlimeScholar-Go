@@ -96,9 +96,7 @@ func PaperMapToPaperList(m map[string]interface{}) (ret_list []interface{}) {
 	}
 	return ret_list
 }
-
-// GetAuthorAllPaper 根据作者id获取该作者所有的papers
-func GetAuthorAllPaper(author_id string) (paper_list []interface{}) {
+func GetAuthorAllPapersIds(author_id string) []string {
 	paper_result := QueryByField("paper", "authors.aid.keyword", author_id, 1, 100)
 	paper_ids_origin := make([]string, 0, 10000)
 	//authors_map := make(map[string]interface{})
@@ -138,7 +136,13 @@ func GetAuthorAllPaper(author_id string) (paper_list []interface{}) {
 			paper_ids_final = append(paper_ids_final, key)
 		}
 	}
-	return GetPapers(paper_ids_final)
+	return paper_ids_final
+}
+
+// GetAuthorAllPaper 根据作者id获取该作者所有的papers
+func GetAuthorAllPaper(author_id string) (paper_list []interface{}) {
+
+	return GetPapers(GetAuthorAllPapersIds(author_id))
 }
 
 // JudgeAuthorIsSettled 判断作者是否已经入驻

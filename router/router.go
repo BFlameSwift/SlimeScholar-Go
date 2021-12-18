@@ -28,6 +28,7 @@ func InitRouter(Router *gin.RouterGroup) {
 	{
 		SchoalrRouter.POST("/info", v1.GetScholar)
 		SchoalrRouter.POST("/cite_paper", v1.CitePaper)
+		SchoalrRouter.POST("/get/citation/author", v1.GetAuthorCitationGraph)
 		SchoalrRouter.POST("/get/citation/paper", v1.GetPaperCitationGraph)
 		SchoalrRouter.POST("/transfer", v1.ScholarManagePaper)
 	}
