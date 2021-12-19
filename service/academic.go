@@ -316,18 +316,17 @@ func APACitePaper(paper map[string]interface{}) (ret string) {
 		ret += " " + journal["name"].(string) + "Journal," + GetPaperPages(paper)
 	} else if paper["conference_id"].(string) != "" {
 		conference := GetsByIndexIdRetMap("conference", paper["conference_id"].(string))
-		ret += " " + conference["name"].(string)
+		ret += " " + conference["name"].(string) + "."
 	}
-	ret += "."
 	return ret
 }
 
 // CitePaper 根据paperid引用文献
 func CitePaper(paperId string) (ret []interface{}) {
 	paper := GetSimplePaper(paperId)
-	authors := strings.Join(GetPaperAuthorsName(paper), ",")
+	authors := strings.Join(GetPaperAuthorsName(paper), ",") + "."
 	//fmt.Println(authors)
-	title := paper["paper_title"].(string)
+	title := paper["paper_title"].(string) + "."
 	//fmt.Println(title)
 	citedType := GetPaperCiteType(paper)
 	//fmt.Println(citedType)
@@ -344,7 +343,6 @@ func GetPaperCitationIds(paperIds []string, size int, page int) ([]string, int) 
 		idsQuery.Should(elastic.NewMatchPhraseQuery("rel.keyword", id))
 	}
 	boolQuery.Must(idsQuery)
-
 	searchResult, err := Client.Search().Index("reference").Query(boolQuery).From((page - 1) * size).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)

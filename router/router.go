@@ -73,6 +73,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/query/paper/hot", v1.QueryHotPaper)
 
 		EsRouter.POST("/get/citation/paper", v1.GetPaperCitationPaper)
+		EsRouter.POST("/get/related/paper", v1.GetRelatedPaper)
 
 	}
 

@@ -44,6 +44,7 @@ func GetPaper(c *gin.Context) {
 	//fmt.Println(len(yearList))
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "details": paper})
+
 	return
 }
 
@@ -1336,7 +1337,7 @@ func GetAuthorCitationGraph(c *gin.Context) {
 }
 
 // GetPaperCitationPaper doc
-// @description 获取es期刊详细信息
+// @description 获取es引用论文的论文
 // @Tags elasticsearch
 // @Param id formData string true "id"
 // @Param page formData int true "page"
@@ -1352,5 +1353,22 @@ func GetPaperCitationPaper(c *gin.Context) {
 	citationsIds, total_hits := service.GetPaperCitationIds(append(make([]string, 0), thisId), size, page)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "citations": service.GetPapers(citationsIds), "total_hits": total_hits})
+	return
+}
+
+// GetRelatedPaper doc
+// @description 根据paper—id 获取论文的相关文献
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 期刊ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/related/paper [POST]
+func GetRelatedPaper(c *gin.Context) {
+	thisId := c.Request.FormValue("id")
+
+	simplePaper := service.GetSimplePaper(thisId)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "related": service.GetPapers(service.GetRelatedPapers(simplePaper["paper_title"].(string)))})
 	return
 }

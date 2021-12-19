@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitee.com/online-publish/slime-scholar-go/utils"
@@ -843,6 +845,25 @@ func GetAuthors(ids []string) (ret []interface{}) {
 		ret = append(ret, author)
 	}
 	return ret
+}
+
+// 根据paper的领域，获取相关领域的文献idlist
+func GetRelatedPapers(paperTitle string) (papersIds []string) {
+	page := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 30
+	boolQuery := elastic.NewBoolQuery()
+	titleList := strings.Split(paperTitle, " ")
+	rand1, rand2 := rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList)
+	boolQuery.Should(elastic.NewMatchQuery("paper_title", titleList[rand1])).Should(elastic.NewMatchQuery("paper_title", titleList[rand2]))
+	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
+	searchResult, err := Client.Search("paper").Query(boolQuery).Size(5).
+		From((page - 1) * 5).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for _, hits := range searchResult.Hits.Hits {
+		papersIds = append(papersIds, hits.Id)
+	}
+	return papersIds
 }
 
 // func main() {

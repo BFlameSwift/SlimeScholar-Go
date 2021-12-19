@@ -103,7 +103,7 @@ paths:
       - elasticsearch
   /es/get/citation/paper:
     post:
-      description: 获取es期刊详细信息
+      description: 获取es引用论文的论文
       parameters:
       - description: id
         in: formData
@@ -223,6 +223,30 @@ paths:
             type: string
         "404":
           description: '{"success": false, "message": "该PaperID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
+  /es/get/related/paper:
+    post:
+      description: 根据paper—id 获取论文的相关文献
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 期刊ID不存在"}'
           schema:
             type: string
         "500":
