@@ -287,9 +287,10 @@ func FormatCite(rank int, name string, content string) map[string]interface{} {
 	ret["content"] = content
 	return ret
 }
-func MLACitePaper(paperId string) (ret string) {
-	paper := GetSimplePaper(paperId)
 
+// 根据paper生成MLA格式的参考文献
+func MLACitePaper(paper map[string]interface{}) (ret string) {
+	//paper := GetSimplePaper(paperId)
 	authors := GetPaperAuthorsName(paper)
 	if len(authors) > 3 {
 		ret += authors[0] + " et al"
@@ -307,6 +308,20 @@ func MLACitePaper(paperId string) (ret string) {
 	ret += " (" + paper["year"].(string) + ")"
 	return ret
 }
+func APACitePaper(paper map[string]interface{}) (ret string) {
+	ret += strings.Join(GetPaperAuthorsName(paper), ".& ")
+	ret += " (" + paper["year"].(string) + ")."
+	ret += paper["paper_title"].(string) + "."
+	if paper["journal_id"].(string) != "" {
+		journal := GetsByIndexIdRetMap("journal", paper["journal_id"].(string))
+		ret += " " + journal["name"].(string) + "Journal," + GetPaperPages(paper)
+	} else if paper["conference_id"].(string) != "" {
+		conference := GetsByIndexIdRetMap("conference", paper["conference_id"].(string))
+		ret += " " + conference["name"].(string)
+	}
+	ret += "."
+	return ret
+}
 
 // CitePaper 根据paperid引用文献
 func CitePaper(paperId string) (ret []interface{}) {
@@ -318,7 +333,8 @@ func CitePaper(paperId string) (ret []interface{}) {
 	citedType := GetPaperCiteType(paper)
 	//fmt.Println(citedType)
 	ret = append(ret, FormatCite(1, "GB/T 7714", authors+title+citedType))
-	ret = append(ret, FormatCite(2, "MLA", MLACitePaper(paperId)))
+	ret = append(ret, FormatCite(2, "MLA", MLACitePaper(paper)))
+	ret = append(ret, FormatCite(3, "APA", APACitePaper(paper)))
 	//fmt.Println(gbt["GB/T 7714"])
 
 	return ret
