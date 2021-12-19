@@ -287,6 +287,24 @@ func FormatCite(rank int, name string, content string) map[string]interface{} {
 	ret["content"] = content
 	return ret
 }
+func MLACitePaper(paperId string) (ret string) {
+	paper := GetSimplePaper(paperId)
+
+	authors := GetPaperAuthorsName(paper)
+	ret += authors[0]
+	if len(authors) > 1 {
+		ret += " et al"
+	}
+	ret += "." + "\"" + paper["paper_title"].(string) + "\""
+	//TODO 根据会议来选择输出格式
+	ret += "(" + paper["year"].(string) + ")"
+	//fmt.Println(authors)
+	//title := paper["paper_title"].(string)
+	//fmt.Println(title)
+	//fmt.Println(gbt["GB/T 7714"])
+
+	return ret
+}
 
 // CitePaper 根据paperid引用文献
 func CitePaper(paperId string) (ret []interface{}) {
@@ -298,6 +316,7 @@ func CitePaper(paperId string) (ret []interface{}) {
 	citedType := GetPaperCiteType(paper)
 	//fmt.Println(citedType)
 	ret = append(ret, FormatCite(1, "GB/T 7714", authors+title+citedType))
+	ret = append(ret, FormatCite(2, "MLA", MLACitePaper(paperId)))
 	//fmt.Println(gbt["GB/T 7714"])
 
 	return ret
