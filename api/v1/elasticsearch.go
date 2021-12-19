@@ -177,6 +177,7 @@ func GetJournal(c *gin.Context) {
 // @Tags elasticsearch
 // @Param title formData string true "title"
 // @Param page formData int true "page"
+// @Param is_precise formData bool false "is_precise"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "page 不是整数"}"
 // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
@@ -186,12 +187,17 @@ func TitleQueryPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
+	isPreciseStr := c.Request.FormValue("is_precise")
+	is_precise := true
+	if isPreciseStr != "true" {
+		is_precise = false
+	}
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
 		return
 	}
-	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, false, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, is_precise, elastic.NewBoolQuery())
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -226,6 +232,7 @@ func TitleQueryPaper(c *gin.Context) {
 // @description es 根据title筛选论文，包括对文章类型journal的筛选，页数的更换,页面大小size的设计, \n 错误码：401 参数格式错误, 排序方式1为默认，2为引用率，3为年份
 // @Tags elasticsearch
 // @Param title formData string true "title"
+// @Param is_precise formData bool false "is_precise"
 // @Param page formData int true "page"
 // @Param size formData int true "size"
 // @Param min_year formData int true "min_year"
@@ -254,6 +261,7 @@ func TitleSelectPaper(c *gin.Context) {
 	doctypes, conferences, journals, publishers := make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100), make([]string, 0, 100)
 	sort_type_str := c.Request.FormValue("sort_type")
 	sort_ascending_str := c.Request.FormValue("sort_ascending")
+	isPreciseStr := c.Request.FormValue("is_precise")
 
 	err := service.CheckSelectPaperParams(c, page_str, size_str, min_year, max_year, doctypesJson, journalsJson, conferenceJson, publisherJson, sort_ascending_str)
 	if err != nil {
@@ -269,7 +277,11 @@ func TitleSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
+	if isPreciseStr != "true" {
+		boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
+	} else {
+		boolQuery.Must(elastic.NewTermQuery("paper_title", title))
+	}
 	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})

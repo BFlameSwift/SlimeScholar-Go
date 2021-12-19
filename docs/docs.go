@@ -1045,6 +1045,12 @@ var doc = `{
                         "name": "page",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "is_precise",
+                        "name": "is_precise",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1766,6 +1772,12 @@ var doc = `{
                         "name": "title",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "is_precise",
+                        "name": "is_precise",
+                        "in": "formData"
                     },
                     {
                         "type": "integer",

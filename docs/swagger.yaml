@@ -683,6 +683,10 @@ paths:
         name: page
         required: true
         type: integer
+      - description: is_precise
+        in: formData
+        name: is_precise
+        type: boolean
       responses:
         "200":
           description: '{"success": true, "message": "获取成功"}'
@@ -1186,6 +1190,10 @@ paths:
         name: title
         required: true
         type: string
+      - description: is_precise
+        in: formData
+        name: is_precise
+        type: boolean
       - description: page
         in: formData
         name: page

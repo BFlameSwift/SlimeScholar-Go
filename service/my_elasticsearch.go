@@ -184,7 +184,7 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	//boolQuery := elastic.NewBoolQuery()
 	//if boolQuery != elastic.NewBoolQuery() {
 	if is_precise == false {
-		boolQuery.Must(elastic.NewMatchQuery(field, content))
+		boolQuery.Must(elastic.NewTermQuery(field, content))
 	} else {
 		boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	}
