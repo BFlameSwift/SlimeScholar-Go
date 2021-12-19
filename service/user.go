@@ -121,6 +121,7 @@ func SendCheckAnswer(themail string, success bool, content string) {
 	if err != nil {
 		log.Println(err)
 		fmt.Println("send fail")
+		panic(err)
 		return
 	}
 	fmt.Println("sendRegisterEmail successfully")

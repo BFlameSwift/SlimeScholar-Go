@@ -2,11 +2,11 @@ package utils
 
 import (
 	"fmt"
+	"gopkg.in/gomail.v2"
 	"log"
 	"strconv"
-
-	"gopkg.in/gomail.v2"
 )
+
 func SendRegisterEmail(themail string, number int) {
 	subject := "欢迎注册Slime学术成果分享平台"
 	// 邮件正文
@@ -37,7 +37,7 @@ func SendMail(mailTo []string, subject string, body string) error {
 		"user": "chlorinum@126.com",
 		"pass": "QBUCCRELRTNZJJWV",
 		"host": "smtp.126.com",
-		"port": "25",
+		"port": "465",
 	}
 
 	port, _ := strconv.Atoi(mailConn["port"]) //转换端口类型为int
@@ -59,7 +59,7 @@ func SendMail(mailTo []string, subject string, body string) error {
 
 }
 
-func SendReplyEmail(themail string , paper_id string) {
+func SendReplyEmail(themail string, paper_id string) {
 	subject := "您在Slime学术成果分享平台的评论收到了一条回复"
 	// 邮件正文
 	mailTo := []string{
