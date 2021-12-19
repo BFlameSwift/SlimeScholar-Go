@@ -1062,7 +1062,7 @@ func FieldQueryPaper(c *gin.Context) {
 		return
 	}
 
-	fieldIds := service.IndexFieldsQueryGetIds("field", "name", field, 5)
+	fieldIds := service.IndexFieldsQueryGetIds("fields", "name", field, 5)
 	fmt.Println("search field", field, "hits :", len(fieldIds))
 	if len(fieldIds) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
