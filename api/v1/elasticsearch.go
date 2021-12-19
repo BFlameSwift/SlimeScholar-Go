@@ -36,7 +36,7 @@ func GetPaper(c *gin.Context) {
 	paper = service.FullPaperSocial(paper)
 	//service.CitePaper(thisId)
 
-	//yearList, citationCountList := service.GetCitationPapers(append(make([]string, 0), thisId), 200)
+	//yearList, citationCountList := service.GetCitationPapersGraph(append(make([]string, 0), thisId), 200)
 	////fmt.Println(citations)
 	////fmt.Println(len(citations))
 	//fmt.Println(yearList)
@@ -175,7 +175,7 @@ func GetJournal(c *gin.Context) {
 // @description es 根据title查询论文
 // @Tags elasticsearch
 // @Param title formData string true "title"
-// @Param page formData int true "title"
+// @Param page formData int true "page"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Failure 401 {string} string "{"success": false, "message": "page 不是整数"}"
 // @Failure 404 {string} string "{"success": false, "message": "论文不存在"}"
@@ -1315,7 +1315,7 @@ func QueryHotPaper(c *gin.Context) {
 // @Router /scholar/get/citation/paper [POST]
 func GetPaperCitationGraph(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-	yearList, citationCountList := service.GetCitationPapers(append(make([]string, 0), thisId), 200)
+	yearList, citationCountList := service.GetCitationPapersGraph(append(make([]string, 0), thisId), 200)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "years": yearList, "citations": citationCountList})
 	return
 }
@@ -1330,7 +1330,27 @@ func GetPaperCitationGraph(c *gin.Context) {
 // @Router /scholar/get/citation/author [POST]
 func GetAuthorCitationGraph(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-	yearList, citationCountList := service.GetCitationPapers(service.GetAuthorAllPapersIds(thisId), 10000)
+	yearList, citationCountList := service.GetCitationPapersGraph(service.GetAuthorAllPapersIds(thisId), 10000)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "years": yearList, "citations": citationCountList})
+	return
+}
+
+// GetPaperCitationPaper doc
+// @description 获取es期刊详细信息
+// @Tags elasticsearch
+// @Param id formData string true "id"
+// @Param page formData int true "page"
+// @Param size formData int true "size"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 期刊ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/citation/paper [POST]
+func GetPaperCitationPaper(c *gin.Context) {
+	thisId := c.Request.FormValue("id")
+	page, _ := strconv.Atoi(c.Request.FormValue("page"))
+	size, _ := strconv.Atoi(c.Request.FormValue("size"))
+	citationsIds, total_hits := service.GetPaperCitationIds(append(make([]string, 0), thisId), size, page)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "citations": service.GetPapers(citationsIds), "total_hits": total_hits})
 	return
 }

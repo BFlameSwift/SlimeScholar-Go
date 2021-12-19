@@ -101,6 +101,40 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/get/citation/paper:
+    post:
+      description: 获取es期刊详细信息
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: page
+        in: formData
+        name: page
+        required: true
+        type: integer
+      - description: size
+        in: formData
+        name: size
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 期刊ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/get/conference:
     post:
       description: 获取es会议详细信息
@@ -620,7 +654,7 @@ paths:
         name: title
         required: true
         type: string
-      - description: title
+      - description: page
         in: formData
         name: page
         required: true
