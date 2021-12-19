@@ -1330,7 +1330,7 @@ func GetPaperCitationGraph(c *gin.Context) {
 // @Router /scholar/get/citation/author [POST]
 func GetAuthorCitationGraph(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-	yearList, citationCountList := service.GetCitationPapers(service.GetAuthorAllPapersIds(thisId), 200)
+	yearList, citationCountList := service.GetCitationPapers(service.GetAuthorAllPapersIds(thisId), 10000)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "years": yearList, "citations": citationCountList})
 	return
 }

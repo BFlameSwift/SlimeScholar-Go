@@ -32,6 +32,14 @@ func StructToMap(s interface{}) (ret_map map[string]interface{}) {
 	return ret_map
 }
 
+func GetMapKeysAndValues(m map[string]interface{}) (keys []string, values []interface{}) {
+	for key := range m {
+		keys = append(keys, key)
+		values = append(values, m[key])
+	}
+	return keys, values
+}
+
 // 对mao 按照key 排序
 
 func RankByWordCount(wordFrequencies map[string]int, ascending bool) PairList {

@@ -304,7 +304,7 @@ func CitePaper(paperId string) (ret []interface{}) {
 }
 
 // 根据文献id获取引用此文献的文献
-func GetCitationPapers(paperIds []string, size int) ([]string, []int64) {
+func GetCitationPapers(paperIds []string, size int) ([]string, []int) {
 	boolQuery, idsQuery := elastic.NewBoolQuery(), elastic.NewBoolQuery()
 	for _, id := range paperIds {
 		idsQuery.Should(elastic.NewMatchPhraseQuery("rel.keyword", id))
@@ -319,9 +319,9 @@ func GetCitationPapers(paperIds []string, size int) ([]string, []int64) {
 	mulIdsQuery := elastic.NewIdsQuery()
 	for _, hit := range searchResult.Hits.Hits {
 		citationsIds = append(citationsIds, hit.Id)
-		mulIdsQuery.Ids(hit.Id)
-	}
 
+	}
+	mulIdsQuery.Ids(citationsIds...)
 	fmt.Println("citation_count:!!!!!", len(citationsIds))
 	yearAggregation := elastic.NewTermsAggregation().Field("year.keyword")
 
@@ -330,18 +330,21 @@ func GetCitationPapers(paperIds []string, size int) ([]string, []int64) {
 	agg, found := searchResult.Aggregations.Terms("year")
 
 	if !found {
-		return make([]string, 0), make([]int64, 0)
+		return make([]string, 0), make([]int, 0)
 	}
-	yearList, citationCountList := make([]string, 0), make([]int64, 0)
-	//citationMap := make(map[string]int)
+	yearList, citationCountList := make([]string, 0), make([]int, 0)
+	citationMap := make(map[string]int)
 	for _, bucket := range agg.Buckets {
 		if bucket.Key.(string) == "" {
 			continue
 		}
-		//citationMap[bucket.Key.(string)] =
+		citationMap[bucket.Key.(string)] = int(bucket.DocCount)
 		yearList = append(yearList, bucket.Key.(string))
-		citationCountList = append(citationCountList, bucket.DocCount)
-	}
 
+	}
+	sort.Strings(yearList)
+	for _, year := range yearList {
+		citationCountList = append(citationCountList, citationMap[year])
+	}
 	return yearList, citationCountList
 }
