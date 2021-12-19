@@ -51,7 +51,8 @@ func GetScholar(c *gin.Context) {
 		ret_author_id = submit.AuthorID
 		papers = service.GetAuthorAllPaper(ret_author_id)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
-		people_msg = service.UserScholarInfo(service.StructToMap(user))
+		people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
+		people_msg["follow_count"] = len(service.GetUserFollowedList(user.UserID))
 
 	} else {
 		author_id := c.Request.FormValue("author_id")
@@ -67,10 +68,13 @@ func GetScholar(c *gin.Context) {
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		if is_user {
 			user, _ := service.QueryAUserByID(the_user_id)
-			people_msg = service.UserScholarInfo(service.StructToMap(user))
+			people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
+			people_msg["follow_count"] = len(service.GetUserFollowedList(user.UserID))
+
 		} else {
 			people_msg = service.GetAuthorMsg(author_id)
 			people_msg = service.ProcAuthorMsg(people_msg, papers)
+			people_msg["follow_count"] = 0
 		}
 
 	}

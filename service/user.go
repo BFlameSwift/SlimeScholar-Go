@@ -283,14 +283,18 @@ func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 	}
 }
 
-func UserScholarInfo(m map[string]interface{}) (ret_map map[string]interface{}) {
+func UserScholarInfo(m map[string]interface{}, papers *[]interface{}) (ret_map map[string]interface{}) {
 	ret_map = m
 	if ret_map["fields"] == nil {
 		ret_map["fields"] = make([]string, 0)
 	} else {
 		ret_map["fields"] = strings.Split(ret_map["fields"].(string), ",")
 	}
-
+	citationCount := 0
+	for _, paper := range *papers {
+		citationCount += int(paper.(map[string]interface{})["citation_count"].(float64))
+	}
+	ret_map["citation_count"] = citationCount
 	return ret_map
 }
 

@@ -439,7 +439,6 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 // @Router /es/query/paper/doi [POST]
 func DoiQueryPaper(c *gin.Context) {
 	doi := c.Request.FormValue("doi")
-
 	//searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
 	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true, elastic.NewBoolQuery())
 	if searchResult.TotalHits() == 0 {
