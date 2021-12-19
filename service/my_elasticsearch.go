@@ -132,6 +132,16 @@ func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
 	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
 	return get1
 }
+func GetsByIndexIdRetMap(index string, id string) map[string]interface{} {
+	var get1 *elastic.GetResult
+	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
+	item := make(map[string]interface{})
+	err := json.Unmarshal(get1.Source, &item)
+	if err != nil {
+		panic(err)
+	}
+	return item
+}
 
 //查找
 func Gets(Params map[string]string) (*elastic.GetResult, error) {
@@ -710,7 +720,7 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 	case "abstract":
 		return elastic.NewMatchPhraseQuery("abstract", theMap["content"])
 	case "field":
-		return IndexFieldsGetQuery("field", "name", theMap["content"].(string), 5, "fields")
+		return IndexFieldsGetQuery("fields", "name", theMap["content"].(string), 5, "fields")
 		//return FieldNameGetQuery(theMap["content"].(string), 5)
 
 	}

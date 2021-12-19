@@ -291,18 +291,20 @@ func MLACitePaper(paperId string) (ret string) {
 	paper := GetSimplePaper(paperId)
 
 	authors := GetPaperAuthorsName(paper)
-	ret += authors[0]
-	if len(authors) > 1 {
-		ret += " et al"
+	if len(authors) > 3 {
+		ret += authors[0] + " et al"
+	} else {
+		ret += strings.Join(GetPaperAuthorsName(paper), ",")
 	}
 	ret += "." + "\"" + paper["paper_title"].(string) + "\""
-	//TODO 根据会议来选择输出格式
-	ret += "(" + paper["year"].(string) + ")"
-	//fmt.Println(authors)
-	//title := paper["paper_title"].(string)
-	//fmt.Println(title)
-	//fmt.Println(gbt["GB/T 7714"])
-
+	if paper["journal_id"].(string) != "" {
+		journal := GetsByIndexIdRetMap("journal", paper["journal_id"].(string))
+		ret += " " + journal["name"].(string)
+	} else if paper["conference_id"].(string) != "" {
+		conference := GetsByIndexIdRetMap("conference", paper["conference_id"].(string))
+		ret += " " + conference["name"].(string)
+	}
+	ret += " (" + paper["year"].(string) + ")"
 	return ret
 }
 
