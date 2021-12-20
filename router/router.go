@@ -2,6 +2,8 @@ package router
 
 import (
 	v1 "gitee.com/online-publish/slime-scholar-go/api/v1"
+	"gitee.com/online-publish/slime-scholar-go/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -105,4 +107,9 @@ func InitRouter(Router *gin.RouterGroup) {
 		SocialRouter.POST("/get/user/following", v1.GetUserFollowingList)
 		SocialRouter.POST("/get/user/followed", v1.GetUserFollowingList)
 	}
+	UploadRouter := Router.Group("/upload")
+	{
+		UploadRouter.StaticFS("/media", http.Dir(utils.UPLOAD_PATH))
+	}
+
 }

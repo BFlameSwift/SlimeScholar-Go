@@ -22,3 +22,4 @@ bin
 .run/
 gin.log
 *.log
+media/
