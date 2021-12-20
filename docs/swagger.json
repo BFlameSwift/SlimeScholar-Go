@@ -512,6 +512,31 @@
                 }
             }
         },
+        "/es/query/author/avatars": {
+            "post": {
+                "description": "es 获取一组作者的头像",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "作者id组",
+                        "name": "author_ids",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/author/name": {
             "post": {
                 "description": "es 根据姓名查询作者：精确查询,is_precise=0 为模糊匹配，为1为精准匹配",

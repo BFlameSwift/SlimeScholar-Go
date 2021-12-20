@@ -6,8 +6,10 @@ import (
 	"github.com/olivere/elastic/v7"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
+	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 )
@@ -432,6 +434,33 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 		"details": authors, "aggregation": aggregation})
 	return
 }
+
+// GetAuthorAvatars doc
+// @description es 获取一组作者的头像
+// @Tags elasticsearch
+// @Param author_ids formData string true "作者id组"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Router /es/query/author/avatars [POST]
+func GetAuthorAvatars(c *gin.Context){
+	author_ids := c.Request.FormValue("author_ids")
+	authorIds := strings.Split(author_ids, `,`)
+	pictures := make([]string,0)
+	for _,authorId := range authorIds{
+		submit,notfound := service.QueryASubmitByAuthor(authorId)
+		if notfound || submit.Status != 1{
+			pictures = append(pictures,utils.PICTURE)
+		}else{
+			user,_ := service.QueryAUserByID(submit.UserID)
+			if user.Avatar == "" || len(user.Avatar) == 0{
+				pictures = append(pictures,utils.PICTURE)
+			}else{
+				pictures = append(pictures,utils.BACK_PATH + "/media/" + user.Avatar)
+			}
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": pictures})
+}
+
 
 // DoiQueryPaper doc
 // @description es doi查询论文 精确搜索，结果要么有要么没有

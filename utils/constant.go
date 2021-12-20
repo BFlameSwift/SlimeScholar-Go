@@ -27,3 +27,5 @@ const LOG_FILE_NAME = "scholar.log"
 const BACK_PATH = "http://82.156.217.192:8000"
 
 const UPLOAD_PATH = "./media/"
+
+const PICTURE = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
