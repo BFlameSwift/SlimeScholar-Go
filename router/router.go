@@ -33,6 +33,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		ScholarRouter.POST("/get/citation/author", v1.GetAuthorCitationGraph)
 		ScholarRouter.POST("/get/citation/paper", v1.GetPaperCitationGraph)
 		ScholarRouter.POST("/transfer", v1.ScholarManagePaper)
+		ScholarRouter.POST("/graph", v1.GetAuthorPartialCoAuthors)
 	}
 	UserRouter := Router.Group("/user")
 	{

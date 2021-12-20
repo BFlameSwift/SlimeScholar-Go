@@ -2101,6 +2101,49 @@ var doc = `{
                 }
             }
         },
+        "/scholar/graph": {
+            "post": {
+                "description": "根據作者id获取作者的合作者",
+                "tags": [
+                    "学者门户"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "author_id",
+                        "name": "author_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取成共\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"success\": false, \"message\": \"参数格式错误\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{\"success\": false, \"message\": \"用户不存在}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "600": {
+                        "description": "{\"success\": false, \"message\": \"用户待修改，传入false 更新验证码，否则为验证正确}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/scholar/info": {
             "post": {
                 "description": "获取学者信息",

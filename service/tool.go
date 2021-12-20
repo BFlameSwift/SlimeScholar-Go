@@ -124,3 +124,13 @@ func TimestampToYear(stamp int64) string {
 func Wrap(num float64, retain int) int64 {
 	return int64(num * math.Pow10(retain))
 }
+
+// 对排序好的字符串列表快速查找字符串是否在其中
+func StrInList(target string, str_array []string) bool {
+	//sort.Strings(str_array)
+	index := sort.SearchStrings(str_array, target)
+	if index < len(str_array) && str_array[index] == target {
+		return true
+	}
+	return false
+}

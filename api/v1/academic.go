@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -49,6 +50,8 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = submit.AuthorID
+		fmt.Println("!!!!!!!")
+		fmt.Println(service.GetAuthorCoAuthorIds(append(make([]string, 0), ret_author_id)))
 		papers = service.GetAuthorAllPaper(ret_author_id)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
@@ -182,5 +185,33 @@ func CitePaper(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "detail": service.CitePaper(paper_id)})
+	return
+}
+
+// GetAuthorPartialCoAuthors doc
+// @description 根據作者id获取作者的合作者
+// @Tags 学者门户
+// @Param author_id formData string true "author_id"
+// @Success 200 {string} string "{"success": true, "message": "获取成共"}"
+// @Failure 401 {string} string "{"success": false, "message": "参数格式错误"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户不存在}"
+// @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
+// @Router /scholar/graph [POST]
+func GetAuthorPartialCoAuthors(c *gin.Context) {
+	id := c.Request.FormValue("author_id")
+	coAuthorMap := make(map[string]interface{})
+	firstCoauthorIds := service.GetSingleAuthorCoAuthorIds(id)
+	firstCoauthorItems := service.IdsGetList(firstCoauthorIds[id].([]string), "author")
+
+	secondCoauthorIdMap := service.GetAuthorCoAuthorIds(firstCoauthorIds[id].([]string))
+	for _, item := range firstCoauthorItems {
+		this_id := item.(map[string]interface{})["author_id"].(string)
+		item.(map[string]interface{})["friends"] = service.IdsGetList(secondCoauthorIdMap[this_id].([]string), "author")
+	}
+
+	result, _ := service.GetsByIndexId("author", id)
+	_ = json.Unmarshal(result.Source, &coAuthorMap)
+	coAuthorMap["friends"] = firstCoauthorItems
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "detail": coAuthorMap})
 	return
 }

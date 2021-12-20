@@ -401,3 +401,75 @@ func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
 	}
 	return authors
 }
+
+// 通过一组authorids来获取这些人的合作者。 ： 之所以用数组是为了尽可能提升速度
+func GetAuthorsCoAuthors(authorIds []string) map[string]interface{} {
+	boolQuery := elastic.NewBoolQuery()
+	ret := make(map[string]interface{})
+	sort.Strings(authorIds)
+	for _, id := range authorIds {
+		boolQuery.Should(elastic.NewTermQuery("authors.aid.keyword", id))
+	}
+	searchResult, err := Client.Search().Index("paper").Query(boolQuery).Size(100).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for _, hit := range searchResult.Hits.Hits {
+		paper := make(map[string]interface{})
+		err = json.Unmarshal(hit.Source, &paper)
+		if err != nil {
+			panic(err)
+		}
+		thisAuthorIds := make([]string, 0)
+		mainAuthorIds := make([]string, 0)
+		for _, author := range paper["authors"].([]interface{}) {
+			thisAuthroId := author.(map[string]interface{})["aid"].(string)
+			thisAuthorIds = append(thisAuthorIds, thisAuthroId)
+			if StrInList(thisAuthroId, authorIds) {
+				mainAuthorIds = append(mainAuthorIds, thisAuthroId)
+			}
+		}
+		for _, mainId := range mainAuthorIds {
+			for _, authorId := range thisAuthorIds {
+				if authorId != mainId {
+					if thisMap, ok := ret[mainId]; ok {
+						if _, okSub := thisMap.(map[string]int)[authorId]; okSub {
+							thisMap.(map[string]int)[authorId] += 1
+						} else {
+							thisMap.(map[string]int)[authorId] = 1
+						}
+					} else {
+						_, newMap := make(map[string]interface{}), make(map[string]int)
+						newMap[authorId] = 1
+						ret[mainId] = newMap
+					}
+				}
+			}
+		}
+	}
+	return ret
+}
+func GetSingleAuthorCoAuthorIds(author_id string) map[string]interface{} {
+	theMap := GetAuthorsCoAuthors(append(make([]string, 0), author_id))
+	ret := make(map[string]interface{})
+	for key := range theMap {
+		keys := make([]string, 0)
+		for subKey := range theMap[key].(map[string]int) {
+			keys = append(keys, subKey)
+		}
+		ret[key] = keys
+	}
+	return ret
+}
+func GetAuthorCoAuthorIds(authorIds []string) map[string]interface{} {
+	theMap := GetAuthorsCoAuthors(authorIds)
+	ret := make(map[string]interface{})
+	for key := range theMap {
+		keys := make([]string, 0)
+		for subKey := range theMap[key].(map[string]int) {
+			keys = append(keys, subKey)
+		}
+		ret[key] = keys
+	}
+	return ret
+}
