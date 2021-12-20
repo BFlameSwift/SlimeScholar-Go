@@ -1368,7 +1368,7 @@ func QueryHotPaper(c *gin.Context) {
 // @Router /scholar/get/citation/paper [POST]
 func GetPaperCitationGraph(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-	yearList, citationCountList := service.GetCitationPapersGraph(append(make([]string, 0), thisId), 200)
+	yearList, citationCountList := service.GetCitationPapersGraph(append(make([]string, 0), thisId))
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "years": yearList, "citations": citationCountList})
 	return
 }
@@ -1383,7 +1383,7 @@ func GetPaperCitationGraph(c *gin.Context) {
 // @Router /scholar/get/citation/author [POST]
 func GetAuthorCitationGraph(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-	yearList, citationCountList := service.GetCitationPapersGraph(service.GetAuthorAllPapersIds(thisId), 10000)
+	yearList, citationCountList := service.GetCitationPapersGraph(service.GetAuthorAllPapersIds(thisId))
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "years": yearList, "citations": citationCountList})
 	return
 }

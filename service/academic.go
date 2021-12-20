@@ -104,8 +104,8 @@ func PaperMapToPaperList(m map[string]interface{}) (ret_list []interface{}) {
 	}
 	return ret_list
 }
-func GetAuthorAllPapersIds(author_id string) []string {
-	paper_result := QueryByField("paper", "authors.aid.keyword", author_id, 1, 100)
+func GetAuthorSomePapersIds(author_id string, size int) []string {
+	paper_result := QueryByField("paper", "authors.aid.keyword", author_id, 1, size)
 	paper_ids_origin := make([]string, 0, 10000)
 	//authors_map := make(map[string]interface{})
 	for _, hit := range paper_result.Hits.Hits {
@@ -145,6 +145,9 @@ func GetAuthorAllPapersIds(author_id string) []string {
 		}
 	}
 	return paper_ids_final
+}
+func GetAuthorAllPapersIds(author_id string) []string {
+	return GetAuthorSomePapersIds(author_id, 100)
 }
 
 // GetAuthorAllPaper 根据作者id获取该作者所有的papers
@@ -365,12 +368,13 @@ func GetPaperCitationIds(paperIds []string, size int, page int) ([]string, int) 
 }
 
 // 根据文献id获取引用此文献的文献的引用图
-func GetCitationPapersGraph(paperIds []string, size int) ([]string, []int) {
-	citationsIds, _ := GetPaperCitationIds(paperIds, size, 1)
-	mulIdsQuery := elastic.NewIdsQuery().Ids(citationsIds...)
-	//fmt.Println("citation_count:!!!!!", len(citationsIds))
+func GetCitationPapersGraph(paperIds []string) ([]string, []int) {
+	boolQuery := elastic.NewBoolQuery()
+	for _, id := range paperIds {
+		boolQuery.Should(elastic.NewTermQuery("rel.keyword", id))
+	}
 	yearAggregation := elastic.NewTermsAggregation().Field("year.keyword")
-	searchResult, err := Client.Search().Index("paper").Query(mulIdsQuery).Size(0).Aggregation("year", yearAggregation).Do(context.Background())
+	searchResult, err := Client.Search().Index("reference").Query(boolQuery).Size(0).Aggregation("year", yearAggregation).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -399,6 +403,7 @@ func GetCitationPapersGraph(paperIds []string, size int) ([]string, []int) {
 func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
 	for _, author := range *authors {
 		authorMap := author.(map[string]interface{})
+		author_id := authorMap["author_id"].(string)
 		isUser, userId := JudgeAuthorIsSettled(authorMap["author_id"].(string))
 		author.(map[string]interface{})["is_user"] = false
 		if isUser {
@@ -407,8 +412,8 @@ func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
 			author.(map[string]interface{})["paper_count"] = int(user.PaperCount)
 			author.(map[string]interface{})["is_user"] = true
 			author.(map[string]interface{})["affiliation_name"] = user.Affiliation
-			
 		}
+		author = ProcAuthorMsg(authorMap, GetPapers(GetAuthorSomePapersIds(author_id, 5)))
 	}
 	return authors
 }
