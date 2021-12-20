@@ -3,11 +3,9 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/olivere/elastic/v7"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"github.com/gin-gonic/gin"
@@ -1410,7 +1408,7 @@ func GetRelatedPaper(c *gin.Context) {
 func PrefixGetInfo(c *gin.Context) {
 	name, content := c.Request.FormValue("name"), c.Request.FormValue("content")
 	field, index := "", "paper"
-	content = strings.ToLower(content)
+	//content = strings.ToLower(content)
 	switch name {
 	case "title":
 		field = "paper_title"
