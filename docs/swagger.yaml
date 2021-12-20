@@ -2373,6 +2373,32 @@ paths:
       - Authorization: []
       tags:
       - 用户管理
+  /user/get/avatar:
+    post:
+      description: 获取头像
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 用户ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "上传成功", "data" : "图像"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": "用户ID不存在"}'
+          schema:
+            type: string
+      security:
+      - Authorization: []
+      tags:
+      - 用户管理
   /user/info:
     post:
       description: 查看用户个人信息
