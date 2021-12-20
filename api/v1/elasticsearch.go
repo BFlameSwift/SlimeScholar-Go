@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/olivere/elastic/v7"
 
@@ -1400,6 +1401,7 @@ func GetRelatedPaper(c *gin.Context) {
 func PrefixGetInfo(c *gin.Context) {
 	name, content := c.Request.FormValue("name"), c.Request.FormValue("content")
 	field, index := "", "paper"
+	content = strings.ToLower(content)
 	switch name {
 	case "title":
 		field = "paper_title"
@@ -1409,7 +1411,7 @@ func PrefixGetInfo(c *gin.Context) {
 		field = "paper_title"
 	case "author":
 		field = "name"
-		index = "authors"
+		index = "author"
 	case "affiliation":
 		field = "name"
 		index = "affiliation"
@@ -1420,9 +1422,9 @@ func PrefixGetInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "参数不支持前缀搜索", "status": 401})
 		return
 	}
-	prefixRefult := service.PrefixSearch(index, field, content, 5)
+	prefixResult := service.PrefixSearch(index, field, content, 5)
 	results := make([]string, 0)
-	for _, hit := range prefixRefult.Hits.Hits {
+	for _, hit := range prefixResult.Hits.Hits {
 		item := make(map[string]interface{})
 		err := json.Unmarshal(hit.Source, &item)
 		if err != nil {
