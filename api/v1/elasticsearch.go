@@ -223,6 +223,9 @@ func TitleQueryPaper(c *gin.Context) {
 	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
 
+	//prefixRefult := service.PrefixSearch("paper", "paper_title", title, 5)
+	//fmt.Println(prefixRefult.TotalHits(), "pre!!!")
+	//
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paperSequences, "aggregation": aggregation})
 	return
@@ -1381,5 +1384,52 @@ func GetRelatedPaper(c *gin.Context) {
 	simplePaper := service.GetSimplePaper(thisId)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "related": service.GetPapers(service.GetRelatedPapers(simplePaper["paper_title"].(string)))})
+	return
+}
+
+// PrefixGetInfo doc
+// @description 根据前缀得到搜索建议，返回results 字符串数组
+// @Tags elasticsearch
+// @Param name formData string true "name 表示字段名"
+// @Param content formData string true "content，表示字段的内容"
+// @Success 200 {string} string "{"success": true, "message": "获取成功"}"
+// @Failure 404 {string} string "{"success": false, "message": 参数错误"}"
+// @Failure 404 {string} string "{"success": false, "message": 期刊ID不存在"}"
+// @Failure 500 {string} string "{"success": false, "message": "错误500"}"
+// @Router /es/get/prefix [POST]
+func PrefixGetInfo(c *gin.Context) {
+	name, content := c.Request.FormValue("name"), c.Request.FormValue("content")
+	field, index := "", "paper"
+	switch name {
+	case "title":
+		field = "paper_title"
+	case "source":
+		field = "publisher"
+	case "main":
+		field = "paper_title"
+	case "author":
+		field = "name"
+		index = "authors"
+	case "affiliation":
+		field = "name"
+		index = "affiliation"
+	case "field":
+		field = "name"
+		index = "fields"
+	default:
+		c.JSON(http.StatusOK, gin.H{"success": true, "message": "参数不支持前缀搜索", "status": 401})
+		return
+	}
+	prefixRefult := service.PrefixSearch(index, field, content, 5)
+	results := make([]string, 0)
+	for _, hit := range prefixRefult.Hits.Hits {
+		item := make(map[string]interface{})
+		err := json.Unmarshal(hit.Source, &item)
+		if err != nil {
+			panic(err)
+		}
+		results = append(results, item[field].(string))
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "results": results})
 	return
 }

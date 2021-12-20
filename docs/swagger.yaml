@@ -231,6 +231,35 @@ paths:
             type: string
       tags:
       - elasticsearch
+  /es/get/prefix:
+    post:
+      description: 根据前缀得到搜索建议，返回results 字符串数组
+      parameters:
+      - description: name 表示字段名
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: content，表示字段的内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "获取成功"}'
+          schema:
+            type: string
+        "404":
+          description: '{"success": false, "message": 期刊ID不存在"}'
+          schema:
+            type: string
+        "500":
+          description: '{"success": false, "message": "错误500"}'
+          schema:
+            type: string
+      tags:
+      - elasticsearch
   /es/get/related/paper:
     post:
       description: 根据paper—id 获取论文的相关文献
