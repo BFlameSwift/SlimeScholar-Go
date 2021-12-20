@@ -3,8 +3,6 @@ package main
 import (
 	"gitee.com/online-publish/slime-scholar-go/docs"
 	"gitee.com/online-publish/slime-scholar-go/initialize"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Slime Scholar Golang Backend
@@ -19,6 +17,5 @@ func main() {
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	initialize.Init()
 	r := initialize.SetupRouter()
-	r.GET("/backend/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run(":8000")
 }
