@@ -24,4 +24,4 @@ var LOG_FILE_PATH = "./"
 
 const LOG_FILE_NAME = "scholar.log"
 
-const BACK_PATH = "http://82.156.217.192:8000/backend/api/v1"
+const BACK_PATH = "http://82.156.217.192:8000"
