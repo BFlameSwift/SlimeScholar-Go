@@ -308,7 +308,7 @@ func ExportAvatar(c *gin.Context) {
 		return
 	}
 
-	errr := service.ExportAvatar(&user, utils.BACK_PATH + "/media/" + img.ImgUrl)
+	errr := service.ExportAvatar(&user,"/upload/media/" + img.ImgUrl)
 	if errr != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
