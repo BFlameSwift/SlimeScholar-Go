@@ -1,15 +1,15 @@
 package v1
 
 import (
+	"fmt"
+	"gopkg.in/mgo.v2/bson"
+	"io"
 	"math/rand"
 	"net/http"
-	"strconv"
-	"time"
 	"os"
-    "io"
-    "gopkg.in/mgo.v2/bson"
-	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
@@ -253,11 +253,9 @@ func TellUserInfo(c *gin.Context) {
 	})
 }
 
-const UPLOAD_PATH string = "./media/"
-
 type Img struct {
-    Id     bson.ObjectId `bson:"_id"`
-    ImgUrl string        `bson:"imgUrl"`
+	Id     bson.ObjectId `bson:"_id"`
+	ImgUrl string        `bson:"imgUrl"`
 }
 
 // ExportAvatar doc
@@ -270,7 +268,7 @@ type Img struct {
 // @Success 200 {string} string "{"success": true, "message": "上传成功",}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Router /user/export/avatar [POST]
-func ExportAvatar(c *gin.Context){
+func ExportAvatar(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
@@ -279,32 +277,32 @@ func ExportAvatar(c *gin.Context){
 	}
 
 	//获取文件头
-    imgFile, imgHead, imgErr := c.Request.FormFile("avatar")
-    if imgErr != nil {
-        fmt.Println(imgErr)
-        return
-    }
-    defer imgFile.Close()
+	imgFile, imgHead, imgErr := c.Request.FormFile("avatar")
+	if imgErr != nil {
+		fmt.Println(imgErr)
+		return
+	}
+	defer imgFile.Close()
 
-    imgFormat := strings.Split(imgHead.Filename, ".")
+	imgFormat := strings.Split(imgHead.Filename, ".")
 	var img Img
-    img.Id = bson.NewObjectId()
+	img.Id = bson.NewObjectId()
 	img.ImgUrl = user.Username + "_" + img.Id.Hex()[0:6] + "." + imgFormat[len(imgFormat)-1]
 
-    image, e := os.Create(UPLOAD_PATH + img.ImgUrl)
-    if e != nil {
-        fmt.Println(e)
-        return
-    }
-    defer image.Close()
+	image, e := os.Create(utils.UPLOAD_PATH + img.ImgUrl)
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
+	defer image.Close()
 
-    _, e = io.Copy(image, imgFile)
-    if e != nil {
-        fmt.Println(e)
-        return
-    }
+	_, e = io.Copy(image, imgFile)
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
 
-	errr := service.ExportAvatar(&user,img.ImgUrl)
+	errr := service.ExportAvatar(&user, img.ImgUrl)
 	if errr != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -329,7 +327,7 @@ func ExportAvatar(c *gin.Context){
 // @Success 200 {string} string "{"success": true, "message": "上传成功", "data" : "图像"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
 // @Router /user/get/avatar [POST]
-func GetAvatar(c *gin.Context){
+func GetAvatar(c *gin.Context) {
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	authorization := c.Request.Header.Get("Authorization")
 	user, err := VerifyLogin(userID, authorization, c)
@@ -338,9 +336,9 @@ func GetAvatar(c *gin.Context){
 	}
 
 	var avatar string
-	if user.Avatar == "" || len(user.Avatar) == 0{
+	if user.Avatar == "" || len(user.Avatar) == 0 {
 		avatar = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
-	}else{
+	} else {
 		avatar = utils.BACK_PATH + "/media/" + user.Avatar
 	}
 
@@ -348,6 +346,6 @@ func GetAvatar(c *gin.Context){
 		"success": true,
 		"message": "上传成功",
 		"status":  200,
-		"data": avatar,
+		"data":    avatar,
 	})
 }

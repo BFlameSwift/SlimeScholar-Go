@@ -181,18 +181,16 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 
-	//boolQuery := elastic.NewBoolQuery()
-	//if boolQuery != elastic.NewBoolQuery() {
+	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
+
 	if is_precise == false {
 		boolQuery.Must(elastic.NewTermQuery(field, content))
 	} else {
 		boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	}
-	//}
 
-	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		panic(err)
@@ -473,6 +471,26 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 	return boolQuery
 }
 
+func GetAggregationYear(searchResult *elastic.SearchResult, name string, isMin bool) string {
+	var agg *elastic.AggregationValueMetric
+	var found bool
+	if isMin {
+		agg, found = searchResult.Aggregations.Min(name)
+	} else {
+		agg, found = searchResult.Aggregations.Max(name)
+	}
+
+	if found {
+		return TimestampToYear(Wrap(*agg.Value, -3))
+	} else {
+		if isMin {
+			return "1900"
+		} else {
+			return "2022"
+		}
+	}
+}
+
 // 搜索结果绝活部分
 func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{} {
 	aggregation := make(map[string]interface{})
@@ -483,6 +501,9 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 	aggregation["conference"] = Paper_Aggregattion(searchResult, "conference")
 	aggregation["fields"] = Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = Paper_Aggregattion(searchResult, "publisher")
+	aggregation["min_year"] = GetAggregationYear(searchResult, "min_year", true)
+	aggregation["max_year"] = GetAggregationYear(searchResult, "max_year", false)
+
 	return aggregation
 }
 
@@ -868,9 +889,9 @@ func GetRelatedPapers(paperTitle string) (papersIds []string) {
 
 // 前缀搜索，用于搜索提示
 func PrefixSearch(index string, field string, content string, size int) *elastic.SearchResult {
-	query := elastic.NewPrefixQuery(field, content)
-	page := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 5
-	searchResult, err := Client.Search().Index(index).Query(query).From(page).Size(size).Do(context.Background())
+	query := elastic.NewPrefixQuery(field+".keyword", content)
+
+	searchResult, err := Client.Search().Index(index).Query(query).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
