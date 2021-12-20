@@ -343,7 +343,7 @@ func GetAvatar(c *gin.Context) {
 
 	var avatar string
 	if user.Avatar == "" || len(user.Avatar) == 0 {
-		avatar = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
+		avatar = utils.PICTURE
 	} else {
 		avatar = utils.BACK_PATH + "/media/" + user.Avatar
 	}
