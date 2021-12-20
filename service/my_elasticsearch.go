@@ -899,9 +899,24 @@ func PrefixSearch(index string, field string, content string, size int) *elastic
 // 针对前端对作者进行格式化输出
 func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
 	ret = IdsGetList(authorIds, "author")
+	affIds := make([]string, 0)
+	affiliationMap := make(map[string]interface{})
 	for _, author := range ret {
 		author.(map[string]interface{})["author_name"] = author.(map[string]interface{})["name"]
+		id := author.(map[string]interface{})["affiliation_id"].(string)
+		affIds = append(affIds, id)
+		if id != "" {
+			affiliationMap[author.(map[string]interface{})["affiliation_id"].(string)] = 1
+		}
 		delete(author.(map[string]interface{}), "name")
+	}
+	affiliationsMap := IdsGetItems(GetMapAllKey(affiliationMap), "affiliation")
+	for i, afid := range affIds {
+		if afid != "" {
+			ret[i].(map[string]interface{})["affiliation_name"] = affiliationsMap[afid].(map[string]interface{})["name"]
+		} else {
+			ret[i].(map[string]interface{})["affiliation_name"] = ""
+		}
 	}
 	return ret
 }

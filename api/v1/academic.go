@@ -203,9 +203,7 @@ func CitePaper(c *gin.Context) {
 func GetAuthorPartialCoAuthors(c *gin.Context) {
 	id, level := c.Request.FormValue("author_id"), c.Request.FormValue("level")
 
-	coAuthorMap := make(map[string]interface{})
-	result, _ := service.GetsByIndexId("author", id)
-	_ = json.Unmarshal(result.Source, &coAuthorMap)
+	coAuthorMap := service.GetSimpleAuthors(append(make([]string, 0), id))[0].(map[string]interface{})
 	firstCoauthorIds := service.GetSingleAuthorCoAuthorIds(id)
 	firstCoauthorItems := service.GetSimpleAuthors(firstCoauthorIds[id].([]string))
 	if level != "2" {
