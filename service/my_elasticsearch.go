@@ -900,9 +900,11 @@ func PrefixSearch(index string, field string, content string, size int) *elastic
 func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
 	ret = IdsGetList(authorIds, "author")
 	affIds := make([]string, 0)
+	nullList := make([]string, 0)
 	affiliationMap := make(map[string]interface{})
 	for _, author := range ret {
 		author.(map[string]interface{})["author_name"] = author.(map[string]interface{})["name"]
+		author.(map[string]interface{})["friends"] = nullList
 		id := author.(map[string]interface{})["affiliation_id"].(string)
 		affIds = append(affIds, id)
 		if id != "" {
