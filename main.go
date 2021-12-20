@@ -5,6 +5,7 @@ import (
 	"gitee.com/online-publish/slime-scholar-go/initialize"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+  	"net/http"
 )
 
 // @title Slime Scholar Golang Backend
@@ -20,5 +21,7 @@ func main() {
 	initialize.Init()
 	r := initialize.SetupRouter()
 	r.GET("/backend/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// r.Static("/media", "./media")
+	r.StaticFS("/media", http.Dir("media"))
 	r.Run(":8000")
 }
