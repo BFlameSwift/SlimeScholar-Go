@@ -73,7 +73,7 @@ func UpdateAUser(user *model.User, username string, password string, userInfo st
 }
 
 // 更新用户头像
-func ExportAvatar(user *model.User, avatar string) error{
+func ExportAvatar(user *model.User, avatar string) error {
 	user.Avatar = avatar
 	err := global.DB.Save(user).Error
 	return err
@@ -285,6 +285,9 @@ func MakeUserScholar(user model.User, submit model.SubmitScholar) {
 	user.HomePage = submit.HomePage
 	user.PaperCount += submit.PaperCount
 	user.AuthorID = submit.AuthorID
+	author := GetSimpleAuthors(append(make([]string, 0), submit.AuthorID))[0].(map[string]interface{})
+	user.PaperCount = int(author["paper_count"].(float64))
+	user.CitationCount = int(author["citation_count"].(float64))
 	err := global.DB.Save(&user).Error
 	if err != nil {
 		panic(err)

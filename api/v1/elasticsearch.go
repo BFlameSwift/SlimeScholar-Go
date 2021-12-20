@@ -1418,9 +1418,7 @@ func GetPaperCitationPaper(c *gin.Context) {
 // @Router /es/get/related/paper [POST]
 func GetRelatedPaper(c *gin.Context) {
 	thisId := c.Request.FormValue("id")
-
 	simplePaper := service.GetSimplePaper(thisId)
-
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "related": service.GetPapers(service.GetRelatedPapers(simplePaper["paper_title"].(string)))})
 	return
 }

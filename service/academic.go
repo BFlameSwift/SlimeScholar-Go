@@ -70,6 +70,15 @@ func TransferPaper(user model.User, author_id string, paper_id string, kind int,
 			panic(err)
 		}
 	}
+	paper := GetSimplePaper(paper_id)
+	if kind == 0 {
+		user.PaperCount += 1
+		user.CitationCount += int(paper["citation_count"].(float64))
+	} else if kind == 1 {
+		user.PaperCount -= 1
+		user.CitationCount -= int(paper["citation_count"].(float64))
+	}
+	_ = global.DB.Save(&user).Error
 }
 
 // FindAllAuthorManagePapers 根据作者id找到作者的所有transfer
