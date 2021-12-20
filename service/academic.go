@@ -406,6 +406,8 @@ func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
 			author.(map[string]interface{})["citation_count"] = int(user.CitationCount)
 			author.(map[string]interface{})["paper_count"] = int(user.PaperCount)
 			author.(map[string]interface{})["is_user"] = true
+			author.(map[string]interface{})["affiliation_name"] = user.Affiliation
+			
 		}
 	}
 	return authors
