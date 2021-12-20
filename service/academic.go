@@ -386,3 +386,18 @@ func GetCitationPapersGraph(paperIds []string, size int) ([]string, []int) {
 	}
 	return yearList, citationCountList
 }
+
+func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
+	for _, author := range *authors {
+		authorMap := author.(map[string]interface{})
+		isUser, userId := JudgeAuthorIsSettled(authorMap["author_id"].(string))
+		author.(map[string]interface{})["is_user"] = false
+		if isUser {
+			user, _ := QueryAUserByID(userId)
+			author.(map[string]interface{})["citation_count"] = int(user.CitationCount)
+			author.(map[string]interface{})["paper_count"] = int(user.PaperCount)
+			author.(map[string]interface{})["is_user"] = true
+		}
+	}
+	return authors
+}

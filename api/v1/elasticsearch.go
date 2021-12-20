@@ -226,9 +226,6 @@ func TitleQueryPaper(c *gin.Context) {
 	aggregation["min_year"] = service.GetAggregationYear(searchResult, "min_year", true)
 	aggregation["max_year"] = service.GetAggregationYear(searchResult, "max_year", false)
 
-	//prefixRefult := service.PrefixSearch("paper", "paper_title", title, 5)
-	//fmt.Println(prefixRefult.TotalHits(), "pre!!!")
-	//
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
 		"details": paperSequences, "aggregation": aggregation})
 	return
@@ -364,7 +361,7 @@ func NameQueryAuthor(c *gin.Context) {
 	authors := service.GetAuthors(ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": authors, "aggregation": aggregation})
+		"details": *service.ParseEnterScholarMsg(&authors), "aggregation": aggregation})
 	return
 }
 
@@ -431,7 +428,7 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 	authors := service.GetAuthors(ids)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": authors, "aggregation": aggregation})
+		"details": *service.ParseEnterScholarMsg(&authors), "aggregation": aggregation})
 	return
 }
 
@@ -441,26 +438,25 @@ func AffiliationNameQueryAuthor(c *gin.Context) {
 // @Param author_ids formData string true "作者id组"
 // @Success 200 {string} string "{"success": true, "message": "获取成功"}"
 // @Router /es/query/author/avatars [POST]
-func GetAuthorAvatars(c *gin.Context){
+func GetAuthorAvatars(c *gin.Context) {
 	author_ids := c.Request.FormValue("author_ids")
 	authorIds := strings.Split(author_ids, `,`)
-	pictures := make([]string,0)
-	for _,authorId := range authorIds{
-		submit,notfound := service.QueryASubmitByAuthor(authorId)
-		if notfound || submit.Status != 1{
-			pictures = append(pictures,utils.PICTURE)
-		}else{
-			user,_ := service.QueryAUserByID(submit.UserID)
-			if user.Avatar == "" || len(user.Avatar) == 0{
-				pictures = append(pictures,utils.PICTURE)
-			}else{
-				pictures = append(pictures,user.Avatar)
+	pictures := make([]string, 0)
+	for _, authorId := range authorIds {
+		submit, notfound := service.QueryASubmitByAuthor(authorId)
+		if notfound || submit.Status != 1 {
+			pictures = append(pictures, utils.PICTURE)
+		} else {
+			user, _ := service.QueryAUserByID(submit.UserID)
+			if user.Avatar == "" || len(user.Avatar) == 0 {
+				pictures = append(pictures, utils.PICTURE)
+			} else {
+				pictures = append(pictures, user.Avatar)
 			}
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": pictures})
 }
-
 
 // DoiQueryPaper doc
 // @description es doi查询论文 精确搜索，结果要么有要么没有
