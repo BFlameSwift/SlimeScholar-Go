@@ -82,8 +82,10 @@ func GetScholar(c *gin.Context) {
 
 	}
 	//service.GetAuthorAllPaper(ret_author_id)
+	CoauthorIds := service.GetSingleAuthorCoAuthorIds(ret_author_id)
+	CoauthorItems := service.IdsGetList(CoauthorIds[ret_author_id].([]string), "author")
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": papers, "author_id": ret_author_id, "people": people_msg})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "status": 200, "is_user": is_user, "papers": papers, "author_id": ret_author_id, "people": people_msg, "coauthors": CoauthorItems})
 	return
 }
 
