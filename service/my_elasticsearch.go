@@ -471,20 +471,19 @@ func SelectTypeQuery(doctypes []string, journals []string, conferences []string,
 	return boolQuery
 }
 
+// 得到聚合结果中的年限边界
 func GetAggregationYear(searchResult *elastic.SearchResult, name string, isMin bool) string {
 	var agg *elastic.AggregationValueMetric
 	var found bool
 	if isMin {
-		agg, found = searchResult.Aggregations.Min(name)
-	} else {
-		agg, found = searchResult.Aggregations.Max(name)
-	}
-
-	if found {
-		return TimestampToYear(Wrap(*agg.Value, -3))
-	} else {
-		if isMin {
+		if agg, found = searchResult.Aggregations.Min(name); found {
+			return TimestampToYear(Wrap(*agg.Value, -3))
+		} else {
 			return "1900"
+		}
+	} else {
+		if agg, found = searchResult.Aggregations.Max(name); found {
+			return TimestampToYear(Wrap(*agg.Value, -3))
 		} else {
 			return "2022"
 		}
@@ -503,7 +502,6 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 	aggregation["publisher"] = Paper_Aggregattion(searchResult, "publisher")
 	aggregation["min_year"] = GetAggregationYear(searchResult, "min_year", true)
 	aggregation["max_year"] = GetAggregationYear(searchResult, "max_year", false)
-
 	return aggregation
 }
 
