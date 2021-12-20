@@ -2119,8 +2119,7 @@ var doc = `{
                         "type": "string",
                         "description": "level",
                         "name": "level",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {

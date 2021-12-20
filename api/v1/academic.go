@@ -194,7 +194,7 @@ func CitePaper(c *gin.Context) {
 // @description 根據作者id获取作者的合作者
 // @Tags 学者门户
 // @Param author_id formData string true "author_id"
-// @Param level formData string true "level"
+// @Param level formData string false "level"
 // @Success 200 {string} string "{"success": true, "message": "获取成共"}"
 // @Failure 401 {string} string "{"success": false, "message": "参数格式错误"}"
 // @Failure 404 {string} string "{"success": false, "message": "用户不存在}"

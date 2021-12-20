@@ -1420,7 +1420,6 @@ paths:
       - description: level
         in: formData
         name: level
-        required: true
         type: string
       responses:
         "200":
