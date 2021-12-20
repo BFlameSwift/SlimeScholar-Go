@@ -625,8 +625,8 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 		_ = json.Unmarshal(urlResult.Source, &urlMap)
 		for _, url := range urlMap["rel"].([]interface{}) {
 			url := url.(map[string]interface{})
-			//fmt.Println(url["utype"], url["utype"] == 3)
-			if url["utype"] == "3" {
+
+			if url["utype"] == "3" || strings.HasSuffix(url["url"].(string), "pdf") {
 				pdfs = append(pdfs, url["url"].(string))
 			} else {
 				urls = append(urls, url["url"].(string))
