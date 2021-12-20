@@ -72,6 +72,13 @@ func UpdateAUser(user *model.User, username string, password string, userInfo st
 	return err
 }
 
+// 更新用户头像
+func ExportAvatar(user *model.User, avatar string) error{
+	user.Avatar = avatar
+	err := global.DB.Save(user).Error
+	return err
+}
+
 // 如果bool == false 重发邮件，否则就把user的comfirm = true
 func UpdateConfirmAUser(user *model.User, has_comfirmed bool) error {
 	if has_comfirmed == false {

@@ -1321,6 +1321,15 @@ func QueryHotPaper(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
 }
 
+// QueryRecommendPaper doc
+// @description es 获取推荐文献,根据被引用数量数判定,返回10篇文章
+// @Tags elasticsearch
+// @Success 200 {string} string "{"success": true, "message": "获取文献成功"}"
+// @Router /es/query/paper/recommend [POST]
+// func QueryRecommendPaper(c *gin.Context){
+
+// }
+
 // GetPaperCitationGraph doc
 // @description 获取es期刊详细信息
 // @Tags 学者门户
