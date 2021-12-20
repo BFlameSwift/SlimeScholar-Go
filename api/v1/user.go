@@ -321,6 +321,7 @@ func ExportAvatar(c *gin.Context) {
 		"success": true,
 		"message": "上传成功",
 		"status":  200,
+		"data": user.Avatar,
 	})
 }
 
