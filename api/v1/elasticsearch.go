@@ -1405,14 +1405,14 @@ func PrefixGetInfo(c *gin.Context) {
 	switch name {
 	case "title":
 		field = "paper_title"
-	case "source":
+	case "publisher":
 		field = "publisher"
 	case "main":
 		field = "paper_title"
-	case "author":
+	case "author_name":
 		field = "name"
 		index = "author"
-	case "affiliation":
+	case "affiliation_name":
 		field = "name"
 		index = "affiliation"
 	case "field":
