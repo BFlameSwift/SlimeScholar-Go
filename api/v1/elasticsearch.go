@@ -221,6 +221,8 @@ func TitleQueryPaper(c *gin.Context) {
 	aggregation["conference"] = service.Paper_Aggregattion(searchResult, "conference")
 	aggregation["fields"] = service.Paper_Aggregattion(searchResult, "fields")
 	aggregation["publisher"] = service.Paper_Aggregattion(searchResult, "publisher")
+	aggregation["min_year"] = service.GetAggregationYear(searchResult, "min_year", true)
+	aggregation["max_year"] = service.GetAggregationYear(searchResult, "max_year", false)
 
 	//prefixRefult := service.PrefixSearch("paper", "paper_title", title, 5)
 	//fmt.Println(prefixRefult.TotalHits(), "pre!!!")
@@ -481,8 +483,9 @@ func MainQueryPaper(c *gin.Context) {
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "参数错误", "status": 401})
@@ -630,9 +633,10 @@ func AdvancedSearch(c *gin.Context) {
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
 	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		Size(size).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
@@ -1089,6 +1093,7 @@ func FieldQueryPaper(c *gin.Context) {
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
+	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
 	boolQuery := elastic.NewBoolQuery()
 	for _, hits := range fieldIds {
@@ -1096,7 +1101,7 @@ func FieldQueryPaper(c *gin.Context) {
 	}
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := service.Client.Search("paper").Query(boolQuery).Size(10).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).
+		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * 10).Do(context.Background())
 	if err != nil {
 		panic(err)
