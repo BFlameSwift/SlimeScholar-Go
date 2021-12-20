@@ -868,9 +868,9 @@ func GetRelatedPapers(paperTitle string) (papersIds []string) {
 
 // 前缀搜索，用于搜索提示
 func PrefixSearch(index string, field string, content string, size int) *elastic.SearchResult {
-	query := elastic.NewPrefixQuery(field, content)
-	page := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 5
-	searchResult, err := Client.Search().Index(index).Query(query).From(page).Size(size).Do(context.Background())
+	query := elastic.NewPrefixQuery(field+".keyword", content)
+
+	searchResult, err := Client.Search().Index(index).Query(query).Size(size).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}

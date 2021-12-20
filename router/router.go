@@ -24,13 +24,13 @@ func InitRouter(Router *gin.RouterGroup) {
 		SubmitRouter.POST("/get/papers", v1.PaperGetAuthors)
 		SubmitRouter.POST("/get/detail", v1.GetSubmitDetail)
 	}
-	SchoalrRouter := Router.Group("/scholar")
+	ScholarRouter := Router.Group("/scholar")
 	{
-		SchoalrRouter.POST("/info", v1.GetScholar)
-		SchoalrRouter.POST("/cite_paper", v1.CitePaper)
-		SchoalrRouter.POST("/get/citation/author", v1.GetAuthorCitationGraph)
-		SchoalrRouter.POST("/get/citation/paper", v1.GetPaperCitationGraph)
-		SchoalrRouter.POST("/transfer", v1.ScholarManagePaper)
+		ScholarRouter.POST("/info", v1.GetScholar)
+		ScholarRouter.POST("/cite_paper", v1.CitePaper)
+		ScholarRouter.POST("/get/citation/author", v1.GetAuthorCitationGraph)
+		ScholarRouter.POST("/get/citation/paper", v1.GetPaperCitationGraph)
+		ScholarRouter.POST("/transfer", v1.ScholarManagePaper)
 	}
 	UserRouter := Router.Group("/user")
 	{
