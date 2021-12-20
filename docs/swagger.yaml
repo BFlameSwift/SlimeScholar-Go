@@ -1417,6 +1417,11 @@ paths:
         name: author_id
         required: true
         type: string
+      - description: level
+        in: formData
+        name: level
+        required: true
+        type: string
       responses:
         "200":
           description: '{"success": true, "message": "获取成共"}'

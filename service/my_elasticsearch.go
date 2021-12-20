@@ -896,6 +896,16 @@ func PrefixSearch(index string, field string, content string, size int) *elastic
 	return searchResult
 }
 
+// 针对前端对作者进行格式化输出
+func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
+	ret = IdsGetList(authorIds, "author")
+	for _, author := range ret {
+		author.(map[string]interface{})["author_name"] = author.(map[string]interface{})["name"]
+		delete(author.(map[string]interface{}), "name")
+	}
+	return ret
+}
+
 // func main() {
 // 	Init()
 // 	fmt.Println("123")

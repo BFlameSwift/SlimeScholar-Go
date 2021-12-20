@@ -2114,6 +2114,13 @@ var doc = `{
                         "name": "author_id",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "level",
+                        "name": "level",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
