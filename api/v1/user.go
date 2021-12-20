@@ -5,6 +5,11 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"os"
+    "io"
+    "gopkg.in/mgo.v2/bson"
+	"fmt"
+	"strings"
 
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
@@ -245,5 +250,72 @@ func TellUserInfo(c *gin.Context) {
 		"status":  200,
 		"message": "查看用户信息成功",
 		"data":    user,
+	})
+}
+
+const UPLOAD_PATH string = "./media/"
+
+type Img struct {
+    Id     bson.ObjectId `bson:"_id"`
+    ImgUrl string        `bson:"imgUrl"`
+}
+
+// ExportAvatar doc
+// @description 上传头像
+// @Tags 用户管理
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Param avatar formData file true "头像照片"
+// @Success 200 {string} string "{"success": true, "message": "上传成功",}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Router /user/export/avatar [POST]
+func ExportAvatar(c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	user, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+
+	//获取文件头
+    imgFile, imgHead, imgErr := c.Request.FormFile("avatar")
+    if imgErr != nil {
+        fmt.Println(imgErr)
+        return
+    }
+    defer imgFile.Close()
+
+    imgFormat := strings.Split(imgHead.Filename, ".")
+	var img Img
+    img.Id = bson.NewObjectId()
+	img.ImgUrl = user.Username + "_" + img.Id.Hex()[0:6] + "." + imgFormat[len(imgFormat)-1]
+
+    image, e := os.Create(UPLOAD_PATH + img.ImgUrl)
+    if e != nil {
+        fmt.Println(e)
+        return
+    }
+    defer image.Close()
+
+    _, e = io.Copy(image, imgFile)
+    if e != nil {
+        fmt.Println(e)
+        return
+    }
+
+	errr := service.ExportAvatar(&user,img.ImgUrl)
+	if errr != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"status":  500,
+			"message": errr.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "上传成功",
+		"status":  200,
 	})
 }
