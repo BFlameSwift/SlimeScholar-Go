@@ -372,6 +372,31 @@ var doc = `{
                 }
             }
         },
+        "/es/get/pdf": {
+            "post": {
+                "description": "文件下载转换",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件路径",
+                        "name": "pdf_url",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"上传成功\",}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/get/prefix": {
             "post": {
                 "description": "根据前缀得到搜索建议，返回results 字符串数组",
@@ -3983,5 +4008,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"os"
+	"io"
+	"math/rand"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
@@ -1469,4 +1472,35 @@ func PrefixGetInfo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "results": results})
 	return
+}
+
+
+// UploadPdf doc
+// @description  文件下载转换
+// @Tags elasticsearch
+// @Param pdf_url formData string true "文件路径"
+// @Success 200 {string} string "{"success": true, "message": "上传成功",}"
+// @Router /es/get/pdf [POST]
+func UploadPdf(c *gin.Context){
+	pdfUrl := c.Request.FormValue("pdf_url")
+	// Get the data
+	resp, err := http.Get(pdfUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	// Create output file
+	a := rand.Int()
+	path := utils.UPLOAD_PATH + fmt.Sprintf("%d", a)[0:6] +".pdf"
+	out, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	// copy stream
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "data": "/upload/media/" + fmt.Sprintf("%d", a)[0:6] + ".pdf"})
 }

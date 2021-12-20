@@ -82,6 +82,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		EsRouter.POST("/get/related/paper", v1.GetRelatedPaper)
 		EsRouter.POST("/get/prefix", v1.PrefixGetInfo)
 
+		EsRouter.POST("/get/pdf", v1.UploadPdf)
+
 	}
 
 	SocialRouter := Router.Group("/social")
