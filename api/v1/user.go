@@ -292,6 +292,12 @@ func ExportAvatar(c *gin.Context) {
 	image, e := os.Create(utils.UPLOAD_PATH + img.ImgUrl)
 	if e != nil {
 		fmt.Println(e)
+		_ = os.Mkdir(utils.UPLOAD_PATH, 777)
+
+		image, e = os.Create(utils.UPLOAD_PATH + img.ImgUrl)
+		if e != nil {
+			fmt.Println(e)
+		}
 		return
 	}
 	defer image.Close()
