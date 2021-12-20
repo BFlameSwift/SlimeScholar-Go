@@ -319,3 +319,35 @@ func ExportAvatar(c *gin.Context){
 		"status":  200,
 	})
 }
+
+// GetAvatar doc
+// @description 获取头像
+// @Tags 用户管理
+// @Security Authorization
+// @Param Authorization header string false "Authorization"
+// @Param user_id formData string true "用户ID"
+// @Success 200 {string} string "{"success": true, "message": "上传成功", "data" : "图像"}"
+// @Failure 404 {string} string "{"success": false, "message": "用户ID不存在"}"
+// @Router /user/get/avatar [POST]
+func GetAvatar(c *gin.Context){
+	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
+	authorization := c.Request.Header.Get("Authorization")
+	user, err := VerifyLogin(userID, authorization, c)
+	if err {
+		return
+	}
+
+	var avatar string
+	if user.Avatar == "" || len(user.Avatar) == 0{
+		avatar = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
+	}else{
+		avatar = utils.BACK_PATH + "/media/" + user.Avatar
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "上传成功",
+		"status":  200,
+		"data": avatar,
+	})
+}

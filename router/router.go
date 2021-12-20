@@ -40,6 +40,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.POST("/info", v1.TellUserInfo)
 		UserRouter.POST("/confirm", v1.Confirm)
 		UserRouter.POST("/export/avatar", v1.ExportAvatar)
+		UserRouter.POST("/get/avatar", v1.GetAvatar)
 	}
 	EsRouter := Router.Group("/es")
 	{
