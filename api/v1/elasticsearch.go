@@ -454,7 +454,7 @@ func GetAuthorAvatars(c *gin.Context){
 			if user.Avatar == "" || len(user.Avatar) == 0{
 				pictures = append(pictures,utils.PICTURE)
 			}else{
-				pictures = append(pictures,utils.BACK_PATH + "/media/" + user.Avatar)
+				pictures = append(pictures,user.Avatar)
 			}
 		}
 	}
