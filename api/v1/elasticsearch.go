@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/olivere/elastic/v7"
-	"net/http"
-	"strconv"
-	"strings"
-	"os"
 	"io"
 	"math/rand"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
@@ -1474,14 +1474,13 @@ func PrefixGetInfo(c *gin.Context) {
 	return
 }
 
-
 // UploadPdf doc
 // @description  文件下载转换
 // @Tags elasticsearch
 // @Param pdf_url formData string true "文件路径"
 // @Success 200 {string} string "{"success": true, "message": "上传成功",}"
 // @Router /es/get/pdf [POST]
-func UploadPdf(c *gin.Context){
+func UploadPdf(c *gin.Context) {
 	pdfUrl := c.Request.FormValue("pdf_url")
 	// Get the data
 	resp, err := http.Get(pdfUrl)
@@ -1491,9 +1490,12 @@ func UploadPdf(c *gin.Context){
 	defer resp.Body.Close()
 	// Create output file
 	a := rand.Int()
-	path := utils.UPLOAD_PATH + fmt.Sprintf("%d", a)[0:6] +".pdf"
+
+	path := utils.UPLOAD_PATH + fmt.Sprintf("%d", a)[0:6] + ".pdf"
 	out, err := os.Create(path)
 	if err != nil {
+		_ = os.Mkdir(utils.UPLOAD_PATH, 666)
+		_, _ = os.Create(path)
 		panic(err)
 	}
 	defer out.Close()
