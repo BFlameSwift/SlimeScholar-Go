@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"math/rand"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
+	"github.com/wxnacy/wgo/arrays"
 )
 
 // GetPaper doc
@@ -1354,9 +1356,24 @@ func QueryHotPaper(c *gin.Context) {
 // @Tags elasticsearch
 // @Success 200 {string} string "{"success": true, "message": "获取文献成功"}"
 // @Router /es/query/paper/recommend [POST]
-// func QueryRecommendPaper(c *gin.Context){
-
-// }
+func QueryRecommendPaper(c *gin.Context){
+	ids := service.GetMost1000CitationPaperIds()
+	fmt.Println(ids, len(ids))
+	var paper_ids []string
+	i := 0
+	for true {
+		b := rand.Intn(1000)
+		if arrays.ContainsString(paper_ids,ids[b]) == -1{
+			paper_ids = append(paper_ids,ids[b])
+			i++
+			if i >= 10 {
+				break
+			}
+		}
+	}
+	paper_detail := service.GetPapers(paper_ids)
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
+}
 
 // GetPaperCitationGraph doc
 // @description 获取es期刊详细信息
