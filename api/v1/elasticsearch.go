@@ -1496,13 +1496,17 @@ func UploadPdf(c *gin.Context) {
 	if err != nil {
 		_ = os.Mkdir(utils.UPLOAD_PATH, 666)
 		_, _ = os.Create(path)
-		panic(err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": true, "message": "错误", "error": err})
+		return
+		//panic(err)
 	}
 	defer out.Close()
 	// copy stream
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": true, "message": "错误", "error": err})
+		return
+		//panic(err)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "成功", "data": "/upload/media/" + fmt.Sprintf("%d", a)[0:6] + ".pdf"})
 }
