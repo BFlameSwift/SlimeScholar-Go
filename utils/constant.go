@@ -24,8 +24,8 @@ var LOG_FILE_PATH = "./"
 
 const LOG_FILE_NAME = "scholar.log"
 
-const BACK_PATH = "http://82.156.217.192:8000/api/v1/upload"
+var BACK_PATH = "http://82.156.217.192:8000/api/v1/upload"
 
-const UPLOAD_PATH = "./media/"
+var UPLOAD_PATH = "./media/"
 
 const PICTURE = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
