@@ -27,7 +27,7 @@ var doc = `{
             "get": {
                 "description": "测试 Index 页",
                 "tags": [
-                    "测试"
+                    "basic"
                 ],
                 "responses": {
                     "200": {
@@ -43,7 +43,7 @@ var doc = `{
             "post": {
                 "description": "返回所有文档数目",
                 "tags": [
-                    "测试"
+                    "basic"
                 ],
                 "responses": {
                     "200": {
@@ -365,31 +365,6 @@ var doc = `{
                     },
                     "500": {
                         "description": "{\"success\": false, \"message\": \"错误500\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/es/get/pdf": {
-            "post": {
-                "description": "文件下载转换",
-                "tags": [
-                    "elasticsearch"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "文件路径",
-                        "name": "pdf_url",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"上传成功\",}",
                         "schema": {
                             "type": "string"
                         }
@@ -3590,6 +3565,31 @@ var doc = `{
                 }
             }
         },
+        "/upload/get/pdf": {
+            "post": {
+                "description": "文件下载转换",
+                "tags": [
+                    "basic"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件路径",
+                        "name": "pdf_url",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"上传成功\",}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/confirm": {
             "post": {
                 "description": "验证邮箱",
@@ -4008,5 +4008,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register("swagger", &s{})
+	swag.Register(swag.Name, &s{})
 }

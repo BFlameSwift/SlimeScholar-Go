@@ -14,7 +14,7 @@
             "get": {
                 "description": "测试 Index 页",
                 "tags": [
-                    "测试"
+                    "basic"
                 ],
                 "responses": {
                     "200": {
@@ -30,7 +30,7 @@
             "post": {
                 "description": "返回所有文档数目",
                 "tags": [
-                    "测试"
+                    "basic"
                 ],
                 "responses": {
                     "200": {
@@ -352,31 +352,6 @@
                     },
                     "500": {
                         "description": "{\"success\": false, \"message\": \"错误500\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/es/get/pdf": {
-            "post": {
-                "description": "文件下载转换",
-                "tags": [
-                    "elasticsearch"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "文件路径",
-                        "name": "pdf_url",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"success\": true, \"message\": \"上传成功\",}",
                         "schema": {
                             "type": "string"
                         }
@@ -3570,6 +3545,31 @@
                 "responses": {
                     "200": {
                         "description": "{\"success\": true, \"message\": \"登录成功\", \"detail\": user的信息}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/get/pdf": {
+            "post": {
+                "description": "文件下载转换",
+                "tags": [
+                    "basic"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件路径",
+                        "name": "pdf_url",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"上传成功\",}",
                         "schema": {
                             "type": "string"
                         }

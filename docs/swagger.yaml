@@ -13,7 +13,7 @@ paths:
           schema:
             type: string
       tags:
-      - 测试
+      - basic
   /count/all:
     post:
       description: 返回所有文档数目
@@ -23,7 +23,7 @@ paths:
           schema:
             type: string
       tags:
-      - 测试
+      - basic
   /es/create/mytype:
     post:
       description: 创建es索引
@@ -227,22 +227,6 @@ paths:
             type: string
         "500":
           description: '{"success": false, "message": "错误500"}'
-          schema:
-            type: string
-      tags:
-      - elasticsearch
-  /es/get/pdf:
-    post:
-      description: 文件下载转换
-      parameters:
-      - description: 文件路径
-        in: formData
-        name: pdf_url
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"success": true, "message": "上传成功",}'
           schema:
             type: string
       tags:
@@ -2369,6 +2353,22 @@ paths:
             type: string
       tags:
       - 管理员
+  /upload/get/pdf:
+    post:
+      description: 文件下载转换
+      parameters:
+      - description: 文件路径
+        in: formData
+        name: pdf_url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"success": true, "message": "上传成功",}'
+          schema:
+            type: string
+      tags:
+      - basic
   /user/confirm:
     post:
       description: 验证邮箱
