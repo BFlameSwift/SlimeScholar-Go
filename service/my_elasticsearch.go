@@ -627,7 +627,11 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 			url := url.(map[string]interface{})
 
 			if url["utype"] == "3" || strings.HasSuffix(url["url"].(string), "pdf") {
-				pdfs = append(pdfs, url["url"].(string))
+				thisUrl := url["url"].(string)
+				if !strings.HasSuffix(url["url"].(string), "pdf") {
+					thisUrl += ".pdf"
+				}
+				pdfs = append(pdfs, thisUrl)
 			} else {
 				urls = append(urls, url["url"].(string))
 			}
