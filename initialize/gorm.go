@@ -77,7 +77,7 @@ func InitOS() {
 		utils.LOG_FILE_PATH = "/backend/"
 		utils.ELASTIC_SEARCH_HOST = "http://172.18.0.1:9200"
 		utils.BACK_PATH = "https://slime.matrix53.top/api/v1/upload"
-		utils.UPLOAD_PATH = "/share"
+		utils.UPLOAD_PATH = "/share/"
 
 	} else if utils.SysType == "windows" {
 		utils.LOG_FILE_PATH = "./"
