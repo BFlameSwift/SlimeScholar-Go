@@ -1485,9 +1485,8 @@ func UploadPdf(c *gin.Context) {
 	// Get the data
 	resp, err := http.Get(pdfUrl)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": true, "message": "错误", "error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "错误", "error": err.Error()})
 		return
-		//panic(err)
 	}
 	defer resp.Body.Close()
 	// Create output file
@@ -1496,8 +1495,6 @@ func UploadPdf(c *gin.Context) {
 	path := utils.UPLOAD_PATH + fmt.Sprintf("%d", a)[0:6] + ".pdf"
 	out, err := os.Create(path)
 	if err != nil {
-		_ = os.Mkdir(utils.UPLOAD_PATH, 666)
-		_, _ = os.Create(path)
 		c.JSON(http.StatusBadRequest, gin.H{"success": true, "message": "错误", "error": err.Error()})
 		return
 		//panic(err)

@@ -10,7 +10,7 @@ import (
 // @description hzh company
 // @schemes https
 func main() {
-	docs.SwaggerInfo.Title = "Slime scholar"
+	docs.SwaggerInfo.Title = "Slime scholar !"
 	docs.SwaggerInfo.Description = "This is a Scholar sharing platform"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
