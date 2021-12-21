@@ -1094,6 +1094,22 @@ var doc = `{
                 }
             }
         },
+        "/es/query/paper/recommend": {
+            "post": {
+                "description": "es 获取推荐文献,根据被引用数量数判定,返回10篇文章",
+                "tags": [
+                    "elasticsearch"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\": true, \"message\": \"获取文献成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/es/query/paper/title": {
             "post": {
                 "description": "es 根据title查询论文",
@@ -4008,5 +4024,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }
