@@ -3,9 +3,10 @@ package router
 import (
 	v1 "gitee.com/online-publish/slime-scholar-go/api/v1"
 	"gitee.com/online-publish/slime-scholar-go/utils"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"net/http"
 )
 
 // 初始化路由
@@ -114,6 +115,10 @@ func InitRouter(Router *gin.RouterGroup) {
 	UploadRouter := Router.Group("/upload")
 	{
 		UploadRouter.StaticFS("/media", http.Dir(utils.UPLOAD_PATH))
+	}
+	ConfigRouter := Router.Group("/config")
+	{
+		ConfigRouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
 }
