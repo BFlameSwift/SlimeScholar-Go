@@ -46,6 +46,21 @@ func RedisRemoveValue(key string, value string) {
 	redisClient.SRem(key, value)
 }
 
+func RedisSaveValueSorted(key string, value string) {
+	redisClient.RPush(key, value)
+}
+func RedisGetValueSorted(key string) []string {
+	length, err := redisClient.LLen(key).Result()
+	if err != nil {
+		panic(err)
+	}
+	vals, err := redisClient.LRange(key, 0, length).Result()
+	if err != nil {
+		panic(err)
+	}
+	return vals
+}
+
 // redis基础操作，设置一个key，以list存储，设置数值与取值
 //func main() {
 //	fmt.Println("golang连接redis")

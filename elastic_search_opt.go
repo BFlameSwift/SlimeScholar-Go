@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitee.com/online-publish/slime-scholar-go/initialize"
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/olivere/elastic/v7"
@@ -292,10 +293,36 @@ func test_aggregation() {
 	//	query()
 	//	// list(2, 1)
 }
+
+func GetMostCitationPapers(size int) (ret []string) {
+	service.Init()
+	result, err := service.Client.Search().Index("paper").Query(elastic.NewMatchAllQuery()).Size(size).Sort("citation_count", false).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for _, hit := range result.Hits.Hits {
+		ret = append(ret, hit.Id)
+	}
+	return ret
+}
+
 func main() {
 	service.Init()
-	result := service.GetsByIndexIdWithout("test_paper_fields", "22367272")
-	fmt.Println(string(result.Source))
+	initialize.Init()
+	//result := service.GetsByIndexIdWithout("test_paper_fields", "22367272")
+	//fmt.Println(string(result.Source))
+	//initialize.Init()
+
+	//mostCitationPapers := GetMostCitationPapers(1000)
+	//for _, id := range mostCitationPapers {
+	//	service.RedisSaveValueSorted("most1000sort", id)
+	//	//fmt.Println(id)
+	//}
+	////initialize.Init()
+	//initialize.InitRedis()
+	ids := service.GetMost1000CitationPaperIds()
+	fmt.Println(ids, len(ids))
+
 }
 
 //func main(){

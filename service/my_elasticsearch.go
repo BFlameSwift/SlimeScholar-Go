@@ -926,6 +926,10 @@ func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
 	}
 	return ret
 }
+func GetMost1000CitationPaperIds() (ret []string) {
+
+	return RedisGetValueSorted("most1000sort")
+}
 
 // func main() {
 // 	Init()
