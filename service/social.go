@@ -114,6 +114,14 @@ func QueryACollect(userID uint64,paperID string)(collect model.Collect, notFound
 	}
 }
 
+//根据paperid返回所有收藏
+func QueryPaperCollect(paperID string)(collects []model.Collect){
+	collects = make([]model.Collect, 0)
+	//TODO 按时间排序
+	global.DB.Where("paper_id=?", paperID).Find(&collects)
+	return collects
+}
+
 //删除标签
 func DeleteATag(tagID uint64) (err error) {
 	if err = global.DB.Where("tag_id = ?", tagID).Delete(model.Tag{}).Error; err != nil {

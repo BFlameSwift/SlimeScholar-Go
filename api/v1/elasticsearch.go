@@ -1372,6 +1372,10 @@ func QueryRecommendPaper(c *gin.Context){
 		}
 	}
 	paper_detail := service.GetPapers(paper_ids)
+	for _, paper := range paper_detail {
+		collects := service.QueryPaperCollect(paper.(map[string]interface{})["paper_id"].(string));
+		paper.(map[string]interface{})["collect_num"] = len(collects)
+	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
 }
 
