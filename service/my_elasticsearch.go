@@ -732,23 +732,24 @@ func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool
 func parseCondition(condition map[string]interface{}) elastic.Query {
 	theMap := condition
 	key := theMap["category"]
+	content := strings.ToLower(theMap["content"].(string))
 	switch key {
 	case "source":
-		return elastic.NewMatchQuery("publisher", theMap["content"])
+		return elastic.NewMatchQuery("publisher", content)
 	case "title":
-		return elastic.NewMatchPhraseQuery("paper_title", theMap["content"])
+		return elastic.NewMatchPhraseQuery("paper_title", content)
 	case "author":
-		return elastic.NewMatchPhraseQuery("authors.aname", theMap["content"])
+		return elastic.NewMatchPhraseQuery("authors.aname", content)
 	case "doi":
 		return elastic.NewTermQuery("doi.keyword", theMap["content"])
 	case "author_affiliation":
-		return elastic.NewMatchPhraseQuery("authors.afname", theMap["content"])
+		return elastic.NewMatchPhraseQuery("authors.afname", content)
 	case "main":
-		return elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("abstract", theMap["content"])).Should(elastic.NewMatchPhraseQuery("paper_title", theMap["content"]))
+		return elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("abstract", content)).Should(elastic.NewMatchPhraseQuery("paper_title", content))
 	case "abstract":
-		return elastic.NewMatchPhraseQuery("abstract", theMap["content"])
+		return elastic.NewMatchPhraseQuery("abstract", content)
 	case "field":
-		return IndexFieldsGetQuery("fields", "name", theMap["content"].(string), 5, "fields")
+		return IndexFieldsGetQuery("fields", "name", content, 5, "fields")
 		//return FieldNameGetQuery(theMap["content"].(string), 5)
 
 	}

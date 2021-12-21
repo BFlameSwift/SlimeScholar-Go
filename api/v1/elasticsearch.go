@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
-	"math/rand"
 
 	"gitee.com/online-publish/slime-scholar-go/service"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/net/context"
 	"github.com/wxnacy/wgo/arrays"
+	"golang.org/x/net/context"
 )
 
 // GetPaper doc
@@ -189,6 +189,7 @@ func GetJournal(c *gin.Context) {
 func TitleQueryPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
+	title = strings.ToLower(title)
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	isPreciseStr := c.Request.FormValue("is_precise")
 	is_precise := true
@@ -258,6 +259,7 @@ func TitleSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	title := c.Request.FormValue("title")
+	title = strings.ToLower(title)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -322,6 +324,7 @@ func TitleSelectPaper(c *gin.Context) {
 // @Router /es/query/author/name [POST]
 func NameQueryAuthor(c *gin.Context) {
 	name := c.Request.FormValue("author_name")
+	name = strings.ToLower(name)
 	page, _ := strconv.Atoi(c.Request.FormValue("page"))
 	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
@@ -382,6 +385,7 @@ func NameQueryAuthor(c *gin.Context) {
 // @Router /es/query/author/affiliation [POST]
 func AffiliationNameQueryAuthor(c *gin.Context) {
 	name := c.Request.FormValue("affiliation_name")
+	name = strings.ToLower(name)
 	page, _ := strconv.Atoi(c.Request.FormValue("page"))
 	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	sort_type, _ := strconv.Atoi(c.Request.FormValue("sort_type"))
@@ -501,6 +505,7 @@ func DoiQueryPaper(c *gin.Context) {
 // @Router /es/query/paper/main [POST]
 func MainQueryPaper(c *gin.Context) {
 	main := c.Request.FormValue("main")
+	main = strings.ToLower(main)
 	page, _ := strconv.Atoi(c.Request.FormValue("page"))
 	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	boolQuery := elastic.NewBoolQuery().Should(elastic.NewMatchPhraseQuery("paper_title", main)).Should(elastic.NewMatchPhraseQuery("abstract", main))
@@ -559,6 +564,7 @@ func MainSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	main := c.Request.FormValue("main")
+	main = strings.ToLower(main)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -795,6 +801,7 @@ func AdvancedSelectPaper(c *gin.Context) {
 // @Router /es/query/paper/author_name [POST]
 func AuthorNameQueryPaper(c *gin.Context) {
 	author_name := c.Request.FormValue("author_name")
+	author_name = strings.ToLower(author_name)
 	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
@@ -842,6 +849,7 @@ func AuthorNameSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	author_name := c.Request.FormValue("author_name")
+	author_name = strings.ToLower(author_name)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -897,6 +905,7 @@ func AuthorNameSelectPaper(c *gin.Context) {
 // @Router /es/query/paper/affiliation_name [POST]
 func AffiliationNameQueryPaper(c *gin.Context) {
 	affiliation_name := c.Request.FormValue("affiliation_name")
+	affiliation_name = strings.ToLower(affiliation_name)
 	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
@@ -944,6 +953,7 @@ func AffiliationNameSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	affiliation_name := c.Request.FormValue("affiliation_name")
+	affiliation_name = strings.ToLower(affiliation_name)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -999,6 +1009,7 @@ func AffiliationNameSelectPaper(c *gin.Context) {
 // @Router /es/query/paper/publisher [POST]
 func PublisherQueryPaper(c *gin.Context) {
 	publisher := c.Request.FormValue("publisher")
+	publisher = strings.ToLower(publisher)
 	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
 	if err != nil {
 		panic(err)
@@ -1046,6 +1057,7 @@ func PublisherSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	publisher := c.Request.FormValue("publisher")
+	publisher = strings.ToLower(publisher)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -1101,6 +1113,7 @@ func PublisherSelectPaper(c *gin.Context) {
 // @Router /es/query/paper/field [POST]
 func FieldQueryPaper(c *gin.Context) {
 	field := c.Request.FormValue("field")
+	field = strings.ToLower(field)
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
@@ -1165,6 +1178,7 @@ func FieldQueryPaper(c *gin.Context) {
 // @Router /es/query/paper/field [POST]
 func FieldSelectPaper(c *gin.Context) {
 	field := c.Request.FormValue("field")
+	field = strings.ToLower(field)
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
@@ -1239,6 +1253,7 @@ func FieldSelectPaper(c *gin.Context) {
 // @Router /es/query/paper/abstract [POST]
 func AbstractQueryPaper(c *gin.Context) {
 	abstract := c.Request.FormValue("abstract")
+	abstract = strings.ToLower(abstract)
 	page, _ := strconv.Atoi(c.Request.FormValue("page"))
 	size, _ := strconv.Atoi(c.Request.FormValue("size"))
 	is_precise, err := strconv.ParseBool(c.Request.FormValue("is_precise"))
@@ -1288,6 +1303,7 @@ func AbstractSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	abstract := c.Request.FormValue("abstract")
+	abstract = strings.ToLower(abstract)
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -1356,15 +1372,15 @@ func QueryHotPaper(c *gin.Context) {
 // @Tags elasticsearch
 // @Success 200 {string} string "{"success": true, "message": "获取文献成功"}"
 // @Router /es/query/paper/recommend [POST]
-func QueryRecommendPaper(c *gin.Context){
+func QueryRecommendPaper(c *gin.Context) {
 	ids := service.GetMost1000CitationPaperIds()
 	fmt.Println(ids, len(ids))
 	var paper_ids []string
 	i := 0
 	for true {
 		b := rand.Intn(1000)
-		if arrays.ContainsString(paper_ids,ids[b]) == -1{
-			paper_ids = append(paper_ids,ids[b])
+		if arrays.ContainsString(paper_ids, ids[b]) == -1 {
+			paper_ids = append(paper_ids, ids[b])
 			i++
 			if i >= 10 {
 				break
@@ -1373,7 +1389,7 @@ func QueryRecommendPaper(c *gin.Context){
 	}
 	paper_detail := service.GetPapers(paper_ids)
 	for _, paper := range paper_detail {
-		collects := service.QueryPaperCollect(paper.(map[string]interface{})["paper_id"].(string));
+		collects := service.QueryPaperCollect(paper.(map[string]interface{})["paper_id"].(string))
 		paper.(map[string]interface{})["collect_num"] = len(collects)
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": paper_detail})
@@ -1456,6 +1472,7 @@ func GetRelatedPaper(c *gin.Context) {
 // @Router /es/get/prefix [POST]
 func PrefixGetInfo(c *gin.Context) {
 	name, content := c.Request.FormValue("name"), c.Request.FormValue("content")
+	content = strings.ToLower(content)
 	field, index := "", "paper"
 	//content = strings.ToLower(content)
 	switch name {
