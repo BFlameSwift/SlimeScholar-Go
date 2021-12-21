@@ -131,7 +131,10 @@ func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 //根据index以及id获取文档信息，但不返回错误信息
 func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
 	var get1 *elastic.GetResult
-	get1, _ = Client.Get().Index(index).Id(id).Do(context.Background())
+	get1, err := Client.Get().Index(index).Id(id).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	return get1
 }
 func GetsByIndexIdRetMap(index string, id string) map[string]interface{} {
@@ -927,7 +930,6 @@ func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
 	return ret
 }
 func GetMost1000CitationPaperIds() (ret []string) {
-
 	return RedisGetValueSorted("most1000sort")
 }
 

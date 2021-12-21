@@ -37,6 +37,8 @@ func SemanticScholarApiSingle(mag_id string, field string) string {
 	}
 
 }
+
+// 不过也用不上（
 func SemanticScholarApiMulti(mag_id string, fields_pointer *[]string) map[string]interface{} {
 	// 时刻记住go 参数传递数组是复制在传递，直接用指针可以节省开销
 	fields := *fields_pointer

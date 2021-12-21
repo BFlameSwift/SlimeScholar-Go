@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/olivere/elastic/v7"
 	"golang.org/x/net/context"
 	"sort"
@@ -147,7 +148,17 @@ func GetAuthorSomePapersIds(author_id string, size int) []string {
 	return paper_ids_final
 }
 func GetAuthorAllPapersIds(author_id string) []string {
-	return GetAuthorSomePapersIds(author_id, 100)
+	author := GetAuthors(append(make([]string, 0), author_id))[0].(map[string]interface{})
+	paperCount := int(author["paper_count"].(float64))
+	fmt.Println("get author"+author_id+"all papers :len = ", paperCount)
+	if paperCount > 500 {
+		paperCount = 500
+	}
+	return GetAuthorSomePapersIds(author_id, paperCount)
+}
+
+func GetAuthorSomePapers(author_id string, size int) (paper_list []interface{}) {
+	return GetPapers(GetAuthorSomePapersIds(author_id, size))
 }
 
 // GetAuthorAllPaper 根据作者id获取该作者所有的papers
@@ -188,9 +199,9 @@ func GetAuthorMsg(author_id string) (author_map map[string]interface{}) {
 }
 
 // ProcAuthorMsg 处理作者的基本信息：生成作者的领域等等
-func ProcAuthorMsg(people map[string]interface{}, papers []interface{}) map[string]interface{} {
+func ProcAuthorMsg(people map[string]interface{}, papers *[]interface{}) map[string]interface{} {
 	fields_map := make(map[string]int)
-	for _, paper := range papers {
+	for _, paper := range *papers {
 		if paper.(map[string]interface{})["fields"] != nil {
 			for _, field := range paper.(map[string]interface{})["fields"].([]interface{}) {
 				//fmt.Println(field)
@@ -413,7 +424,8 @@ func ParseEnterScholarMsg(authors *[]interface{}) *[]interface{} {
 			author.(map[string]interface{})["is_user"] = true
 			author.(map[string]interface{})["affiliation_name"] = user.Affiliation
 		}
-		author = ProcAuthorMsg(authorMap, GetPapers(GetAuthorSomePapersIds(author_id, 5)))
+		papers := GetPapers(GetAuthorSomePapersIds(author_id, 5))
+		author = ProcAuthorMsg(authorMap, &papers)
 	}
 	return authors
 }

@@ -35,7 +35,7 @@ func SubmitCount(c *gin.Context) {
 	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/paper/_count")), &paper_map); err != nil {
 		panic(err)
 	}
-	
+
 	author_map := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(service.GetUrl(utils.ELASTIC_SEARCH_HOST+"/author/_count")), &author_map); err != nil {
 		panic(err)
@@ -52,7 +52,7 @@ func SubmitCount(c *gin.Context) {
 	// fmt.Println(data["memberCount"])
 
 	filename := utils.LOG_FILE_PATH + utils.LOG_FILE_NAME
-	activeIndex,responseTime := LogAnalize(filename)
+	activeIndex, responseTime := LogAnalize(filename)
 	data["activeIndex"] = activeIndex
 	fmt.Println(data["activeIndex"])
 
@@ -102,9 +102,10 @@ func CreateSubmit(c *gin.Context) {
 		return
 	}
 	//后续对papers可能需要处理
-	papers := service.GetAuthorAllPaper(author_id)
+	//papers := service.GetAuthorAllPaper(author_id)
+	author := service.GetAuthors(append(make([]string, 0), author_id))[0].(map[string]interface{})
 	submit := model.SubmitScholar{AffiliationName: affiliation_name, AuthorName: author_name, WorkEmail: work_email,
-		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "", PaperCount: len(papers),
+		HomePage: home_page, AuthorID: author_id, Fields: fields, UserID: user_id_u64, Status: 0, Content: "", PaperCount: int(author["paper_count"].(float64)),
 		CreatedTime: time.Now()}
 
 	err = service.CreateASubmit(&submit)
@@ -114,7 +115,7 @@ func CreateSubmit(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请提交成功", "status": 200, "papers": service.GetAuthorAllPaper(author_id)})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "申请提交成功", "status": 200, "papers": service.GetAuthorSomePapers(author_id, 100)})
 	return
 }
 
@@ -320,7 +321,7 @@ func PaperGetAuthors(c *gin.Context) {
 		if err != nil {
 			panic(err)
 		}
-		papers := service.GetAuthorAllPaper(author_map["author_id"].(string))
+		papers := service.GetAuthorSomePapers(author_map["author_id"].(string), 30)
 		if papers == nil {
 			author_map["papers"] = make([]string, 0)
 		} else {
@@ -365,7 +366,7 @@ func GetSubmitDetail(c *gin.Context) {
 	data["fields"] = strings.Split(submit.Fields, `,`)
 
 	author_id := submit.AuthorID
-	papers := service.GetAuthorAllPaper(author_id)
+	papers := service.GetAuthorSomePapers(author_id, 30)
 	data_papers := make([]map[string]interface{}, 0)
 	// fmt.Println(papers)
 	for _, tmp := range papers {
@@ -407,10 +408,10 @@ func AdminLogin(c *gin.Context) {
 	} else {
 		if user.Password != password {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "密码错误", "status": 402})
-		} else{
-			if user.UserType != 2{
+		} else {
+			if user.UserType != 2 {
 				c.JSON(http.StatusOK, gin.H{"success": false, "message": "该用户不是管理员", "status": 405})
-			}else{
+			} else {
 				if user.HasConfirmed == false {
 					c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户尚未确认邮箱", "status": 403})
 				} else {
@@ -438,7 +439,7 @@ func AdminLogin(c *gin.Context) {
 	}
 }
 
-func LogAnalize(filename string) (data []interface{},resTime float64) {
+func LogAnalize(filename string) (data []interface{}, resTime float64) {
 	f, e := os.Open(filename)
 	var msgList []Msg
 	if e != nil {
@@ -498,35 +499,35 @@ func LogAnalize(filename string) (data []interface{},resTime float64) {
 	Reverse(&msgList)
 	msg_count := 0 //记录最近100条POST信息
 	resTime = 0.0
-	for _,tmp := range msgList{
-		if strings.Contains(tmp.msg, "POST") && msg_count < 100{
+	for _, tmp := range msgList {
+		if strings.Contains(tmp.msg, "POST") && msg_count < 100 {
 			a := tmp.msg
 			fmt.Println(a)
 			end := strings.Index(a, "s")
 			b := strings.TrimSpace(a[7:end]) //去掉前后空格
 			len := len(b)
-			for i := len-1; i >= 0; i-- {
-                if !(b[i] >= '0' && b[i] <= '9'){
+			for i := len - 1; i >= 0; i-- {
+				if !(b[i] >= '0' && b[i] <= '9') {
 					len--
-				}else{
+				} else {
 					break
 				}
-        	}
-			c,_ := strconv.ParseFloat(b[:len],64)
+			}
+			c, _ := strconv.ParseFloat(b[:len], 64)
 			fmt.Println(c)
 			resTime = resTime + c
-			msg_count++ 
-			if msg_count >= 100{
+			msg_count++
+			if msg_count >= 100 {
 				break
 			}
 		}
 	}
-	count,_ := strconv.ParseFloat(strconv.Itoa(msg_count),64)
+	count, _ := strconv.ParseFloat(strconv.Itoa(msg_count), 64)
 	resTime = resTime / count
 	resTime, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", resTime), 64)
 	//
 
-	return data,resTime
+	return data, resTime
 }
 func Reverse(arr *[]Msg) {
 	var temp Msg

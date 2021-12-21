@@ -52,7 +52,7 @@ func GetScholar(c *gin.Context) {
 		ret_author_id = submit.AuthorID
 		fmt.Println("!!!!!!!")
 		fmt.Println(service.GetAuthorCoAuthorIds(append(make([]string, 0), ret_author_id)))
-		papers = service.GetAuthorAllPaper(ret_author_id)
+		papers = service.GetAuthorSomePapers(ret_author_id, 100)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
 		people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
 		people_msg["follow_count"] = len(service.GetUserFollowedList(user.UserID))
@@ -66,17 +66,18 @@ func GetScholar(c *gin.Context) {
 			return
 		}
 		ret_author_id = author_id
-		papers = service.GetAuthorAllPaper(ret_author_id)
+		papers = service.GetAuthorSomePapers(ret_author_id, 100)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
 		if is_user {
 			user, _ := service.QueryAUserByID(the_user_id)
 			people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
+			fmt.Println(people_msg)
 			people_msg["follow_count"] = len(service.GetUserFollowedList(user.UserID))
 
 		} else {
 			people_msg = service.GetAuthorMsg(author_id)
-			people_msg = service.ProcAuthorMsg(people_msg, papers)
+			people_msg = service.ProcAuthorMsg(people_msg, &papers)
 			people_msg["follow_count"] = 0
 		}
 
