@@ -175,9 +175,19 @@ func QueryByField(index string, field string, content string, page int, size int
 
 	return searchResult
 }
+func JudgeBoolQueryIsEmpty(boolQuery *elastic.BoolQuery) bool {
+	thisMap, _ := boolQuery.Source()
+	subMap := thisMap.(map[string]interface{})["bool"].(map[string]interface{})
+	if len(subMap) == 0 {
+		return true
+	} else {
+		return false
+	}
+
+}
 
 // 通用的paper搜索部分，包含对各种类型的聚合
-func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool, boolQuery *elastic.BoolQuery) *elastic.SearchResult {
+func PaperQueryByField(index string, field string, content string, page int, size int, is_precise bool, boolQuery *elastic.BoolQuery, sortType int, ascending bool) *elastic.SearchResult {
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
 	fields_agg := elastic.NewTermsAggregation().Field("fields.keyword")
 	conference_agg := elastic.NewTermsAggregation().Field("conference_id.keyword") // 设置统计字段
@@ -186,15 +196,27 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
+	//fmt.Println(JudgeBoolQueryIsEmpty(boolQuery))
 	if is_precise == false {
 		boolQuery.Must(elastic.NewTermQuery(field, content))
 	} else {
 		boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	}
-
-	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
-		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
-		From((page - 1) * size).Do(context.Background())
+	var searchResult *elastic.SearchResult
+	var err error
+	if sortType == 1 {
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
+			From((page - 1) * size).Do(context.Background())
+	} else if sortType == 2 {
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
+			Sort("citation_count", ascending).From((page - 1) * size).Do(context.Background())
+	} else if sortType == 3 {
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
+			Sort("date", ascending).From((page - 1) * size).Do(context.Background())
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -492,6 +514,12 @@ func GetAggregationYear(searchResult *elastic.SearchResult, name string, isMin b
 		}
 	}
 }
+func SearchAggregationsYear(searchResult *elastic.SearchResult) map[string]interface{} {
+	aggregation := make(map[string]interface{})
+	aggregation["min_year"] = GetAggregationYear(searchResult, "min_year", true)
+	aggregation["max_year"] = GetAggregationYear(searchResult, "max_year", false)
+	return aggregation
+}
 
 // 搜索结果绝活部分
 func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{} {
@@ -715,15 +743,19 @@ func CheckSelectPaperParams(c *gin.Context, page_str string, size_str string, mi
 
 func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool, page int, size int) *elastic.SearchResult {
 	var searchResult *elastic.SearchResult
+	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
 	if sort_type == 1 {
 		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).
+			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	} else if sort_type == 2 {
 		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("citation_count", sort_ascending).
+			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	} else if sort_type == 3 {
 		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("date", sort_ascending).
+			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	}
 	return searchResult
@@ -804,7 +836,7 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 }
 
 func FieldNameGetSimilarIds(field string, size int) (ids []string) {
-	searchResult := PaperQueryByField("fields", "name", field, 1, size, true, elastic.NewBoolQuery())
+	searchResult := PaperQueryByField("fields", "name", field, 1, size, true, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		return make([]string, 0)
 	}

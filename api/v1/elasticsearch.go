@@ -189,19 +189,20 @@ func GetJournal(c *gin.Context) {
 func TitleQueryPaper(c *gin.Context) {
 	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
-	title = strings.ToLower(title)
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	isPreciseStr := c.Request.FormValue("is_precise")
 	is_precise := true
 	if isPreciseStr != "true" {
 		is_precise = false
+	} else {
+		title = strings.ToLower(title)
 	}
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
 		return
 	}
-	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, is_precise, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, 10, is_precise, elastic.NewBoolQuery(), 1, true)
 
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
@@ -259,7 +260,7 @@ func TitleSelectPaper(c *gin.Context) {
 
 	var sort_ascending bool
 	title := c.Request.FormValue("title")
-	title = strings.ToLower(title)
+
 	page_str := c.Request.FormValue("page")
 	size_str := c.Request.FormValue("size")
 	min_year := c.Request.FormValue("min_year")
@@ -269,6 +270,7 @@ func TitleSelectPaper(c *gin.Context) {
 	sort_type_str := c.Request.FormValue("sort_type")
 	sort_ascending_str := c.Request.FormValue("sort_ascending")
 	isPreciseStr := c.Request.FormValue("is_precise")
+	is_precise := true
 
 	err := service.CheckSelectPaperParams(c, page_str, size_str, min_year, max_year, doctypesJson, journalsJson, conferenceJson, publisherJson, sort_ascending_str)
 	if err != nil {
@@ -282,14 +284,17 @@ func TitleSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(journalsJson), &journals)
 	json.Unmarshal([]byte(conferenceJson), &conferences)
 	json.Unmarshal([]byte(publisherJson), &publishers)
-
-	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
 	if isPreciseStr != "true" {
-		boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
+		title = strings.ToLower(title)
+		is_precise = false
+		//boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
 	} else {
-		boolQuery.Must(elastic.NewTermQuery("paper_title", title))
+		//boolQuery.Must(elastic.NewTermQuery("paper_title", title))
 	}
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
+	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, size, is_precise, boolQuery, sort_type, sort_ascending)
+
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this title query %s not existed", title)
@@ -305,7 +310,7 @@ func TitleSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -475,7 +480,7 @@ func GetAuthorAvatars(c *gin.Context) {
 func DoiQueryPaper(c *gin.Context) {
 	doi := c.Request.FormValue("doi")
 	//searchResult := service.MatchPhraseQuery("paper", "doi.keyword", doi, 1, 1)
-	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "doi.keyword", doi, 1, 10, true, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this abstract query %s not existed", doi)
@@ -604,7 +609,7 @@ func MainSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregationsYear(searchResult)})
 	return
 }
 
@@ -786,7 +791,7 @@ func AdvancedSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregationsYear(searchResult)})
 	return
 }
 
@@ -806,7 +811,7 @@ func AuthorNameQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "authors.aname", author_name, 1, 10, is_precise, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "authors.aname", author_name, 1, 10, is_precise, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this author_name query %s not existed", author_name)
@@ -873,15 +878,15 @@ func AuthorNameSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	boolQuery.Must(elastic.NewMatchPhraseQuery("authors.aname", author_name))
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	//boolQuery.Must(elastic.NewMatchPhraseQuery("authors.aname", author_name))
+	searchResult := service.PaperQueryByField("paper", "authors.aname", author_name, page, size, true, boolQuery, sort_type, sort_ascending)
+	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this authors name query %s not existed", author_name)
 		return
 	}
 	fmt.Println("search authors name", author_name, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -890,7 +895,7 @@ func AuthorNameSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -910,14 +915,13 @@ func AffiliationNameQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, 1, 10, is_precise, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, 1, 10, is_precise, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", affiliation_name)
 		return
 	}
 	fmt.Println("search author_name", affiliation_name, "hits :", searchResult.TotalHits())
-
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -977,8 +981,9 @@ func AffiliationNameSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	boolQuery.Must(elastic.NewMatchPhraseQuery("authors.afname", affiliation_name))
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	//boolQuery.Must(elastic.NewMatchPhraseQuery("authors.afname", affiliation_name))
+	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	searchResult := service.PaperQueryByField("paper", "authors.afname", affiliation_name, page, size, true, boolQuery, sort_type, sort_ascending)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this authors name query %s not existed", affiliation_name)
@@ -994,7 +999,7 @@ func AffiliationNameSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -1014,7 +1019,7 @@ func PublisherQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "publisher", publisher, 1, 10, is_precise, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "publisher", publisher, 1, 10, is_precise, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", publisher)
@@ -1081,8 +1086,9 @@ func PublisherSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	boolQuery.Must(elastic.NewMatchPhraseQuery("publisher", publisher))
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	//boolQuery.Must(elastic.NewMatchPhraseQuery("publisher", publisher))
+	searchResult := service.PaperQueryByField("paper", "publisher", publisher, page, size, true, boolQuery, sort_type, sort_ascending)
+	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this publisher query %s not existed", publisher)
@@ -1098,7 +1104,7 @@ func PublisherSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -1236,7 +1242,7 @@ func FieldSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregationsYear(searchResult)})
 	return
 }
 
@@ -1260,7 +1266,7 @@ func AbstractQueryPaper(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	searchResult := service.PaperQueryByField("paper", "abstract", abstract, page, size, is_precise, elastic.NewBoolQuery())
+	searchResult := service.PaperQueryByField("paper", "abstract", abstract, page, size, is_precise, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this affiliation_name query %s not existed", abstract)
@@ -1328,8 +1334,9 @@ func AbstractSelectPaper(c *gin.Context) {
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
 
-	boolQuery.Must(elastic.NewMatchPhraseQuery("abstract", abstract))
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	//boolQuery.Must(elastic.NewMatchPhraseQuery("abstract", abstract))
+	searchResult := service.PaperQueryByField("paper", "abstract", abstract, page, size, true, boolQuery, sort_type, sort_ascending)
+	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this abstract query %s not existed", abstract)
@@ -1345,7 +1352,7 @@ func AbstractSelectPaper(c *gin.Context) {
 	paperSequences = service.GetPapers(paperIds)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "total_hits": searchResult.TotalHits(),
-		"details": paperSequences})
+		"details": paperSequences, "aggregation": service.SearchAggregates(searchResult)})
 	return
 }
 
@@ -1472,7 +1479,6 @@ func GetRelatedPaper(c *gin.Context) {
 // @Router /es/get/prefix [POST]
 func PrefixGetInfo(c *gin.Context) {
 	name, content := c.Request.FormValue("name"), c.Request.FormValue("content")
-	content = strings.ToLower(content)
 	field, index := "", "paper"
 	//content = strings.ToLower(content)
 	switch name {
