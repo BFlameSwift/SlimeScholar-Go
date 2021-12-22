@@ -192,11 +192,10 @@ func TitleQueryPaper(c *gin.Context) {
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	isPreciseStr := c.Request.FormValue("is_precise")
 	is_precise := true
-	if isPreciseStr != "true" {
+	if isPreciseStr == "true" {
 		is_precise = false
-	} else {
-		title = strings.ToLower(title)
 	}
+	title = strings.ToLower(title)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "page 不为整数", "status": 401})
@@ -284,13 +283,10 @@ func TitleSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(journalsJson), &journals)
 	json.Unmarshal([]byte(conferenceJson), &conferences)
 	json.Unmarshal([]byte(publisherJson), &publishers)
-	if isPreciseStr != "true" {
-		title = strings.ToLower(title)
+	if isPreciseStr == "true" {
 		is_precise = false
-		//boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
-	} else {
-		//boolQuery.Must(elastic.NewTermQuery("paper_title", title))
 	}
+	title = strings.ToLower(title)
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
 	//searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
 	searchResult := service.PaperQueryByField("paper", "paper_title", title, page, size, is_precise, boolQuery, sort_type, sort_ascending)
