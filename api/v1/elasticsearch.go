@@ -1141,12 +1141,13 @@ func FieldQueryPaper(c *gin.Context) {
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
-	boolQuery := elastic.NewBoolQuery()
+	boolQuery, query := elastic.NewBoolQuery(), elastic.NewBoolQuery()
 	for _, hits := range fieldIds {
 		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
 	}
+	query.Must(boolQuery)
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err := service.Client.Search("paper").Query(boolQuery).Size(10).Aggregation("conference", conference_agg).
+	searchResult, err := service.Client.Search("paper").Query(query).Size(10).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * 10).Do(context.Background())
 	if err != nil {
@@ -1220,14 +1221,14 @@ func FieldSelectPaper(c *gin.Context) {
 		return
 	}
 
-	boolQuery := elastic.NewBoolQuery()
+	boolQuery, query := elastic.NewBoolQuery(), elastic.NewBoolQuery()
 	for _, hits := range fieldIds {
 		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
 	}
-
+	query.Must(boolQuery)
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	boolQuery = service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
-	searchResult := service.SearchSort(boolQuery, sort_type, sort_ascending, page, size)
+	searchResult := service.SearchSort(query, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		fmt.Printf("this field query %s not existed", field)
