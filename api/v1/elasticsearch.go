@@ -659,7 +659,9 @@ func AdvancedSearch(c *gin.Context) {
 	fmt.Println(conditions)
 	fmt.Println(minDate, maxDate)
 
-	boolQuery := service.AdvancedCondition(conditions)
+	advancedQuery := service.AdvancedCondition(conditions)
+	boolQuery := elastic.NewBoolQuery().Must(advancedQuery)
+	boolQuery.Must(elastic.NewRangeQuery("date").Lte(maxDate).Gte(minDate))
 	//boolQuery.Must(elastic.NewQuery)
 	//boolQuery.Must(elastic.NewMatchPhraseQuery("paper_title", title))
 	doc_type_agg := elastic.NewTermsAggregation().Field("doctype.keyword") // 设置统计字段
@@ -765,7 +767,9 @@ func AdvancedSelectPaper(c *gin.Context) {
 	json.Unmarshal([]byte(publisherJson), &publishers)
 
 	boolQuery := service.SelectTypeQuery(doctypes, journals, conferences, publishers, 0, 2050)
-	boolQuery.Must(service.AdvancedCondition(conditions))
+	advancedQuery := service.AdvancedCondition(conditions)
+	boolQuery.Must(advancedQuery)
+	boolQuery.Must(elastic.NewRangeQuery("date").Lte(maxDate).Gte(minDate))
 
 	fmt.Println(minDate, maxDate)
 	//boolQuery.Must(elastic.NewRangeQuery("date").Lte(max_date).Gte(min_date))

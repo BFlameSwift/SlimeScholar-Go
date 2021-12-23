@@ -911,8 +911,8 @@ func GetRelatedPapers(paperTitle string) (papersIds []string) {
 	page := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 30
 	boolQuery := elastic.NewBoolQuery()
 	titleList := strings.Split(paperTitle, " ")
-	rand1, rand2 := rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList)
-	boolQuery.Should(elastic.NewMatchQuery("paper_title", titleList[rand1])).Should(elastic.NewMatchQuery("paper_title", titleList[rand2]))
+	rand1, rand2, rand3 := rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList)
+	boolQuery.Should(elastic.NewMatchQuery("paper_title", titleList[rand1])).Should(elastic.NewMatchQuery("paper_title", titleList[rand2])).Should(elastic.NewMatchQuery("paper_title", titleList[rand3]))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search("paper").Query(boolQuery).Size(5).
 		From((page - 1) * 5).Do(context.Background())
