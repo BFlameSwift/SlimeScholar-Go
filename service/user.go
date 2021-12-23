@@ -63,6 +63,13 @@ func QueryAUserByEmail(email string) (user model.User, notFound bool) {
 	}
 }
 
+//查询所有用户
+func QueryAllUser() (users []model.User){
+	users = make([]model.User,0)
+	global.DB.Find(&users)
+	return users
+}
+
 // 更新用户的用户名、密码、个人信息
 func UpdateAUser(user *model.User, username string, password string, userInfo string) error {
 	user.Username = username
@@ -230,6 +237,13 @@ func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFoun
 		return submit, false
 	}
 }
+
+func QuerySubmitsByAuthor(author_ids []string) (submits []model.SubmitScholar) {
+	submits = make([]model.SubmitScholar,0)
+	global.DB.Where("author_id IN ? AND status = ?", author_ids,1).Find(&submits)
+	return submits
+}
+
 func QueryASubmitExist(user_id uint64) (submit model.SubmitScholar, notFound bool) {
 	err := global.DB.Where("user_id = ?", user_id).First(&submit).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {

@@ -449,17 +449,23 @@ func GetAuthorAvatars(c *gin.Context) {
 	author_ids := c.Request.FormValue("author_ids")
 	authorIds := strings.Split(author_ids, `,`)
 	pictures := make([]string, 0)
+	submits := service.QuerySubmitsByAuthor(authorIds)
 	for _, authorId := range authorIds {
-		submit, notfound := service.QueryASubmitByAuthor(authorId)
-		if notfound || submit.Status != 1 {
-			pictures = append(pictures, utils.PICTURE)
-		} else {
-			user, _ := service.QueryAUserByID(submit.UserID)
-			if user.Avatar == "" || len(user.Avatar) == 0 {
-				pictures = append(pictures, utils.PICTURE)
-			} else {
-				pictures = append(pictures, user.Avatar)
+		find := false
+		for _,submit := range submits{
+			if authorId == submit.AuthorID {
+				user,_ :=  service.QueryAUserByID(submit.UserID)
+				if user.Avatar == "" || len(user.Avatar) == 0 {
+					pictures = append(pictures, utils.PICTURE)
+				} else {
+					pictures = append(pictures, user.Avatar)
+				}
+				find = true
+				break
 			}
+		} 
+		if !find{
+			pictures = append(pictures, utils.PICTURE)
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查找成功", "status": 200, "data": pictures})
