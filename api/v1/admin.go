@@ -505,20 +505,24 @@ func LogAnalize(filename string) (data []interface{}, resTime float64) {
 			fmt.Println(a)
 			end := strings.Index(a, "s")
 			b := strings.TrimSpace(a[7:end]) //去掉前后空格
-			len := len(b)
-			for i := len - 1; i >= 0; i-- {
-				if !(b[i] >= '0' && b[i] <= '9') {
-					len--
-				} else {
-					break
+			if a[end-1] == 'm' {
+				len := len(b)
+				for i := len - 1; i >= 0; i-- {
+					if !(b[i] >= '0' && b[i] <= '9') {
+						len--
+					} else {
+						break
+					}
 				}
-			}
-			c, _ := strconv.ParseFloat(b[:len], 64)
-			fmt.Println(c)
-			resTime = resTime + c
-			msg_count++
-			if msg_count >= 100 {
-				break
+				c, _ := strconv.ParseFloat(b[:len], 64)
+				if c > 10.0 {
+					fmt.Println(c)
+					resTime = resTime + c
+					msg_count++
+					if msg_count >= 100 {
+						break
+					}
+				}
 			}
 		}
 	}
