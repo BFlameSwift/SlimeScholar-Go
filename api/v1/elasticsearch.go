@@ -449,19 +449,18 @@ func GetAuthorAvatars(c *gin.Context) {
 	author_ids := c.Request.FormValue("author_ids")
 	authorIds := strings.Split(author_ids, `,`)
 	pictures := make([]string, 0)
-	submits := service.QuerySubmitsByAuthor(authorIds)
+	submits,users := service.QuerySubmitsByAuthor(authorIds)
 	for _, authorId := range authorIds {
 		find := false
 		for _,submit := range submits{
 			if authorId == submit.AuthorID {
-				user,_ :=  service.QueryAUserByID(submit.UserID)
-				if user.Avatar == "" || len(user.Avatar) == 0 {
-					pictures = append(pictures, utils.PICTURE)
-				} else {
-					pictures = append(pictures, user.Avatar)
+				for _,user := range users{
+					if user.UserID == submit.UserID{
+						pictures = append(pictures, user.Avatar)
+						find = true
+						break
+					}
 				}
-				find = true
-				break
 			}
 		} 
 		if !find{
