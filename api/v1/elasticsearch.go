@@ -1231,9 +1231,10 @@ func FieldSelectPaper(c *gin.Context) {
 	for _, hits := range fieldIds {
 		boolQuery.Should(elastic.NewMatchPhraseQuery("fields.keyword", hits))
 	}
-	query.Filter(boolQuery)
+
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	boolQuery = service.SelectTypeQuery(doctypes, journals, conferences, publishers, service.PureAtoi(min_year), service.PureAtoi(max_year))
+	query.Must(boolQuery)
 	searchResult := service.SearchSort(query, sort_type, sort_ascending, page, size)
 	if searchResult.TotalHits() == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
