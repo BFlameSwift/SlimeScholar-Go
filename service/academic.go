@@ -327,7 +327,7 @@ func MLACitePaper(paper map[string]interface{}) (ret string) {
 		conference := GetsByIndexIdRetMap("conference", paper["conference_id"].(string))
 		ret += " " + conference["name"].(string)
 	}
-	ret += " (" + paper["year"].(string) + ")"
+	ret += " (" + paper["year"].(string) + ")."
 	return ret
 }
 func APACitePaper(paper map[string]interface{}) (ret string) {

@@ -452,9 +452,9 @@ func GetAuthorAvatars(c *gin.Context) {
 	submits := service.QuerySubmitsByAuthor(authorIds)
 	for _, authorId := range authorIds {
 		find := false
-		for _,submit := range submits{
+		for _, submit := range submits {
 			if authorId == submit.AuthorID {
-				user,_ :=  service.QueryAUserByID(submit.UserID)
+				user, _ := service.QueryAUserByID(submit.UserID)
 				if user.Avatar == "" || len(user.Avatar) == 0 {
 					pictures = append(pictures, utils.PICTURE)
 				} else {
@@ -463,8 +463,8 @@ func GetAuthorAvatars(c *gin.Context) {
 				find = true
 				break
 			}
-		} 
-		if !find{
+		}
+		if !find {
 			pictures = append(pictures, utils.PICTURE)
 		}
 	}
@@ -523,7 +523,7 @@ func MainQueryPaper(c *gin.Context) {
 	journal_id_agg := elastic.NewTermsAggregation().Field("journal_id.keyword")    // 设置统计字段
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
-	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Size(size).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * size).Do(context.Background())
 	if err != nil {
@@ -677,7 +677,7 @@ func AdvancedSearch(c *gin.Context) {
 	publisher_agg := elastic.NewTermsAggregation().Field("publisher.keyword")
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
-	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).Aggregation("conference", conference_agg).
+	searchResult, err := service.Client.Search().Index("paper").Query(boolQuery).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		Size(size).
 		From((page - 1) * size).Do(context.Background())
@@ -1153,7 +1153,7 @@ func FieldQueryPaper(c *gin.Context) {
 	}
 	query.Must(boolQuery)
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err := service.Client.Search("paper").Query(query).Size(10).Aggregation("conference", conference_agg).
+	searchResult, err := service.Client.Search("paper").Query(query).Size(10).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 		Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 		From((page - 1) * 10).Do(context.Background())
 	if err != nil {
