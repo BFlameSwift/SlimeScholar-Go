@@ -168,7 +168,7 @@ func QueryByField(index string, field string, content string, page int, size int
 	boolQuery.Must(elastic.NewMatchPhraseQuery(field, content))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
 	searchResult, err := Client.Search(index).Query(boolQuery).Size(size).
-		From((page - 1) * size).Do(context.Background())
+		From((page - 1) * size).TerminateAfter(utils.TERMINATE_AFTER).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -205,15 +205,15 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 	var searchResult *elastic.SearchResult
 	var err error
 	if sortType == 1 {
-		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	} else if sortType == 2 {
-		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			Sort("citation_count", ascending).From((page - 1) * size).Do(context.Background())
 	} else if sortType == 3 {
-		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).Aggregation("conference", conference_agg).
+		searchResult, err = Client.Search(index).Query(boolQuery).Size(size).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("conference", conference_agg).
 			Aggregation("journal", journal_id_agg).Aggregation("doctype", doc_type_agg).Aggregation("fields", fields_agg).Aggregation("publisher", publisher_agg).Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			Sort("date", ascending).From((page - 1) * size).Do(context.Background())
 	}
@@ -227,7 +227,7 @@ func PaperQueryByField(index string, field string, content string, page int, siz
 
 func MatchPhraseQuery(index string, field string, content string, page int, size int) *elastic.SearchResult {
 	query := elastic.NewMatchPhraseQuery(field, content)
-	searchResult, err := Client.Search().Index("paper").Query(query).From((page - 1) * size).Size(size).Do(context.Background())
+	searchResult, err := Client.Search().Index("paper").Query(query).From((page - 1) * size).Size(size).TerminateAfter(utils.TERMINATE_AFTER).Do(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -746,15 +746,15 @@ func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
 
 	if sort_type == 1 {
-		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).TerminateAfter(utils.TERMINATE_AFTER).
 			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	} else if sort_type == 2 {
-		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("citation_count", sort_ascending).
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("citation_count", sort_ascending).TerminateAfter(utils.TERMINATE_AFTER).
 			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	} else if sort_type == 3 {
-		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("date", sort_ascending).
+		searchResult, _ = Client.Search("paper").Query(boolQuery).Size(size).Sort("date", sort_ascending).TerminateAfter(utils.TERMINATE_AFTER).
 			Aggregation("min_year", min_year_agg).Aggregation("max_year", max_year_agg).
 			From((page - 1) * size).Do(context.Background())
 	}
@@ -814,19 +814,19 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 	//authorNameAgg := elastic.NewTermsAggregation().Field("name.keyword") // 设置统计字段
 	affiliationNameAgg := elastic.NewTermsAggregation().Field("affiliation_id.keyword")
 	if sort_type == 0 {
-		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page - 1) * size).Size(size).Do(context.Background())
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("affiliation", affiliationNameAgg).From((page - 1) * size).Size(size).Do(context.Background())
 		if err != nil {
 			panic(err)
 		}
 		return searchResult
 	} else if sort_type == 1 {
-		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("paper_count", sort_ascending).Do(context.Background())
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("paper_count", sort_ascending).Do(context.Background())
 		if err != nil {
 			panic(err)
 		}
 		return searchResult
 	} else if sort_type == 2 {
-		searchResult, err := Client.Search().Index(index).Query(boolQuery).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("citation_count", sort_ascending).Do(context.Background())
+		searchResult, err := Client.Search().Index(index).Query(boolQuery).TerminateAfter(utils.TERMINATE_AFTER).Aggregation("affiliation", affiliationNameAgg).From((page-1)*size).Size(size).Sort("citation_count", sort_ascending).Do(context.Background())
 		if err != nil {
 			panic(err)
 		}
@@ -914,7 +914,7 @@ func GetRelatedPapers(paperTitle string) (papersIds []string) {
 	rand1, rand2, rand3 := rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList), rand.New(rand.NewSource(time.Now().UnixNano())).Int()%len(titleList)
 	boolQuery.Should(elastic.NewMatchQuery("paper_title", titleList[rand1])).Should(elastic.NewMatchQuery("paper_title", titleList[rand2])).Should(elastic.NewMatchQuery("paper_title", titleList[rand3]))
 	//boolQuery.Filter(elastic.NewRangeQuery("age").Gt("30"))
-	searchResult, err := Client.Search("paper").Query(boolQuery).Size(5).
+	searchResult, err := Client.Search("paper").Query(boolQuery).TerminateAfter(utils.TERMINATE_AFTER).Size(5).
 		From((page - 1) * 5).Do(context.Background())
 	if err != nil {
 		panic(err)

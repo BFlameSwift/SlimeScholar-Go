@@ -29,3 +29,6 @@ var BACK_PATH = "http://82.156.217.192:8000/api/v1/upload"
 var UPLOAD_PATH = "./media/"
 
 const PICTURE = "https://img-1304418829.cos.ap-beijing.myqcloud.com/avatar-grey-bg.jpg"
+
+// 匹配到10000000文档就返回
+const TERMINATE_AFTER = 10000000
