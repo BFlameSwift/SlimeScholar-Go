@@ -649,7 +649,7 @@ func AdvancedSearch(c *gin.Context) {
 		min_date += " 00:00:00"
 	}
 	if max_date == "0" {
-		min_date = "2050-01-01 00:00:00"
+		max_date = "2050-01-01 00:00:00"
 	} else {
 		max_date += " 00:00:00"
 	}
