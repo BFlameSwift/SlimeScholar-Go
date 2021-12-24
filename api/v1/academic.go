@@ -211,7 +211,13 @@ func GetAuthorPartialCoAuthors(c *gin.Context) {
 
 	coAuthorMap := service.GetSimpleAuthors(append(make([]string, 0), id))[0].(map[string]interface{})
 	firstCoauthorIds := service.GetSingleAuthorCoAuthorIds(id)
-	firstCoauthorItems := service.GetSimpleAuthors(firstCoauthorIds[id].([]string))
+	var firstCoauthorItems []interface{}
+	if firstCoauthorIds[id] == nil {
+		firstCoauthorItems = make([]interface{}, 0)
+	} else {
+		firstCoauthorItems = service.GetSimpleAuthors(firstCoauthorIds[id].([]string))
+	}
+
 	if level != "2" {
 		coAuthorMap["friends"] = firstCoauthorItems
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "detail": coAuthorMap})
