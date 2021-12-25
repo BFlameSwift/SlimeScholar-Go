@@ -310,7 +310,7 @@ func makeMultiRel(filename string, mytype string, isMulti bool, mainType string)
 	fmt.Println(time.Now(), i, lineNum)
 }
 
-func main() {
+func parseJsonMain() {
 	s := time.Now()
 	fmt.Println(s)
 	//load_map()

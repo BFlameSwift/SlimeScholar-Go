@@ -20,7 +20,7 @@ func getKeys1(m map[int64]int) int {
 	return j
 }
 
-func main() {
+func MakeReferenceClosure() {
 	s := time.Now()
 	fmt.Println(s)
 

@@ -971,6 +971,19 @@ func GetSimpleAuthors(authorIds []string) (ret []interface{}) {
 	}
 	return ret
 }
+
+// 获取到引用量最大的1000个paper
+func GetMostCitationPapers(size int) (ret []string) {
+	Init()
+	result, err := Client.Search().Index("paper").Query(elastic.NewMatchAllQuery()).Size(size).Sort("citation_count", false).Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for _, hit := range result.Hits.Hits {
+		ret = append(ret, hit.Id)
+	}
+	return ret
+}
 func GetMost1000CitationPaperIds() (ret []string) {
 	return RedisGetValueSorted("most1000sort")
 }

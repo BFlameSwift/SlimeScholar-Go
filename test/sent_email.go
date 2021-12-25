@@ -7,7 +7,8 @@ import (
 
 	"gopkg.in/gomail.v2"
 )
-func SendRegisterEmail(themail string, number int) error{
+
+func SendRegisterEmail(themail string, number int) error {
 	subject := "欢迎注册Slime学术成果分享平台"
 	// 邮件正文
 	mailTo := []string{
@@ -59,10 +60,10 @@ func SendMail(mailTo []string, subject string, body string) error {
 
 }
 
-func main() {
+func testMain() {
 	//定义收件人
 	mailTo := []string{
-		"bflameswift@163.com",
+		"email@example.com",
 	}
 	//邮件主题为"Hello"
 	subject := "Hello by golang gomail from exmail.qq.com"
