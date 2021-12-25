@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// 根据cspaperid 根据reference 获取闭包。经计算10次迭代即可收敛
 func getKeys1(m map[int64]int) int {
 	// 数组默认长度为map长度,后面append时,不需要重新申请内存和拷贝,效率很高
 	j := 0

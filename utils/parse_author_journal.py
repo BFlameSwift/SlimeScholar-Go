@@ -3,7 +3,7 @@ import sys
 import json
 import tqdm
 import os
-
+# 处理SemanticScholar 数据的脚本
 # from elasticsearch import Elasticsearch
 # from elasticsearch.helpers import bulk
 
