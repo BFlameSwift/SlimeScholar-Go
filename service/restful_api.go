@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// 向服务器发起请求调用aoi， 最初用作调用semanticscholar的api
 func GetUrl(url string) string {
 	res, err := http.Get(url)
 	if err != nil {

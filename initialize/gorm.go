@@ -75,13 +75,16 @@ func InitRedis() {
 func InitOS() {
 	if utils.SysType == "linux" {
 		utils.LOG_FILE_PATH = "/backend/"
+		// local host 内网环境下访问es 速度更快
 		utils.ELASTIC_SEARCH_HOST = "http://172.18.0.1:9200"
-		utils.BACK_PATH = "https://slime.matrix53.top/api/v1/upload"
+		utils.BACK_PATH = "https://<your domain name>/api/v1/upload"
+		// 服务器docker中挂载至/share/ 中
 		utils.UPLOAD_PATH = "/share/"
 
 	} else if utils.SysType == "windows" {
 		utils.LOG_FILE_PATH = "./"
-		utils.ELASTIC_SEARCH_HOST = "http://124.70.95.61:9200"
+		// 本地环境访问es
+		utils.ELASTIC_SEARCH_HOST = "http://127.0.0.1:9200"
 
 	}
 }

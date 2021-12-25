@@ -24,7 +24,8 @@ var LOG_FILE_PATH = "./"
 
 const LOG_FILE_NAME = "scholar.log"
 
-var BACK_PATH = "http://82.156.217.192:8000/api/v1/upload"
+// your backend  to get img path
+var BACK_PATH = "http://<IP>:8000/api/v1/upload"
 
 var UPLOAD_PATH = "./media/"
 

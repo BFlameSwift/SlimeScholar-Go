@@ -25,7 +25,7 @@ func SendRegisterEmail(themail string, number int) {
 }
 func SendMail(mailTo []string, subject string, body string) error {
 	//定义邮箱服务器连接信息，如果是网易邮箱 pass填密码，qq邮箱填授权码
-
+	// 具体信息可在secret.go 中填写
 	//mailConn := map[string]string{
 	//  "user": "xxx@163.com",
 	//  "pass": "your password",
@@ -34,10 +34,10 @@ func SendMail(mailTo []string, subject string, body string) error {
 	//}
 
 	mailConn := map[string]string{
-		"user": "chlorinum@126.com",
-		"pass": "QBUCCRELRTNZJJWV",
-		"host": "smtp.126.com",
-		"port": "465",
+		"user": EMAIL_HOST,
+		"pass": EMAIL_PASSWORD,
+		"host": EMAIL_HOST,
+		"port": EMAIL_PORT,
 	}
 
 	port, _ := strconv.Atoi(mailConn["port"]) //转换端口类型为int

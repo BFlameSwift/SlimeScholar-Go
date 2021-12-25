@@ -60,36 +60,3 @@ func RedisGetValueSorted(key string) []string {
 	}
 	return vals
 }
-
-// redis基础操作，设置一个key，以list存储，设置数值与取值
-//func main() {
-//	fmt.Println("golang连接redis")
-//
-//	redisClient := redis.NewClient(&redis.Options{
-//		Addr:     utils.REDIS_HOST,
-//		Password: utils.REDIS_PASSWORD,
-//		DB:       0,
-//	})
-//
-//	pong, err := redisClient.Ping().Result()
-//	fmt.Println(pong, err)
-//
-//	setKey := "golang_test_set"
-//	redisClient.SAdd(setKey, 1)
-//	redisClient.SAdd(setKey, 2)
-//	setList, _ := redisClient.SMembers(setKey).Result()
-//	fmt.Println("GetSet", setList)
-//
-//}
-
-// 简单操作跟随
-//func main() {
-//	InitRedis()
-//	FollowUser(10086, 100887)
-//	fmt.Println(GetUserFollowingList(10086))
-//	fmt.Println(GetUserFollowedList(100887))
-//	CanCelFollowUser(10086, 100887)
-//	fmt.Println(GetUserFollowingList(10086))
-//	fmt.Println(GetUserFollowedList(100887))
-//
-//}

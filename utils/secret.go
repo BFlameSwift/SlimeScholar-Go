@@ -21,3 +21,8 @@ const REDIS_HOST = "124.70.95.61:6379"
 
 // your redis password
 const REDIS_PASSWORD = "redis1921@"
+
+const EMAIL_HOST = "smtp.126.com"
+const EMAIL_USER = ""
+const EMAIL_PASSWORD = ""
+const EMAIL_PORT = "465"
