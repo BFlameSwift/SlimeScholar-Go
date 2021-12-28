@@ -34,7 +34,7 @@ func SendMail(mailTo []string, subject string, body string) error {
 	//}
 
 	mailConn := map[string]string{
-		"user": EMAIL_HOST,
+		"user": EMAIL_USER,
 		"pass": EMAIL_PASSWORD,
 		"host": EMAIL_HOST,
 		"port": EMAIL_PORT,
