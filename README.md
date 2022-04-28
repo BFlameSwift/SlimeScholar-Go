@@ -85,7 +85,7 @@ OpenAlex将会是未来的第一选择。（MAG已宣布在2021年末停止服�
 	
 此外此网站还有一些比较好用的API在链接处。至于数据源则是在[此](https://api.semanticscholar.org/corpus/)
 
-OAG：from [aminer](https://www.aminer.cn/oag-2-1)
+OAG 2.1：from [aminer](https://www.aminer.cn/oag-2-1)
 
 [scigraph](https://sn-scigraph.figshare.com/articles/dataset/Dataset_GRID_Organizations_for_SciGraph/7376537) ：看起来还算不错。应该涵盖了大部分的CSpaper
 
