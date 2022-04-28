@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"strconv"
 	"strings"
 	"time"
