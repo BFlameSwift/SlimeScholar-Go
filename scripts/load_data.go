@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"bufio"
@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/olivere/elastic/v7"
 
 	"io"
 	"os"
