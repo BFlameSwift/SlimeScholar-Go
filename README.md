@@ -66,6 +66,12 @@ Slime学术成果共享平台，实现了学术搜索引擎的大多基本功能
 
 
 
+### 项目的核心设计：
+
+本项目核心便是使用`Elasticsearch`进行搜索，核心实现的文件位于`api/elasticsearch.go`与`service/my_elasticsearch.go`中，将多个请求~~实际上绝大部分的API都可以合并成一个~~，带入相应信息转入`service.PaperQueryByField`，`service.SelectTypeQuery`中进行处理，获取到相应的PaperIDs后，通过`service.GetPapers`**批量的**获取相应的信息并简单处理。以节省多次交互elasticsearchde的时间以及统一返回前端的格式。
+
+
+
 # 致谢
 
 感谢微软提供了[Microsoft Academic ](https://academic.microsoft.com/)全部的开源数据，也是本网站最主要的数据来源
