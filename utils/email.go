@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"gopkg.in/gomail.v2"
 	"log"
 	"strconv"
+
+	"gopkg.in/gomail.v2"
 )
 
 func SendRegisterEmail(themail string, number int) {
@@ -65,7 +66,7 @@ func SendReplyEmail(themail string, paper_id string) {
 	mailTo := []string{
 		themail,
 	}
-	//TODO:发送文献链接
+	//发送文献链接
 	body := "您评论的文章链接为" + "https://slime.matrix53.top" + "/article?v=" + paper_id
 	err := SendMail(mailTo, subject, body)
 	if err != nil {

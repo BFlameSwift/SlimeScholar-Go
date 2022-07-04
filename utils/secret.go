@@ -7,6 +7,7 @@ const ADDR, PORT, USER, PASSWORD, DATABASE = "ip", "3306", "user", "password", "
 
 const HUAWEI_ELASTIC_SEARCH_HOST = "http://124.70.95.61:9200"
 
+// 个人内网穿透ES使用
 //const ELASTIC_SEARCH_HOST = "http://4r244274i3.zicp.vip:23656"
 
 const LOCAL_ELASTIC_SEARCH_HOST = "http://172.18.0.1:9200"

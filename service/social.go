@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
+	"strconv"
+
 	"gitee.com/online-publish/slime-scholar-go/global"
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/utils"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 //创建标签
@@ -68,10 +69,11 @@ func QueryTagPaper(tagID uint64) (papers []model.TagPaper) {
 	return papers
 }
 
-type PaperCollect struct{
-	Num 		uint64 		`json:"num"`
-	PaperId 	string 		`json:"paper_id"`
+type PaperCollect struct {
+	Num     uint64 `json:"num"`
+	PaperId string `json:"paper_id"`
 }
+
 //查询收藏文章Top10
 func QueryCollectTop10() (collects []PaperCollect) {
 	collects = make([]PaperCollect, 0)
@@ -80,9 +82,9 @@ func QueryCollectTop10() (collects []PaperCollect) {
 }
 
 //查询用户的所有收藏文章
-func QueryUserCollect(userid uint64)(collects []model.Collect){
+func QueryUserCollect(userid uint64) (collects []model.Collect) {
 	collects = make([]model.Collect, 0)
-	//TODO 按时间排序
+	// 按时间排序
 	global.DB.Where("user_id=?", userid).Find(&collects)
 	return collects
 }
@@ -100,7 +102,7 @@ func QueryATagPaper(tagID uint64, paperID string) (tagPaper model.TagPaper, not 
 }
 
 //判断用户是否收藏文章
-func QueryACollect(userID uint64,paperID string)(collect model.Collect, notFound bool) {
+func QueryACollect(userID uint64, paperID string) (collect model.Collect, notFound bool) {
 	db := global.DB
 	db = db.Where("user_id = ?", userID)
 	db = db.Where("paper_id = ?", paperID)
@@ -115,9 +117,9 @@ func QueryACollect(userID uint64,paperID string)(collect model.Collect, notFound
 }
 
 //根据paperid返回所有收藏
-func QueryPaperCollect(paperID string)(collects []model.Collect){
+func QueryPaperCollect(paperID string) (collects []model.Collect) {
 	collects = make([]model.Collect, 0)
-	//TODO 按时间排序
+	// 按时间排序
 	global.DB.Where("paper_id=?", paperID).Find(&collects)
 	return collects
 }

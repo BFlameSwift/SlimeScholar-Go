@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"io"
 	"math/rand"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"gitee.com/online-publish/slime-scholar-go/model"
 	"gitee.com/online-publish/slime-scholar-go/service"
@@ -152,7 +153,6 @@ func Login(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "数据库操作时的其他错误"}"
 // @Router /user/modify [POST]
 func ModifyUser(c *gin.Context) {
-	// TODO 修改为请求头中的Authorization
 
 	userID, _ := strconv.ParseUint(c.Request.FormValue("user_id"), 0, 64)
 	username := c.Request.FormValue("username")
@@ -308,7 +308,7 @@ func ExportAvatar(c *gin.Context) {
 		return
 	}
 
-	errr := service.ExportAvatar(&user,"/upload/media/" + img.ImgUrl)
+	errr := service.ExportAvatar(&user, "/upload/media/"+img.ImgUrl)
 	if errr != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -321,7 +321,7 @@ func ExportAvatar(c *gin.Context) {
 		"success": true,
 		"message": "上传成功",
 		"status":  200,
-		"data": user.Avatar,
+		"data":    user.Avatar,
 	})
 }
 

@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/olivere/elastic/v7"
 
 	"io"
 	"os"
@@ -22,7 +23,7 @@ const FILE_NUM = 3
 const AUTHOR_FILE_PREFIX = "aminer_authors_"
 const PAPER_FILE_PREFIX = "s2-corpus-"
 
-// TODO 设置bulk的大小
+// 设置bulk的大小
 const BULK_SIZE = 10000
 
 var fieldsMap map[string]int = make(map[string]int)
@@ -80,7 +81,7 @@ func proc_file(file_path string, index string) {
 		//m = proc_single_paper(m)
 		// 因为这些数据到es中已经超过了100G 由于io的限制会导致查询的特别慢。。于是杉树一些不必哟啊的属性。 将引用，被引用信息分开存储，减少paper 索引的数据量
 		//m["comment_num"] ,m["download_num"],m["collect_num"],m["browser_num"]= 0,0,0,0
-		//TODO 存到数据库中吧
+
 		doc := elastic.NewBulkIndexRequest().Index(index).Id(m["id"].(string)).Doc(m)
 		//simpleBulkRequest.Add(elastic.NewBulkIndexRequest().Index("simple_paper").Id(m["id"].(string)).Doc(service.SimplifyPaper(m)))
 
@@ -315,19 +316,19 @@ func proc_paper_rel(file_path string, index string, main_id string, other_type s
 			fmt.Println("linenum!!!!", i)
 			continue
 		}
-		// TODO 数据格式为{paperid,rel(abstract、authors)}，让map只含有abstract或者authors、，直接插入
+		// 数据格式为{paperid,rel(abstract、authors)}，让map只含有abstract或者authors、，直接插入
 
 		m[other_type] = m["rel"]
 		// fmt.Println(m["rel"])
 		id := m[main_id].(string)
 		delete(m, "rel")
 		delete(m, main_id)
-		//TODO 让map只含有abstract或者authors、，直接插入
+		//让map只含有abstract或者authors、，直接插入
 		// fmt.Println(m)
 		doc := elastic.NewBulkUpdateRequest().Index(index).Id(id).Doc(m).DocAsUpsert(true)
 		bulkRequest.Add(doc)
 		if i%BULK_SIZE == 0 {
-			// TODO 每一个size 输出结果
+			// 每一个size 输出结果
 			response, err := bulkRequest.Do(context.Background())
 			if err != nil {
 				panic(err)
@@ -533,7 +534,7 @@ func print1() {
 }
 func loadPaperAbstract() {
 	service.Init()
-	// TODO 分成五进程直接插入
+	// 分成五进程直接插入
 	for i := 5; i < i+1; i++ {
 		str := strconv.Itoa(i)
 		proc_paper_rel("H:\\myPaperAbstractsInvertedIndex.txt."+str, "paper", "paper_id", "abstract")

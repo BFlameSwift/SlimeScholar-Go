@@ -3,10 +3,11 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
+	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/gin-gonic/gin"
 )
 
 // GetScholar doc
@@ -21,7 +22,7 @@ import (
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
 // @Router /scholar/info [POST]
 func GetScholar(c *gin.Context) {
-	// TODO 根据实际的paper维护被引用数目等
+	// 根据实际的paper维护被引用数目等
 	user_id_str := c.Request.FormValue("user_id")
 	var ret_author_id string
 	var people_msg map[string]interface{}

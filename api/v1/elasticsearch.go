@@ -188,7 +188,7 @@ func GetJournal(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/query/paper/title [POST]
 func TitleQueryPaper(c *gin.Context) {
-	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
+	// 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
 	title := c.Request.FormValue("title")
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	isPreciseStr := c.Request.FormValue("is_precise")
@@ -256,7 +256,7 @@ func TitleQueryPaper(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/select/paper/title [POST]
 func TitleSelectPaper(c *gin.Context) {
-	//TODO 多表联查，查id的时候同时查询author，  查个屁（父子文档开销太大，扁平化管理了
+	//曾想多表联查，查id的时候同时查询author，  然而查个屁（父子文档开销太大，扁平化管理了
 
 	var sort_ascending bool
 	title := c.Request.FormValue("title")
@@ -298,7 +298,7 @@ func TitleSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search title", title, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
+
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -788,7 +788,6 @@ func AdvancedSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search conditions", conditions, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -996,7 +995,6 @@ func AffiliationNameSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search authors name", affiliation_name, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -1101,7 +1099,6 @@ func PublisherSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search publisher", publisher, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
@@ -1351,7 +1348,6 @@ func AbstractSelectPaper(c *gin.Context) {
 		return
 	}
 	fmt.Println("search abstract", abstract, "hits :", searchResult.TotalHits())
-	// TODO 会议与journal信息补全，一次mget替换10此mget
 	var paperSequences []interface{} = make([]interface{}, 0, 1000)
 	paperIds := make([]string, 0, 1000)
 	for _, hit := range searchResult.Hits.Hits {
