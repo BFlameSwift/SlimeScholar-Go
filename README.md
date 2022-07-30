@@ -10,7 +10,7 @@
 
 随后初始化包 ： `go mod tidy`,下载与生成依赖 
 
-运行 go run ./main.go 即可运行后端，本项目需结合[前端]() 使用
+运行 go run ./main.go 即可运行后端，本项目需结合[前端](https://github.com/BUAASE-Slime/SlimeScholar-frontend) 使用
 
 
 
