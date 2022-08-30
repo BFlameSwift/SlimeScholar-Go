@@ -74,7 +74,7 @@ Slime学术成果共享平台，实现了学术搜索引擎的大多基本功能
 
 # 致谢
 
-感谢微软提供了[Microsoft Academic ](https://academic.microsoft.com/)全部的开源数据，也是本网站最主要的数据来源
+感谢微软提供了[Microsoft Academic ](https://docs.microsoft.com/en-us/academic-services/graph/reference-data-schema)全部的开源数据，也是本网站最主要的数据来源
 
 同样感谢Open-Alex提供了Microsoft-Academic-Graph的部分备用数据，虽然在最终并未使用，但是想必以后的同学们想要获取高质量数据的话，
 
