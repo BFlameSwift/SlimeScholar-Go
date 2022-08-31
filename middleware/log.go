@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"os"

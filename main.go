@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gitee.com/online-publish/slime-scholar-go/docs"
-	"gitee.com/online-publish/slime-scholar-go/initialize"
+	"github.com/BFlameSwift/SlimeScholar-Go/docs"
+	"github.com/BFlameSwift/SlimeScholar-Go/initialize"
 )
 
 // @title Slime Scholar Golang Backend

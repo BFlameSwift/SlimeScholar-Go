@@ -2,14 +2,14 @@ package initialize
 
 import (
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
 	"log"
 	"os"
 	"time"
 
-	"gitee.com/online-publish/slime-scholar-go/global"
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/global"
+	"github.com/BFlameSwift/SlimeScholar-Go/model"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

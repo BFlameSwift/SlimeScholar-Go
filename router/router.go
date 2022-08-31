@@ -1,8 +1,8 @@
 package router
 
 import (
-	v1 "gitee.com/online-publish/slime-scholar-go/api/v1"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	v1 "github.com/BFlameSwift/SlimeScholar-Go/api/v1"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

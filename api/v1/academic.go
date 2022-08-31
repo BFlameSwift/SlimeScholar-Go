@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
 	"github.com/gin-gonic/gin"
 )
 

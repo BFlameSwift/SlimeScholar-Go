@@ -11,9 +11,9 @@ import (
 	// "container/list"
 	"fmt"
 
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/model"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -260,12 +260,12 @@ func DeleteATag(c *gin.Context) {
 	}
 	tagPapers := service.QueryTagPaper(tag.TagID)
 	service.DeleteATag(tag.TagID)
-	for _,paper := range tagPapers{
-		collect,_ := service.QueryACollect(userID,paper.PaperID)
+	for _, paper := range tagPapers {
+		collect, _ := service.QueryACollect(userID, paper.PaperID)
 		collect.TagCount--
-		if collect.TagCount == 0{
+		if collect.TagCount == 0 {
 			service.DeleteACollect(collect.ID)
-		}else{
+		} else {
 			service.UpdateACollect(&collect)
 		}
 		service.DeleteATagPaper(paper.ID)
@@ -297,9 +297,9 @@ func CollectAPaper(c *gin.Context) {
 	id := c.Request.FormValue("paper_id")
 
 	//判断用户是否已收藏过该文章
-	collect,notfound := service.QueryACollect(userID,id)
-	if notfound{
-		collect = model.Collect{UserID:userID,PaperID:id}
+	collect, notfound := service.QueryACollect(userID, id)
+	if notfound {
+		collect = model.Collect{UserID: userID, PaperID: id}
 		service.CreateACollect(&collect)
 	}
 	//
@@ -367,11 +367,11 @@ func DeleteCollectPaper(c *gin.Context) {
 	if tagName != "" {
 		tag, _ := service.QueryATag(userID, tagName)
 		tagPaper, _ := service.QueryATagPaper(tag.TagID, id)
-		collect,_ := service.QueryACollect(userID,tagPaper.PaperID)
+		collect, _ := service.QueryACollect(userID, tagPaper.PaperID)
 		collect.TagCount--
-		if collect.TagCount == 0{
+		if collect.TagCount == 0 {
 			service.DeleteACollect(collect.ID)
-		}else{
+		} else {
 			service.UpdateACollect(&collect)
 		}
 		service.DeleteATagPaper(tagPaper.ID)
@@ -380,11 +380,11 @@ func DeleteCollectPaper(c *gin.Context) {
 		for _, tag := range tags {
 			paper, notfound := service.QueryATagPaper(tag.TagID, id)
 			if !notfound {
-				collect,_ := service.QueryACollect(userID,paper.PaperID)
+				collect, _ := service.QueryACollect(userID, paper.PaperID)
 				collect.TagCount--
-				if collect.TagCount == 0{
+				if collect.TagCount == 0 {
 					service.DeleteACollect(collect.ID)
-				}else{
+				} else {
 					service.UpdateACollect(&collect)
 				}
 				service.DeleteATagPaper(paper.ID)

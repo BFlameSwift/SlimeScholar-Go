@@ -8,7 +8,7 @@ package main
 //	"os"
 //	"strconv"
 //
-//	"gitee.com/online-publish/slime-scholar-go/service"
+//	"github.com/BFlameSwift/SlimeScholar-Go/service"
 //	"github.com/olivere/elastic/v7"
 //	"golang.org/x/net/context"
 //)

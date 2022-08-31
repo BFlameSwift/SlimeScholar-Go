@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/olivere/elastic/v7"
 )

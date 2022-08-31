@@ -3,8 +3,8 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 	"io"
 	"math/rand"

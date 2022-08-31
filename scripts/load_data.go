@@ -13,7 +13,7 @@ import (
 	"io"
 	"os"
 
-	"gitee.com/online-publish/slime-scholar-go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
 	"golang.org/x/net/context"
 )
 

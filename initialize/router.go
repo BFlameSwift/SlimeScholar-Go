@@ -1,9 +1,9 @@
 package initialize
 
 import (
-	v1 "gitee.com/online-publish/slime-scholar-go/api/v1"
-	"gitee.com/online-publish/slime-scholar-go/middleware"
-	"gitee.com/online-publish/slime-scholar-go/router"
+	v1 "github.com/BFlameSwift/SlimeScholar-Go/api/v1"
+	"github.com/BFlameSwift/SlimeScholar-Go/middleware"
+	"github.com/BFlameSwift/SlimeScholar-Go/router"
 	"github.com/gin-gonic/gin"
 )
 

@@ -9,9 +9,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitee.com/online-publish/slime-scholar-go/initialize"
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/initialize"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/olivere/elastic/v7"
 	"log"
 	"reflect"
@@ -262,11 +262,11 @@ func test_aggregation() {
 		Field("doctype.keyword") // 设置统计字段
 
 	searchResult, err := service.Client.Search().
-		Index("paper").                    // 设置索引名
+		Index("paper"). // 设置索引名
 		Query(elastic.NewMatchAllQuery()). // 设置查询条件
-		Aggregation("doctype", aggs).      // 设置聚合条件，并为聚合条件设置一个名字, 支持添加多个聚合条件，命名不一样即可。
-		Size(0).                           // 设置分页参数 - 每页大小,设置为0代表不返回搜索结果，仅返回聚合分析结果
-		Do(context.Background())           // 执行请求
+		Aggregation("doctype", aggs). // 设置聚合条件，并为聚合条件设置一个名字, 支持添加多个聚合条件，命名不一样即可。
+		Size(0). // 设置分页参数 - 每页大小,设置为0代表不返回搜索结果，仅返回聚合分析结果
+		Do(context.Background()) // 执行请求
 
 	if err != nil {
 		// Handle error

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/online-publish/slime-scholar-go/global"
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/global"
+	"github.com/BFlameSwift/SlimeScholar-Go/model"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -64,8 +64,8 @@ func QueryAUserByEmail(email string) (user model.User, notFound bool) {
 }
 
 //查询所有用户
-func QueryAllUser() (users []model.User){
-	users = make([]model.User,0)
+func QueryAllUser() (users []model.User) {
+	users = make([]model.User, 0)
 	global.DB.Find(&users)
 	return users
 }
@@ -238,16 +238,16 @@ func QueryASubmitByAuthor(author_id string) (submit model.SubmitScholar, notFoun
 	}
 }
 
-func QuerySubmitsByAuthor(author_ids []string) (submits []model.SubmitScholar,users []model.User) {
-	submits = make([]model.SubmitScholar,0)
-	global.DB.Where("author_id IN ? AND status = ?", author_ids,1).Find(&submits)
-	userIds := make([]uint64,0)
+func QuerySubmitsByAuthor(author_ids []string) (submits []model.SubmitScholar, users []model.User) {
+	submits = make([]model.SubmitScholar, 0)
+	global.DB.Where("author_id IN ? AND status = ?", author_ids, 1).Find(&submits)
+	userIds := make([]uint64, 0)
 	users = make([]model.User, 0)
-	for _,submit := range submits{
-		userIds = append(userIds,submit.UserID)
+	for _, submit := range submits {
+		userIds = append(userIds, submit.UserID)
 	}
-	global.DB.Where("user_id IN ? AND avatar <> ?",userIds,"").Find(&users)
-	return submits,users
+	global.DB.Where("user_id IN ? AND avatar <> ?", userIds, "").Find(&users)
+	return submits, users
 }
 
 func QueryASubmitExist(user_id uint64) (submit model.SubmitScholar, notFound bool) {

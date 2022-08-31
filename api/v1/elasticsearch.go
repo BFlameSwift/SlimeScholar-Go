@@ -10,8 +10,8 @@ import (
 
 	"github.com/olivere/elastic/v7"
 
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/wxnacy/wgo/arrays"
 	"golang.org/x/net/context"

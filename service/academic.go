@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"gitee.com/online-publish/slime-scholar-go/global"
-	"gitee.com/online-publish/slime-scholar-go/model"
+	"github.com/BFlameSwift/SlimeScholar-Go/global"
+	"github.com/BFlameSwift/SlimeScholar-Go/model"
 	"gorm.io/gorm"
 )
 

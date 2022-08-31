@@ -12,9 +12,9 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"gitee.com/online-publish/slime-scholar-go/model"
-	"gitee.com/online-publish/slime-scholar-go/service"
-	"gitee.com/online-publish/slime-scholar-go/utils"
+	"github.com/BFlameSwift/SlimeScholar-Go/model"
+	"github.com/BFlameSwift/SlimeScholar-Go/service"
+	"github.com/BFlameSwift/SlimeScholar-Go/utils"
 	"github.com/gin-gonic/gin"
 )
 

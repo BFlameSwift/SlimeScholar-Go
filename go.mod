@@ -1,4 +1,4 @@
-module gitee.com/online-publish/slime-scholar-go
+module github.com/BFlameSwift/SlimeScholar-Go
 
 go 1.17
 
