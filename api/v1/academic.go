@@ -29,6 +29,7 @@ func GetScholar(c *gin.Context) {
 	var papers []interface{}
 	is_user := false
 	//var paper_result *elastic.SearchResult
+	// 如果是用户认领的学者
 	if user_id_str != "" {
 		is_user = true
 		user_id, err := strconv.ParseUint(user_id_str, 10, 64)
@@ -53,23 +54,29 @@ func GetScholar(c *gin.Context) {
 		ret_author_id = submit.AuthorID
 		fmt.Println("!!!!!!!")
 		fmt.Println(service.GetAuthorCoAuthorIds(append(make([]string, 0), ret_author_id)))
+		// 获取这个作者所有的paper
 		papers = service.GetAuthorSomePapers(ret_author_id, 100)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", submit.AuthorID, 1, 10)
+		// 计算真实的citation count之类
 		people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
 		people_msg["follow_count"] = len(service.GetUserFollowedList(user.UserID))
 
 	} else {
+		// 只是作者的id
 		author_id := c.Request.FormValue("author_id")
 		var the_user_id uint64
+		//判断该作者id是否被认领
 		is_user, the_user_id = service.JudgeAuthorIsSettled(author_id)
 		if author_id == "" {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "错误，authorid 与userid都不存在", "status": 401})
 			return
 		}
 		ret_author_id = author_id
+		// 获取作者的鄋papers
 		papers = service.GetAuthorSomePapers(ret_author_id, 100)
 		//paper_result = service.QueryByField("paper", "authors.aid.keyword", author_id, 1, 10)
 		//people_msg = service.GetsByIndexIdWithout("author", author_id)
+		// 根据该作者是否被认领添加一些信息
 		if is_user {
 			user, _ := service.QueryAUserByID(the_user_id)
 			people_msg = service.UserScholarInfo(service.StructToMap(user), &papers)
@@ -109,7 +116,7 @@ func GetScholar(c *gin.Context) {
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
 // @Router /scholar/transfer [POST]
 func ScholarManagePaper(c *gin.Context) {
-
+	//学者添加或删除Paper
 	user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "user_id不为int", "status": 401})
@@ -136,6 +143,7 @@ func ScholarManagePaper(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "用户提交表不存在", "status": 403})
 		return
 	}
+	// 直接管理文献，不必同意
 	//fmt.Println(paper_id, is_add)
 	service.TransferPaper(user, user.AuthorID, paper_id, kind, obj_user_id)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "创建成功", "status": 200})
@@ -153,7 +161,7 @@ func ScholarManagePaper(c *gin.Context) {
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
 // @Router /social/get/paper [POST]
 func FullPapersSocial(c *gin.Context) {
-
+	// 补齐论文中的一写社交元素: 被用户收藏等等
 	user_id, err := strconv.ParseUint(c.Request.FormValue("user_id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "user_id不为int", "status": 401})
@@ -193,6 +201,8 @@ func CitePaper(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "论文不存在", "status": 404})
 		return
 	}
+	// 返回引用论文格式
+	// service.CitePaper
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "查询成功", "status": 200, "detail": service.CitePaper(paper_id)})
 	return
 }
@@ -208,6 +218,8 @@ func CitePaper(c *gin.Context) {
 // @Failure 600 {string} string "{"success": false, "message": "用户待修改，传入false 更新验证码，否则为验证正确}"
 // @Router /scholar/graph [POST]
 func GetAuthorPartialCoAuthors(c *gin.Context) {
+	//根據作者id获取作者的合作者
+	// 生成对应格式的知识图谱，不过比较难用( level2 生成二级图谱
 	id, level := c.Request.FormValue("author_id"), c.Request.FormValue("level")
 
 	coAuthorMap := service.GetSimpleAuthors(append(make([]string, 0), id))[0].(map[string]interface{})

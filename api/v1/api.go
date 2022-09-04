@@ -23,7 +23,7 @@ func Index(c *gin.Context) {
 }
 
 // DocumentCount doc
-// @description 返回所有文档数目
+// @description 在线返回所有文档数目
 // @Tags basic
 // @Success 200 {string} string "{"success": true, "message": "gcp"}"
 // @Router /count/all [POST]

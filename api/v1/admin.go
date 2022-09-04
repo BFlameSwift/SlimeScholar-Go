@@ -75,6 +75,7 @@ func SubmitCount(c *gin.Context) {
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/create [POST]
 func CreateSubmit(c *gin.Context) {
+	// 创建申请称为学者的表，等待平台管理申请
 	author_name := c.Request.FormValue("author_name")
 	affiliation_name := c.Request.FormValue("affiliation_name")
 	work_email := c.Request.FormValue("work_email")
@@ -129,6 +130,7 @@ func CreateSubmit(c *gin.Context) {
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/check [POST]
 func CheckSubmit(c *gin.Context) {
+	// 审核申请
 	submit_id := c.Request.FormValue("submit_id")
 	user_id := c.Request.FormValue("user_id")
 	success := c.Request.FormValue("success")
@@ -159,7 +161,7 @@ func CheckSubmit(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "已审核过该申请", "status": 406})
 		return
 	}
-
+	// 根据审批的同意与否发送对应信息
 	if success == "false" {
 		submit.Status = 2
 		submit.Content = content
@@ -167,6 +169,7 @@ func CheckSubmit(c *gin.Context) {
 	} else if success == "true" {
 		submit.Status = 1
 		submit.Content = content
+		// 使用户成为学者，补全user信息
 		service.MakeUserScholar(user, submit)
 		service.SendCheckAnswer(user.Email, true, content)
 		submit.AcceptTime = sql.NullTime{Time: time.Now(), Valid: true}
@@ -291,7 +294,7 @@ func ListAllSubmit(c *gin.Context) {
 }
 
 // PaperGetAuthors doc
-// @description 根据作者姓名返回姓名相近的作者并返回文献组
+// @description 根据作者姓名返回姓名相近的作者并返回文献组，申请学者后，需要认领一个作者，此处返回对应文献组供选择某一个作者来认领
 // @Tags 管理员
 // @Param author_name formData string true "author_name"
 // @Param page formData int true "page"
@@ -299,6 +302,7 @@ func ListAllSubmit(c *gin.Context) {
 // @Success 200 {string} string "{"success": true, "message": "创建成功"}"
 // @Router /submit/get/papers [POST]
 func PaperGetAuthors(c *gin.Context) {
+	//
 	author_name := c.Request.FormValue("author_name")
 	page, err := strconv.Atoi(c.Request.FormValue("page"))
 	if err != nil {
@@ -439,7 +443,9 @@ func AdminLogin(c *gin.Context) {
 	}
 }
 
+// 分析日志，获得管理员需要的统计数据
 func LogAnalize(filename string) (data []interface{}, resTime float64) {
+
 	f, e := os.Open(filename)
 	var msgList []Msg
 	if e != nil {

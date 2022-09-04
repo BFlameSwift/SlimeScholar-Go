@@ -36,7 +36,9 @@ func GetPaper(c *gin.Context) {
 		fmt.Printf("this id %s not existed", thisId)
 		return
 	}
+	// GetFullPaper 关键，获取文献的全部详细信息
 	paper := service.GetFullPaper(thisId)
+	// 补齐paper的social信息
 	paper = service.FullPaperSocial(paper)
 	//service.CitePaper(thisId)
 
@@ -61,6 +63,7 @@ func GetPaper(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/get/author [POST]
 func GetAuthor(c *gin.Context) {
+	// 根据id获取作者信息，不过已经被GetScholar所取代
 	thisId := c.Request.FormValue("id")
 	var mapParam map[string]string = make(map[string]string)
 	mapParam["index"], mapParam["id"], mapParam["bodyJson"] = "author", thisId, ""
@@ -92,6 +95,7 @@ func GetAuthor(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/get/affiliation [POST]
 func GetAffiliation(c *gin.Context) {
+	// 根据id获取机构信息，不过最后未使用
 	thisId := c.Request.FormValue("id")
 	var mapParam map[string]string = make(map[string]string)
 	mapParam["index"], mapParam["id"], mapParam["bodyJson"] = "affiliation", thisId, ""
@@ -123,6 +127,7 @@ func GetAffiliation(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/get/conference [POST]
 func GetConference(c *gin.Context) {
+	// 根据id获取会议信息，不过已经被GetScholar所取代
 	thisId := c.Request.FormValue("id")
 	var mapParam map[string]string = make(map[string]string)
 	mapParam["index"], mapParam["id"], mapParam["bodyJson"] = "conference", thisId, ""
@@ -154,6 +159,7 @@ func GetConference(c *gin.Context) {
 // @Failure 500 {string} string "{"success": false, "message": "错误500"}"
 // @Router /es/get/journal [POST]
 func GetJournal(c *gin.Context) {
+	// 根据id获取Journal信息，不过已经被GetScholar所取代
 	thisId := c.Request.FormValue("id")
 	var mapParam map[string]string = make(map[string]string)
 	mapParam["index"], mapParam["id"], mapParam["bodyJson"] = "journal", thisId, ""
@@ -216,6 +222,7 @@ func TitleQueryPaper(c *gin.Context) {
 	for _, hit := range searchResult.Hits.Hits {
 		paperIds = append(paperIds, hit.Id)
 	}
+	// 关键的GetPapers，**批量**的根据10个id获取paper的详细信息，尽量减少开销
 	paperSequences = service.GetPapers(paperIds)
 
 	//其他的aggregation都集成起来了，毕竟每一个都查询都十行代码挺臭的
