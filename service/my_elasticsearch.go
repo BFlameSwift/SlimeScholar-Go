@@ -57,7 +57,7 @@ func Init() {
 	ESClient = Client
 }
 
-//根据index用id创建对应的文档
+// 根据index用id创建对应的文档
 func Create(Params map[string]string) string {
 	//使用字符串
 	var res *elastic.IndexResponse
@@ -80,7 +80,7 @@ func Create(Params map[string]string) string {
 	return res.Result
 }
 
-//删除
+// 删除
 func Delete(Params map[string]string) string {
 	var res *elastic.DeleteResponse
 	var err error
@@ -98,7 +98,7 @@ func Delete(Params map[string]string) string {
 	return res.Result
 }
 
-//修改
+// 修改
 func Update(Params map[string]string) string {
 	var res *elastic.IndexResponse
 	var err error
@@ -115,7 +115,7 @@ func Update(Params map[string]string) string {
 
 }
 
-//根据index以及id获取文档信息，并返回错误信息
+// 根据index以及id获取文档信息，并返回错误信息
 func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
@@ -128,7 +128,7 @@ func GetsByIndexId(index string, id string) (*elastic.GetResult, error) {
 	return get1, err
 }
 
-//根据index以及id获取文档信息，但不返回错误信息
+// 根据index以及id获取文档信息，但不返回错误信息
 func GetsByIndexIdWithout(index string, id string) *elastic.GetResult {
 	var get1 *elastic.GetResult
 	get1, err := Client.Get().Index(index).Id(id).Do(context.Background())
@@ -148,7 +148,7 @@ func GetsByIndexIdRetMap(index string, id string) map[string]interface{} {
 	return item
 }
 
-//查找
+// 查找
 func Gets(Params map[string]string) (*elastic.GetResult, error) {
 	//通过id查找
 	var get1 *elastic.GetResult
@@ -234,7 +234,7 @@ func MatchPhraseQuery(index string, field string, content string, page int, size
 	return searchResult
 }
 
-//根据多个id，使用mget一次get多个文档，返回列表格式
+// 根据多个id，使用mget一次get多个文档，返回列表格式
 func IdsGetList(id_list []string, index string) (retList []interface{}) {
 	mul_item := Client.MultiGet()
 	fmt.Println("mget : ", index)
@@ -345,7 +345,7 @@ func ParseRelPaperAuthor(m map[string]interface{}) map[string]interface{} {
 	return ret_map
 }
 
-//将interface[] 转化为string[]
+// 将interface[] 转化为string[]
 func InterfaceListToStringList(list []interface{}) []string {
 	ret_list := make([]string, 0, 1000)
 	for _, id := range list {
@@ -461,7 +461,7 @@ func Paper_Aggregattion(result *elastic.SearchResult, index string) (my_list []i
 	return my_list
 }
 
-//筛选paperj进行筛选
+// 筛选paperj进行筛选
 func SelectTypeQuery(doctypes []string, journals []string, conferences []string, publishers []string, min_year int, max_year int) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 
@@ -549,9 +549,11 @@ func SearchAggregates(searchResult *elastic.SearchResult) map[string]interface{}
 // 从现在开始修正码风！！！go的变量命名用驼峰
 // 其中，abstract，field，都不一定有，所以要尽可能保证安全性
 func GetPapers(paperIds []string) []interface{} {
+	// 批量根据paperids 获取对应的index:paper中的paper的信息
 	papers := IdsGetList(paperIds, "paper")
 	needFieldList, affiliationIdMap := make([]string, 0), make(map[string]interface{})
 	//abstractMap := IdsGetItems(paperIds, "abstract")
+	//一次拿到所有paper的领域以及作者的机构的id
 	for _, paper := range papers {
 		paper := paper.(map[string]interface{}) // 省点事
 		if paper["fields"] != nil {
@@ -572,7 +574,7 @@ func GetPapers(paperIds []string) []interface{} {
 	fieldsItems := IdsGetItems(needFieldList, "fields")
 	affiliationMap := IdsGetItems(GetMapAllKey(affiliationIdMap), "affiliation")
 	thisFieldList := make([]interface{}, 0)
-
+	// 根据拿到的作者id分别填入到paper的领域，以及作者的机构名称信息
 	for i, paper := range papers {
 		paper := paper.(map[string]interface{}) // 省点事
 		if paper["fields"] != nil {
@@ -602,6 +604,7 @@ func GetPapers(paperIds []string) []interface{} {
 
 		paper["author_affiliation"] = GetAllSortedKey(paperAffiliationNameMap)
 		//abstract := abstractMap[paperIds[i]].(map[string]interface{})["abstract"]
+		// 格式化处理，有的paper没有abstract属性
 		if paper["abstract"] == nil {
 			paper["abstract"] = ""
 		}
@@ -619,13 +622,15 @@ func GetSimplePaper(paper_id string) map[string]interface{} {
 	return (GetPapers(append(make([]string, 0), paper_id))[0]).(map[string]interface{})
 }
 
-// 获取基本的paper信息
+// 获取全部基本的paper信息
 func GetFullPaper(paper_id string) map[string]interface{} {
+	// 获取单个paper的简要信息
 	paper := GetSimplePaper(paper_id)
 	paper["doi_url"] = ""
 	if paper["doi"].(string) != "" {
 		paper["doi_url"] = "https://dx.doi.org/" + paper["doi"].(string)
 	} // 原文链接 100%
+	// 获取论文的参考文献
 	reference_result, err := GetsByIndexId("reference", paper_id)
 	if err != nil {
 		paper["reference_msg"] = make([]string, 0)
@@ -637,7 +642,7 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 		}
 		paper["reference_msg"] = GetPapers(reference_ids)
 	}
-
+	// 获取论文的引用文献
 	citationResult, err := GetsByIndexId("citation", paper_id)
 	if err != nil {
 		paper["citation_msg"] = make([]string, 0)
@@ -649,6 +654,7 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 		}
 		paper["citation_msg"] = GetPapers(citation_ids)
 	}
+	// 如果论文是journal conference 填写相应jounal conference的信息
 	paper["journal"] = make(map[string]interface{})
 	if paper["journal_id"].(string) != "" {
 		paper["journal"] = GetsByIndexIdWithout("journal", paper["journal_id"].(string)).Source
@@ -657,6 +663,7 @@ func GetFullPaper(paper_id string) map[string]interface{} {
 	if paper["conference_id"].(string) != "" {
 		paper["conference"] = GetsByIndexIdWithout("conference", paper["conference_id"].(string)).Source
 	}
+	// 获取paper 的原文连接的信息
 	urlResult, err := GetsByIndexId("url", paper_id)
 	urls, pdfs := make([]string, 0), make([]string, 0)
 	if err == nil {
@@ -692,6 +699,7 @@ func FullPaperSocial(paper map[string]interface{}) map[string]interface{} {
 	return paper
 }
 
+// 简化一些筛选参数。。
 func CheckSelectPaperParams(c *gin.Context, page_str string, size_str string, minYear string, maxYear string, doctypesJson string, journalsJson string, conferenceJson string, publisherJson string, sort_ascending_str string) error {
 	_, err := strconv.Atoi(page_str)
 	if err != nil {
@@ -750,6 +758,7 @@ func CheckSelectPaperParams(c *gin.Context, page_str string, size_str string, mi
 	return nil
 }
 
+// 对搜索结果进行排序
 func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool, page int, size int) *elastic.SearchResult {
 	var searchResult *elastic.SearchResult
 	min_year_agg, max_year_agg := elastic.NewMinAggregation().Field("date"), elastic.NewMaxAggregation().Field("date")
@@ -770,6 +779,7 @@ func SearchSort(boolQuery *elastic.BoolQuery, sort_type int, sort_ascending bool
 	return searchResult
 }
 
+// 条件判断，简化高级检索书写
 func parseCondition(condition map[string]interface{}) elastic.Query {
 	theMap := condition
 	key := theMap["category"]
@@ -797,7 +807,7 @@ func parseCondition(condition map[string]interface{}) elastic.Query {
 	return nil
 }
 
-// 高级检索条件设置
+// 简要版高级检索条件设置，
 func AdvancedCondition(conditions []interface{}) *elastic.BoolQuery {
 	boolQuery := elastic.NewBoolQuery()
 	var condition int
@@ -844,6 +854,7 @@ func AuthorQuery(page int, size int, sort_type int, sort_ascending bool, index s
 	return nil
 }
 
+// 根据领域选择部分论文
 func FieldNameGetSimilarIds(field string, size int) (ids []string) {
 	searchResult := PaperQueryByField("fields", "name", field, 1, size, true, elastic.NewBoolQuery(), 1, true)
 	if searchResult.TotalHits() == 0 {
@@ -892,6 +903,8 @@ func IndexFieldsGetQuery(index string, field string, content string, size int, a
 	}
 	return boolQuery
 }
+
+// 批量填写部分作者的机构信息
 func GetAuthors(ids []string) (ret []interface{}) {
 	authors := IdsGetList(ids, "author")
 	affiliationMap := make(map[string]interface{})
@@ -915,7 +928,7 @@ func GetAuthors(ids []string) (ret []interface{}) {
 	return ret
 }
 
-// 根据paper的领域，获取相关领域的文献idlist
+// 根据paper的领域，获取相关领域的文献idlist(随机推荐罢了)
 func GetRelatedPapers(paperTitle string) (papersIds []string) {
 	page := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % 30
 	boolQuery := elastic.NewBoolQuery()
@@ -936,6 +949,7 @@ func GetRelatedPapers(paperTitle string) (papersIds []string) {
 
 // 前缀搜索，用于搜索提示
 func PrefixSearch(index string, field string, content string, size int) *elastic.SearchResult {
+	// .keyword 重要，能够加快搜索速度。建议学习相关用法，以及利弊
 	query := elastic.NewPrefixQuery(field+".keyword", content)
 
 	searchResult, err := Client.Search().Index(index).Query(query).Size(size).Do(context.Background())
@@ -984,6 +998,8 @@ func GetMostCitationPapers(size int) (ret []string) {
 	}
 	return ret
 }
+
+// 存到redis中，放在首页推荐
 func GetMost1000CitationPaperIds() (ret []string) {
 	return RedisGetValueSorted("most1000sort")
 }
