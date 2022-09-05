@@ -79,7 +79,7 @@ Slime学术成果共享平台，实现了学术搜索引擎的大多基本功能
 同样感谢Open-Alex提供了Microsoft-Academic-Graph的部分备用数据，虽然在最终并未使用，但是想必以后的同学们想要获取高质量数据的话，
 
 
-OpenAlex将会是未来的第一选择。（MAG已宣布在2021年末停止服务。）
+OpenAlex将会是未来的第一选择。[（MAG已宣布在2021年末停止服务。）](https://www.nature.com/nature-index/news-blog/microsoft-academic-graph-discontinued-whats-next)
 
 下面推荐几款个人在筛选中觉得还不错的数据（排名按照个人使用情况以及推荐度排序）：
 

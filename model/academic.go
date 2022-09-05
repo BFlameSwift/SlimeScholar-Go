@@ -1,7 +1,8 @@
 package model
 
-// 由于相关数据量过大，数据可能会放在elasti search上，此处暂时保存一下
-
+// 由于相关数据量过大，数据全部会放在elasti search上，此处暂时保存一下
+// 此处的数据库只是简单复述，实际的数据格式要看https://docs.microsoft.com/en-us/academic-services/graph/reference-data-schema
+// 不过我的操作是将abstract paperauthor paperfield 都合并到paper这个大index中，方便聚合搜索。
 type Paper struct {
 	PaperId       string `gorm:"type:varchar(32); primary_key;" json:"paper_id"`
 	Rank          int    `gorm:"type:integer;" json:"rank"`
