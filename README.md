@@ -104,8 +104,12 @@ OAG 2.1：from [aminer](https://www.aminer.cn/oag-2-1)
 [https://shubhanshu.com/awesome-scholarly-data-analysis/#networks](https://shubhanshu.com/awesome-scholarly-data-analysis/#networks)
 
 根据[Sci-Hub](https://sci-hub.se/database)首页推荐数据库做出更新
+
 [Crossref](https://www.crossref.org/) 一个庞大的数据库，通过DOIs对研究文档进行索引，提供每个文档的作者，年份，标题和其他元数据的信息。这个数据库包含1.2亿多条记录, 有 [API](https://api.crossref.org/)，并且可以在[torrents](https://www.crossref.org/blog/new-public-data-file-120-million-metadata-records/)上下载。
+
 [Carl Malamud's General Index](https://archive.org/details/GeneralIndex) - 一个巨大的数据集，通过n-grams索引1.07亿篇学术论文。
+
 [OpenCitations Corpus](https://opencitations.net/corpus) - 一个自由开放的数据库，包含文件之间互相引用的信息
+
 [Scopus](https://www.scopus.com/sources.uri?zone=TopNavBar&origin=searchbasic) - 这个数据库不是免费的，但是有一个可以自由访问的表格，里面有关于科学期刊的信息，注册后可以下载。
 
